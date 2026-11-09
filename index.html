@@ -1,0 +1,1436 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ollie Akademi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;800&display=swap">
+<style>
+/* Layout: online-classroom shell — sidebar nav (bottom tab bar on phones) + main column: Ollie's speech strip, then the page (dashboard, units, unit, dictionary, badges, profile) or the lesson player. */
+:root{
+  --bg:#EDF4E8; --surface:#FFFFFF; --soft:#F7F1E4; --ink:#22304A; --muted:#5E6A7C; --line:#D6E2D0;
+  --accent:#E8742A; --accent-2:#C95E18; --on-accent:#FFFFFF;
+  --sun:#FFC43B; --leaf:#2C9A66; --leaf-soft:#DDF3E7; --berry:#D2486A; --berry-soft:#FBE3E9; --sky:#3B7DDD; --sky-soft:#E1ECFB;
+  --owl:#9B6338; --owl-dark:#6E4423; --belly:#F4DAB0; --eye:#FFFFFF; --pupil:#22304A; --beak:#FFB627;
+  --display:"Fredoka","Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Nunito","Segoe UI",system-ui,sans-serif;
+  --r:22px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121933; --surface:#1C2546; --soft:#232E57; --ink:#F1F3FA; --muted:#A9B3CD; --line:#2F3A66;
+  --accent:#FF9149; --accent-2:#FFAA70; --on-accent:#1A1206;
+  --sun:#FFD15A; --leaf:#4CC58D; --leaf-soft:#1C3B3A; --berry:#FF7C98; --berry-soft:#3D2340; --sky:#7FB0FF; --sky-soft:#22305E;
+  --owl:#B87A4B; --owl-dark:#8A5530; --belly:#F1D6A9; --eye:#FFFFFF; --pupil:#121933; --beak:#FFC43B;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121933; --surface:#1C2546; --soft:#232E57; --ink:#F1F3FA; --muted:#A9B3CD; --line:#2F3A66;
+  --accent:#FF9149; --accent-2:#FFAA70; --on-accent:#1A1206;
+  --sun:#FFD15A; --leaf:#4CC58D; --leaf-soft:#1C3B3A; --berry:#FF7C98; --berry-soft:#3D2340; --sky:#7FB0FF; --sky-soft:#22305E;
+  --owl:#B87A4B; --owl-dark:#8A5530; --belly:#F1D6A9; --eye:#FFFFFF; --pupil:#121933; --beak:#FFC43B;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 40px}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;text-wrap:balance;line-height:1.15}
+h1{font-size:1.9rem} h2{font-size:1.45rem} h3{font-size:1.15rem}
+p{margin:0}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,.card3d:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.tr{color:var(--muted);font-size:.86em}
+.muted{color:var(--muted)}
+
+/* Shell */
+.shell{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:22px;align-items:start}
+.side{position:sticky;top:12px;background:var(--surface);border:2px solid var(--line);border-radius:var(--r);padding:16px 12px;display:flex;flex-direction:column;gap:6px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:1.3rem;padding:4px 8px 12px;text-decoration:none}
+.brand small{display:block;font-weight:500;font-size:.75rem;color:var(--muted);letter-spacing:.04em}
+.brand .mini{width:40px;height:40px}
+.nav{display:flex;flex-direction:column;gap:4px}
+.nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:14px;text-decoration:none;font-weight:800;color:var(--muted)}
+.nav a .i{font-size:1.3rem;width:28px;text-align:center}
+.nav a:hover{background:var(--soft);color:var(--ink)}
+.nav a.on{background:var(--soft);color:var(--ink);box-shadow:inset 4px 0 0 var(--accent)}
+.side .me{margin-top:10px;border-top:2px dashed var(--line);padding-top:12px;display:flex;gap:10px;align-items:center}
+.ava{width:44px;height:44px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-size:1.5rem;flex:none;border:2px solid var(--line)}
+.main{min-width:0;display:flex;flex-direction:column;gap:18px}
+.topbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.topbar .brand{display:none;padding:0;margin-right:auto}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:2px solid var(--line);border-radius:999px;padding:5px 14px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill.star{border-color:var(--sun)}
+.pill .lbl{font-weight:600;color:var(--muted);font-size:.85em}
+.bump{animation:bump .45s ease}
+@keyframes bump{40%{transform:scale(1.18)}}
+
+/* Ollie strip */
+.ollie{display:flex;align-items:center;gap:14px}
+.owl{width:76px;height:76px;flex:none}
+.owl .body{fill:var(--owl)} .owl .dark{fill:var(--owl-dark)} .owl .belly{fill:var(--belly)}
+.owl .eye{fill:var(--eye)} .owl .pupil{fill:var(--pupil)} .owl .beak{fill:var(--beak)}
+.owl.hop{animation:hop .5s ease}
+@keyframes hop{30%{transform:translateY(-10px) rotate(-4deg)}60%{transform:translateY(0) rotate(3deg)}}
+.bubble{position:relative;flex:1;min-width:0;background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:10px 16px}
+.bubble::before{content:"";position:absolute;left:-10px;top:26px;width:16px;height:16px;background:var(--surface);border-left:2px solid var(--line);border-bottom:2px solid var(--line);transform:rotate(45deg)}
+.bubble .en{font-family:var(--display);font-weight:500;font-size:1.1rem}
+
+/* Generic */
+.panel{background:var(--surface);border:2px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-2)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+.center{justify-content:center}
+.btn{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:var(--on-accent);font-family:var(--display);font-weight:600;font-size:1.05rem;padding:11px 20px;border-radius:16px;box-shadow:0 4px 0 var(--accent-2);transition:transform .1s;text-decoration:none}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--accent-2)}
+.btn.ghost{background:var(--soft);color:var(--ink);box-shadow:0 4px 0 var(--line)}
+.btn.small{font-size:.92rem;padding:7px 13px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.link{font-weight:800;color:var(--accent-2);text-decoration:none}
+.link:hover{text-decoration:underline}
+.bar{height:12px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--leaf);border-radius:99px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.g3{grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr))}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.stat{background:var(--soft);border-radius:16px;padding:14px 16px}
+.stat b{display:block;font-family:var(--display);font-weight:600;font-size:1.7rem;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-weight:600;font-size:.9rem}
+
+/* Dashboard */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center}
+.ring{position:relative;width:132px;height:132px}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .track{fill:none;stroke:var(--line);stroke-width:12}
+.ring .fill{fill:none;stroke:var(--sun);stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .6s}
+.ring .lbl{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:800;line-height:1.1}
+.ring .lbl b{font-family:var(--display);font-size:1.6rem;display:block}
+.continue{display:flex;gap:14px;align-items:center;background:var(--soft);border-radius:18px;padding:14px 16px;flex-wrap:wrap}
+.continue .ic{font-size:2.2rem}
+.continue .txt{flex:1;min-width:160px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;text-align:center}
+.week div{display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:600;font-size:.85rem;color:var(--muted)}
+.week i{width:34px;height:34px;border-radius:50%;background:var(--soft);border:2px solid var(--line);display:grid;place-items:center;font-style:normal}
+.week .yes i{background:var(--sun);border-color:var(--sun)}
+.week .now{color:var(--ink)}
+.avas{display:flex;gap:8px;flex-wrap:wrap}
+.avas button{width:52px;height:52px;border-radius:50%;font-size:1.7rem;background:var(--soft);border:3px solid transparent}
+.avas button.on{border-color:var(--accent)}
+.field{font-family:var(--body);font-size:1.1rem;padding:11px 14px;border-radius:14px;border:2px solid var(--line);background:var(--surface);color:var(--ink);width:100%;max-width:340px}
+.field:focus{border-color:var(--accent);outline:none}
+
+/* Units */
+.unit{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:20px;border:2px solid var(--line);background:var(--surface);text-decoration:none;min-width:0}
+.unit:hover{border-color:var(--accent)}
+.unit .top{display:flex;align-items:center;gap:12px}
+.unit .ic{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:1.7rem;background:var(--soft);flex:none}
+.unit .nm{font-family:var(--display);font-weight:600;font-size:1.15rem}
+.unit .no{font-family:var(--display);font-weight:600;font-size:.75rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.unit.locked{opacity:.55}
+.unit.locked:hover{border-color:var(--line)}
+.unit .meta{display:flex;justify-content:space-between;font-weight:700;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip{display:inline-flex;align-items:center;gap:4px;background:var(--soft);border-radius:99px;padding:3px 12px;font-weight:700;font-size:.9rem}
+.chip.ok{background:var(--leaf-soft);color:var(--leaf)}
+.lessons{display:flex;flex-direction:column;gap:10px}
+.lesson{display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px solid var(--line);border-radius:18px;flex-wrap:wrap}
+.lesson .ic{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:1.5rem;background:var(--soft);flex:none}
+.lesson .txt{flex:1;min-width:150px}
+.lesson .t{font-family:var(--display);font-weight:600;font-size:1.1rem}
+.lesson.done{border-color:var(--leaf)}
+.lesson.done .ic{background:var(--leaf-soft)}
+.lesson.locked{opacity:.55}
+.uhead{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.uhead .ic{width:72px;height:72px;border-radius:22px;background:var(--soft);display:grid;place-items:center;font-size:2.4rem;flex:none}
+
+/* Dictionary */
+.words{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr));gap:12px}
+.word{border:2px solid var(--line);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:4px;background:var(--surface)}
+.word .e{font-size:2.2rem;line-height:1}
+.word .w{font-family:var(--display);font-weight:600;font-size:1.25rem}
+.word .ipa{color:var(--accent-2);font-family:var(--display)}
+.word .u{font-size:.78rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+select.field{max-width:240px}
+
+/* Badges */
+.badge{border:2px solid var(--line);border-radius:20px;padding:16px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center;background:var(--surface)}
+.badge .e{font-size:2.8rem;line-height:1}
+.badge .n{font-family:var(--display);font-weight:600;font-size:1.1rem}
+.badge.off .e{filter:grayscale(1);opacity:.35}
+.badge.off .n{color:var(--muted)}
+.badge.got{border-color:var(--sun)}
+
+/* Lesson player */
+.song{display:flex;flex-direction:column;gap:6px;background:var(--soft);border-radius:16px;padding:16px 18px}
+.song p{font-family:var(--display);font-weight:500;font-size:1.15rem;padding:2px 8px;border-radius:10px;transition:background .2s}
+.song p.on{background:var(--sun);color:#22304A}
+.song b{color:var(--accent-2)}
+.song p.on b{color:#22304A}
+.cardwrap{display:flex;align-items:center;gap:10px;justify-content:center}
+.card3d{perspective:900px;width:min(300px,100%);aspect-ratio:3/3.4;max-width:100%;cursor:pointer;border-radius:22px}
+.card3d .in{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.card3d.flip .in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:22px;border:3px solid var(--ink);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px;text-align:center}
+.face.back{transform:rotateY(180deg);background:var(--soft)}
+.face .emo{font-size:5rem;line-height:1}
+.face .word{font-family:var(--display);font-weight:700;font-size:2rem;letter-spacing:.05em;border:0;padding:0;background:none}
+.face .ipa{font-family:var(--display);font-size:1.2rem;color:var(--accent-2)}
+.face .ex{font-style:italic}
+.face .hint{font-size:.8rem;color:var(--muted)}
+.arrow{width:46px;height:46px;border-radius:50%;background:var(--soft);font-size:1.3rem;font-weight:800;flex:none}
+.dots{display:flex;gap:6px;justify-content:center}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--accent)}
+.dots i.seen{background:var(--leaf)}
+.progress{display:flex;gap:8px}
+.progress span{flex:1;height:12px;border-radius:99px;background:var(--line)}
+.progress span.done{background:var(--leaf)}
+.progress span.now{background:var(--sun)}
+.kind{font-family:var(--display);font-weight:600;font-size:1rem;display:inline-flex;gap:8px;align-items:center;background:var(--soft);padding:4px 14px;border-radius:99px;align-self:flex-start}
+.q{font-family:var(--display);font-weight:600;font-size:1.45rem}
+.songline{font-family:var(--display);font-size:1.3rem;background:var(--soft);padding:14px 16px;border-radius:14px}
+.blank{display:inline-block;min-width:80px;border-bottom:3px dashed var(--accent);text-align:center;color:var(--accent-2)}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px}
+.opt{background:var(--surface);border:3px solid var(--line);border-radius:18px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:var(--display);font-weight:600;font-size:1.15rem;min-height:92px;justify-content:center;transition:transform .1s,border-color .15s}
+.opt:hover{border-color:var(--accent)}
+.opt .emo{font-size:3rem;line-height:1}
+.opt .sw{width:58px;height:58px;border-radius:50%;border:3px solid var(--ink)}
+.opt.right{border-color:var(--leaf);background:var(--leaf-soft)}
+.opt.wrong{border-color:var(--berry);background:var(--berry-soft);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.bigemo{font-size:4.5rem;line-height:1;text-align:center}
+.mask{font-family:var(--display);font-weight:700;font-size:1.6rem;letter-spacing:.2em;text-align:center}
+.sentence{font-family:var(--display);font-size:1.35rem;text-align:center}
+input.write{font-family:var(--display);font-size:1.5rem;padding:12px 16px;border-radius:14px;border:3px solid var(--line);background:var(--surface);color:var(--ink);width:100%;max-width:320px;text-align:center}
+input.write:focus{border-color:var(--accent);outline:none}
+.say{font-family:var(--display);font-weight:600;font-size:1.5rem;text-align:center;background:var(--soft);padding:18px;border-radius:16px}
+.build{min-height:64px;border:3px dashed var(--line);border-radius:16px;padding:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.build:empty::before{content:"Tap the words below ↓  Aşağıdaki kelimelere dokun";color:var(--muted)}
+.bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.tile{background:var(--surface);border:2px solid var(--ink);border-radius:12px;padding:8px 14px;font-family:var(--display);font-weight:600;font-size:1.15rem;box-shadow:0 3px 0 var(--line)}
+.build .tile{background:var(--sun);color:#22304A;border-color:#22304A}
+.fb{border-radius:16px;padding:14px 16px;font-weight:600}
+.fb.good{background:var(--leaf-soft);border:2px solid var(--leaf)}
+.fb.try{background:var(--berry-soft);border:2px solid var(--berry)}
+.fb .en{font-family:var(--display);font-size:1.15rem}
+.hidden-text{font-style:italic;color:var(--muted)}
+
+/* Overlay, toast, confetti */
+.overlay{position:fixed;inset:0;background:color-mix(in srgb,var(--bg) 72%,transparent);display:grid;place-items:center;z-index:40;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.modal{background:var(--surface);border:3px solid var(--sun);border-radius:28px;padding:28px 24px;max-width:440px;width:100%;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center;animation:pop .4s ease}
+.modal h2{font-size:2.1rem;color:var(--accent-2)}
+@keyframes pop{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:50;background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:16px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:calc(100% - 32px);text-align:center}
+.confetti{position:fixed;top:-40px;font-size:1.6rem;pointer-events:none;z-index:45;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+textarea.essay{width:100%;min-height:210px;font-family:var(--body);font-size:1.12rem;line-height:1.65;padding:14px 16px;border-radius:16px;border:3px solid var(--line);background:var(--surface);color:var(--ink);resize:vertical}
+textarea.essay:focus{border-color:var(--accent);outline:none}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.checks li{display:flex;gap:10px;align-items:flex-start;padding:8px 12px;border-radius:12px;background:var(--soft);font-weight:600}
+.checks li.ok{background:var(--leaf-soft)}
+.checks li .m{flex:none;width:22px;text-align:center}
+.bonus{background:var(--sky-soft);border:2px solid var(--sky);border-radius:16px;padding:12px 16px;font-weight:600}
+.model{background:var(--soft);border-radius:16px;padding:14px 16px;font-style:italic}
+.wc{font-weight:800;font-variant-numeric:tabular-nums}
+.auth{max-width:580px;width:100%;margin:0 auto}
+.tabs{display:flex;gap:6px;background:var(--soft);padding:5px;border-radius:14px;align-self:flex-start}
+.tabs a{padding:8px 16px;border-radius:10px;text-decoration:none;font-weight:800;color:var(--muted)}
+.tabs a.on{background:var(--surface);color:var(--ink);box-shadow:0 2px 0 var(--line)}
+.stack{display:flex;flex-direction:column;gap:8px;align-items:stretch}
+.stack label{font-weight:800;margin-top:4px}
+.stack .field{max-width:none}
+button.chip{cursor:pointer;border:2px solid transparent}
+button.chip:hover{border-color:var(--accent)}
+.side .me .link{font-size:.85rem}
+body.out .side,body.out .pills{display:none}
+body.out .shell{grid-template-columns:minmax(0,1fr);max-width:720px}
+
+/* Phone: sidebar becomes a bottom tab bar */
+@media (max-width:860px){
+  body{padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))}
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:30;border-radius:20px 20px 0 0;border-width:2px 0 0;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+  .side .brand,.side .me{display:none}
+  .nav{flex-direction:row;justify-content:space-around}
+  .nav a{flex-direction:column;gap:2px;padding:6px 4px;font-size:.72rem;flex:1;text-align:center}
+  .nav a.on{box-shadow:inset 0 -3px 0 var(--accent)}
+  .topbar .brand{display:flex}
+  body.out{padding-bottom:40px}
+  .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+  .hero{grid-template-columns:minmax(0,1fr)}
+  .ring{justify-self:center}
+}
+@media (max-width:440px){.q{font-size:1.25rem}.face .emo{font-size:4rem}.owl{width:62px;height:62px}h1{font-size:1.6rem}.pills .pill .lbl{display:none}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="owlart" viewBox="0 0 120 120">
+    <path style="fill:var(--owl-dark)" d="M24 22 L38 40 L30 44Z M96 22 L82 40 L90 44Z"/>
+    <ellipse style="fill:var(--owl)" cx="60" cy="68" rx="40" ry="44"/>
+    <ellipse style="fill:var(--owl-dark)" cx="22" cy="76" rx="10" ry="22"/>
+    <ellipse style="fill:var(--owl-dark)" cx="98" cy="76" rx="10" ry="22"/>
+    <ellipse style="fill:var(--belly)" cx="60" cy="84" rx="25" ry="24"/>
+    <circle style="fill:var(--eye)" cx="44" cy="52" r="15"/><circle style="fill:var(--eye)" cx="76" cy="52" r="15"/>
+    <circle style="fill:var(--pupil)" cx="46" cy="53" r="7"/><circle style="fill:var(--pupil)" cx="78" cy="53" r="7"/>
+    <path style="fill:var(--beak)" d="M54 64 L66 64 L60 76Z"/>
+  </symbol>
+</svg>
+
+<div class="shell">
+  <aside class="side">
+    <a class="brand" href="#home"><svg class="owl mini"><use href="#owlart"/></svg><span>Ollie Akademi<small>İNGİLİZCE · 7-11 YAŞ</small></span></a>
+    <nav class="nav" aria-label="Ana menü">
+      <a href="#home" data-nav="home"><span class="i">🏠</span><span>Ana Sayfa</span></a>
+      <a href="#units" data-nav="units"><span class="i">📚</span><span>Derslerim</span></a>
+      <a href="#words" data-nav="words"><span class="i">📖</span><span>Sözlük</span></a>
+      <a href="#badges" data-nav="badges"><span class="i">🏅</span><span>Rozetler</span></a>
+      <a href="#profile" data-nav="profile"><span class="i">👤</span><span>Profil</span></a>
+    </nav>
+    <div class="me"><span class="ava" id="sideAva">🦊</span><div><b id="sideName">Öğrenci</b><div class="tr" id="sideRank"></div><button class="link" data-act="logout">Çıkış yap</button></div></div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <a class="brand" href="#home"><svg class="owl mini"><use href="#owlart"/></svg><span>Ollie Akademi</span></a>
+      <div class="pills">
+        <span class="pill star" id="scorePill">⭐ <span id="score">0</span> <span class="lbl">yıldız</span></span>
+        <span class="pill" title="Gün serisi">🔥 <span id="streak">0</span> <span class="lbl">gün</span></span>
+      </div>
+    </div>
+    <div class="ollie">
+      <svg class="owl" id="owl" aria-hidden="true"><use href="#owlart"/></svg>
+      <div class="bubble" aria-live="polite"><div class="en" id="sayEn">Hello!</div><div class="tr" id="sayTr">Merhaba!</div></div>
+    </div>
+    <main id="screen"></main>
+  </div>
+</div>
+<div id="toastBox" aria-live="polite"></div>
+
+<script>
+const LEVELS = [
+ { rank:"Novice Explorer", theme:"Animals", tr:"Hayvanlar ve yetenekleri", icon:"🐾",
+   song:{ title:"Can You?", lines:['The <b>elephant</b> has big ears,','The <b>turtle</b> can live for years and years,','The <b>monkey</b> can climb, the <b>eagle</b> can fly,','The <b>giraffe</b> has a neck so high,','The <b>dolphin</b> can swim, but it can’t walk,','The <b>parrot</b> can sing and it can talk!','Can you jump like a <b>rabbit</b>? Yes, I can!','Can you run like a <b>horse</b>? Catch me if you can!'] },
+   cards:[
+    {e:"🐘",w:"elephant",ipa:"/ˈɛləfənt/",tr:"Fil",ex:"The elephant has big ears."},
+    {e:"🐢",w:"turtle",ipa:"/ˈtɝtəl/",tr:"Kaplumbağa",ex:"A turtle is very slow."},
+    {e:"🐒",w:"monkey",ipa:"/ˈmʌŋki/",tr:"Maymun",ex:"A monkey can climb trees."},
+    {e:"🦅",w:"eagle",ipa:"/ˈiɡəl/",tr:"Kartal",ex:"An eagle can fly, but it can't swim."},
+    {e:"🦒",w:"giraffe",ipa:"/dʒəˈræf/",tr:"Zürafa",ex:"A giraffe has a long neck."},
+    {e:"🐬",w:"dolphin",ipa:"/ˈdɑlfɪn/",tr:"Yunus",ex:"Dolphins can swim very fast."},
+    {e:"🦜",w:"parrot",ipa:"/ˈpɛrət/",tr:"Papağan",ex:"My parrot can talk!"},
+    {e:"🐰",w:"rabbit",ipa:"/ˈræbɪt/",tr:"Tavşan",ex:"A rabbit can jump, but it can't fly."},
+    {e:"🐴",w:"horse",ipa:"/hɔrs/",tr:"At",ex:"A horse can run fast."},
+    {e:"🐍",w:"snake",ipa:"/sneɪk/",tr:"Yılan",ex:"A snake doesn't have legs."}],
+   tasks:[
+    {type:"song", line:5, blank:"talk", options:["walk","talk","swim"], hint:["Parrots can say words like people! It rhymes with “walk”.","Papağanlar insan gibi kelime söyler. “Walk” ile kafiyeli!"]},
+    {type:"pick", q:"Read the riddle: “I live in the sea. I can swim and jump, but I can't walk. I don't have legs.” What am I?", tr:"Bilmeceyi oku: Ben hangi hayvanım?", options:[{e:"🐢",v:"turtle"},{e:"🐬",v:"dolphin"},{e:"🦅",v:"eagle"},{e:"🐘",v:"elephant"}], answer:"dolphin", hint:["It lives in the SEA and it can JUMP out of the water.","DENİZDE yaşıyor ve sudan ZIPLAYABİLİYOR."]},
+    {type:"listen", say:"Look at this animal. It is very slow. It has a hard shell. It can swim, but it can't run. What is it?", q:"What animal is it?", tr:"Bu hangi hayvan?", options:[{e:"🐍",v:"snake"},{e:"🐴",v:"horse"},{e:"🐢",v:"turtle"}], answer:"turtle", hint:["Listen again: very slow, a hard shell…","Tekrar dinle: çok yavaş, sert bir kabuk…"]},
+    {type:"write", e:"🦒", sentence:"A giraffe ___ a long neck.", answer:"has", mask:"H _ S", tr:"Zürafanın uzun bir boynu var.", hint:["He / She / It → HAS. I / You / We / They → HAVE.","He/She/It ile HAS, I/You/We/They ile HAVE kullanılır."]},
+    {type:"speak", sentence:"I like monkeys. They can climb trees, but they can't fly.", tr:"Maymunları severim. Ağaca tırmanabilirler ama uçamazlar."}],
+   hard:[
+    {type:"songtype", line:6, blank:"jump", hint:["What can a rabbit do very well? j - u - m - p","Tavşan en iyi ne yapar? j - u - m - p"]},
+    {type:"dictation", word:"giraffe", e:"🦒", hint:["It starts with “g”. Careful: two “f”s! g - i - r - a - f - f - e","“g” ile başlıyor. Dikkat, iki “f” var!"]},
+    {type:"order", tr:"Yunuslar çok hızlı yüzebilir ama yürüyemez.", answer:"Dolphins can swim very fast but they can't walk", extra:"has", hint:["Start with: “Dolphins can swim …”","Şöyle başla: “Dolphins can swim …”"]},
+    {type:"story", say:"This is my zoo diary. On Monday, I saw a giraffe. It has a long neck, and it can eat leaves from tall trees. On Tuesday, I saw a turtle. It is very slow, but it can live for a hundred years!", q:"Which animal can live for a hundred years?", tr:"Hangi hayvan yüz yıl yaşayabilir?", options:["the giraffe","the turtle","both of them"], answer:"the turtle", hint:["Listen to the TUESDAY part again.","SALI günü kısmını tekrar dinle."]},
+    {type:"speakTr", tr:"Kartal uçabilir ama yüzemez. Yunus yüzebilir ama uçamaz.", answer:"An eagle can fly, but it can't swim. A dolphin can swim, but it can't fly."}]},
+ { rank:"Brave Adventurer", theme:"Colors", tr:"Renkler", icon:"🎨",
+   song:{ title:"Rainbow Song", lines:['<b>Red</b>, red, my apple is red,','<b>Blue</b>, blue, my cozy bed,','<b>Yellow</b>, yellow, the sun up high,','<b>Green</b>, green, the grass says hi!'] },
+   cards:[
+    {e:"🍎",w:"red",ipa:"/rɛd/",tr:"Kırmızı",ex:"The apple is red."},
+    {e:"💧",w:"blue",ipa:"/blu/",tr:"Mavi",ex:"The sky is blue."},
+    {e:"🌞",w:"yellow",ipa:"/ˈjɛloʊ/",tr:"Sarı",ex:"The sun is yellow."},
+    {e:"🐸",w:"green",ipa:"/ɡrin/",tr:"Yeşil",ex:"The frog is green."},
+    {e:"🌸",w:"pink",ipa:"/pɪŋk/",tr:"Pembe",ex:"My bag is pink."}],
+   tasks:[
+    {type:"song", line:2, blank:"sun", options:["bed","sun","grass"], hint:["What is yellow and up high in the sky?","Gökyüzünde yukarıda olan sarı şey ne?"]},
+    {type:"pick", q:"Which one is GREEN?", tr:"Hangisi yeşil?", options:[{e:"🍎",v:"apple"},{e:"🐸",v:"frog"},{e:"🌞",v:"sun"},{e:"🌸",v:"flower"}], answer:"frog", hint:["Green is the color of grass and frogs.","Yeşil, çimen ve kurbağanın rengidir."]},
+    {type:"listen", say:"Look up! The sky is blue.", q:"What color is the sky?", tr:"Gökyüzü ne renk?", options:[{c:"#E0393E",v:"red"},{c:"#3B7DDD",v:"blue"},{c:"#F27DB0",v:"pink"}], answer:"blue", hint:["Listen again: “The sky is b…”","Tekrar dinle: “The sky is b…”"]},
+    {type:"write", e:"🍎", sentence:"The apple is ___.", answer:"red", mask:"R _ D", tr:"Elma kırmızı.", hint:["Three letters: r - e - d.","Üç harf: r - e - d."]},
+    {type:"speak", sentence:"My bag is pink.", tr:"Benim çantam pembe."}]},
+ { rank:"Clever Climber", theme:"School Things", tr:"Okul Eşyaları", icon:"🎒",
+   song:{ title:"My School Bag", lines:['I have a <b>pen</b>, I have a <b>book</b>,','Open my <b>bag</b> and take a look!','A <b>ruler</b> long, a <b>pencil</b> too,','School is fun for me and you!'] },
+   cards:[
+    {e:"🖊️",w:"pen",ipa:"/pɛn/",tr:"Tükenmez kalem",ex:"I have a blue pen."},
+    {e:"📘",w:"book",ipa:"/bʊk/",tr:"Kitap",ex:"I read a book."},
+    {e:"🎒",w:"bag",ipa:"/bæɡ/",tr:"Çanta",ex:"My bag is heavy."},
+    {e:"📏",w:"ruler",ipa:"/ˈrulɚ/",tr:"Cetvel",ex:"The ruler is long."},
+    {e:"✏️",w:"pencil",ipa:"/ˈpɛnsəl/",tr:"Kurşun kalem",ex:"I have a red pencil."}],
+   tasks:[
+    {type:"song", line:1, blank:"bag", options:["pen","bag","cat"], hint:["What do you open to take your books out?","Kitaplarını çıkarmak için neyi açarsın?"]},
+    {type:"pick", q:"Which one is a BOOK?", tr:"Hangisi kitap?", options:[{e:"✏️",v:"pencil"},{e:"📘",v:"book"},{e:"🎒",v:"bag"},{e:"📏",v:"ruler"}], answer:"book", hint:["You read a book. It has pages!","Kitabı okursun. Sayfaları vardır!"]},
+    {type:"listen", say:"I have a red pencil.", q:"What do I have?", tr:"Bende ne var?", options:[{e:"📏",v:"ruler"},{e:"🎒",v:"bag"},{e:"✏️",v:"pencil"}], answer:"pencil", hint:["Listen again: “a red p…”","Tekrar dinle: “a red p…”"]},
+    {type:"write", e:"📏", sentence:"The ___ is long.", answer:"ruler", mask:"R _ L E R", tr:"Cetvel uzun.", hint:["Five letters: r - u - l - e - r.","Beş harf: r - u - l - e - r."]},
+    {type:"speak", sentence:"I have a blue pen.", tr:"Benim mavi bir kalemim var."}]},
+ { rank:"Star Seeker", theme:"Family", tr:"Aile", icon:"🏡",
+   song:{ title:"My Family", lines:['<b>Mother</b>, <b>father</b>, hold my hand,','<b>Sister</b>, <b>brother</b>, we’re a band!','<b>Baby</b> smiles and says hello,','I love my family, yes, I know!'] },
+   cards:[
+    {e:"👩",w:"mother",ipa:"/ˈmʌðɚ/",tr:"Anne",ex:"This is my mother."},
+    {e:"👨",w:"father",ipa:"/ˈfɑðɚ/",tr:"Baba",ex:"My father is tall."},
+    {e:"👧",w:"sister",ipa:"/ˈsɪstɚ/",tr:"Kız kardeş",ex:"My sister is seven."},
+    {e:"👦",w:"brother",ipa:"/ˈbrʌðɚ/",tr:"Erkek kardeş",ex:"My brother plays soccer."},
+    {e:"👶",w:"baby",ipa:"/ˈbeɪbi/",tr:"Bebek",ex:"The baby is happy."}],
+   tasks:[
+    {type:"song", line:2, blank:"hello", options:["goodbye","hello","meow"], hint:["Baby is happy to see you. What does Baby say?","Bebek seni görünce mutlu. Ne der?"]},
+    {type:"pick", q:"Which one is a BABY?", tr:"Hangisi bebek?", options:[{e:"👩",v:"mother"},{e:"👨",v:"father"},{e:"👶",v:"baby"},{e:"👧",v:"sister"}], answer:"baby", hint:["A baby is very, very small.","Bebek çok çok küçüktür."]},
+    {type:"listen", say:"This is my sister. She is seven.", q:"Who is it?", tr:"Bu kim?", options:[{e:"👦",v:"brother"},{e:"👧",v:"sister"},{e:"👨",v:"father"}], answer:"sister", hint:["Listen again: “This is my s…”. She is a girl!","Tekrar dinle. O bir kız!"]},
+    {type:"write", e:"👩", sentence:"This is my ___.", answer:"mother", mask:"M _ _ H E R", tr:"Bu benim annem.", hint:["Six letters: m - o - t - h - e - r.","Altı harf: m - o - t - h - e - r."]},
+    {type:"speak", sentence:"I love my family.", tr:"Ailemi seviyorum."}]},
+ { rank:"Word Wizard", theme:"Daily Routines", tr:"Günlük Rutinler", icon:"⏰",
+   song:{ title:"My Busy Day", lines:['I <b>wake up</b> and stretch up high,','I <b>brush</b> my teeth and wave goodbye,','I <b>eat</b> my breakfast, yum, yum, yum,','I <b>go to school</b>, here I come!'] },
+   cards:[
+    {e:"⏰",w:"wake up",ipa:"/weɪk ʌp/",tr:"Uyanmak",ex:"I wake up at seven."},
+    {e:"🪥",w:"brush teeth",ipa:"/brʌʃ tiθ/",tr:"Diş fırçalamak",ex:"I brush my teeth."},
+    {e:"🥣",w:"eat breakfast",ipa:"/it ˈbrɛkfəst/",tr:"Kahvaltı yapmak",ex:"I eat breakfast with my family."},
+    {e:"🏫",w:"go to school",ipa:"/ɡoʊ tə skul/",tr:"Okula gitmek",ex:"I go to school by bus."},
+    {e:"😴",w:"sleep",ipa:"/slip/",tr:"Uyumak",ex:"I sleep at nine."}],
+   tasks:[
+    {type:"song", line:1, blank:"brush", options:["eat","brush","sleep"], hint:["What do you do to your teeth every morning?","Her sabah dişlerine ne yaparsın?"]},
+    {type:"pick", q:"Which one is SLEEP?", tr:"Hangisi uyumak?", options:[{e:"🪥",v:"brush"},{e:"😴",v:"sleep"},{e:"🥣",v:"eat"},{e:"🏫",v:"school"}], answer:"sleep", hint:["You sleep in bed at night. Zzz…","Gece yatakta uyursun. Zzz…"]},
+    {type:"listen", say:"I eat breakfast at seven o'clock.", q:"What do I do?", tr:"Ne yapıyorum?", options:[{e:"😴",v:"sleep"},{e:"🥣",v:"breakfast"},{e:"🏫",v:"school"}], answer:"breakfast", hint:["Listen again: “I eat b…”. Yum, yum!","Tekrar dinle: “I eat b…”. Ham ham!"]},
+    {type:"write", e:"🏫", sentence:"I go to ___.", answer:"school", mask:"S C H _ _ L", tr:"Okula giderim.", hint:["Six letters: s - c - h - o - o - l.","Altı harf: s - c - h - o - o - l."]},
+    {type:"speak", sentence:"I wake up at seven.", tr:"Saat yedide uyanırım."}]},
+ { rank:"Mountain Hiker", theme:"Food", tr:"Yiyecekler", icon:"🍎",
+   song:{ title:"Yummy, Yummy", lines:['I like <b>apples</b>, I like <b>bread</b>,','I eat <b>cheese</b>, it’s yellow, not red,','<b>Milk</b> is white and <b>eggs</b> are round,','Yummy, yummy, what a sound!'] },
+   cards:[
+    {e:"🍎",w:"apple",ipa:"/ˈæpəl/",tr:"Elma",ex:"I like apples."},
+    {e:"🍞",w:"bread",ipa:"/brɛd/",tr:"Ekmek",ex:"The bread is warm."},
+    {e:"🧀",w:"cheese",ipa:"/tʃiz/",tr:"Peynir",ex:"The cheese is yellow."},
+    {e:"🥛",w:"milk",ipa:"/mɪlk/",tr:"Süt",ex:"I drink milk."},
+    {e:"🥚",w:"egg",ipa:"/ɛɡ/",tr:"Yumurta",ex:"The egg is round."}],
+   tasks:[
+    {type:"song", line:2, blank:"milk", options:["bread","milk","cheese"], hint:["What is white? You drink it!","Beyaz olan ne? Onu içersin!"]},
+    {type:"pick", q:"Which one is CHEESE?", tr:"Hangisi peynir?", options:[{e:"🍞",v:"bread"},{e:"🧀",v:"cheese"},{e:"🥚",v:"egg"},{e:"🍎",v:"apple"}], answer:"cheese", hint:["Cheese is yellow and has little holes.","Peynir sarıdır ve küçük delikleri olabilir."]},
+    {type:"listen", say:"I am hungry. I want some bread.", q:"What do I want?", tr:"Ne istiyorum?", options:[{e:"🥛",v:"milk"},{e:"🍞",v:"bread"},{e:"🧀",v:"cheese"}], answer:"bread", hint:["Listen again: “I want some b…”","Tekrar dinle: “I want some b…”"]},
+    {type:"write", e:"🥛", sentence:"I drink ___.", answer:"milk", mask:"M _ L K", tr:"Süt içerim.", hint:["Four letters: m - i - l - k.","Dört harf: m - i - l - k."]},
+    {type:"speak", sentence:"I like apples.", tr:"Elmaları severim."}],
+   hard:[
+    {type:"songtype", line:1, blank:"cheese", hint:["It is yellow and mice love it! c - h - e - e - s - e","Sarıdır ve fareler bayılır: c - h - e - e - s - e"]},
+    {type:"dictation", word:"bread", e:"🍞", hint:["It starts with “b”. You make sandwiches with it!","“b” ile başlıyor. Sandviç yaparsın!"]},
+    {type:"order", tr:"Kahvaltıda yumurta yerim.", answer:"I eat eggs for breakfast", extra:"milk", hint:["Start with: “I eat eggs …”","Şöyle başla: “I eat eggs …”"]},
+    {type:"story", say:"For lunch I have bread and cheese. I don't like eggs. I drink orange juice.", q:"What don't I like?", tr:"Neyi sevmiyorum?", options:["bread","cheese","eggs"], answer:"eggs", hint:["Listen for “I don't like …”","“I don't like …” kısmını dinle."]},
+    {type:"speakTr", tr:"Peynir sarıdır.", answer:"The cheese is yellow."}]},
+ { rank:"Cloud Rider", theme:"Weather", tr:"Hava Durumu", icon:"🌦️",
+   song:{ title:"Weather Song", lines:['<b>Sunny</b>, sunny, let’s go out,','<b>Rainy</b>, rainy, splash about!','<b>Windy</b>, windy, fly my kite,','<b>Snowy</b>, snowy, cold and white!'] },
+   cards:[
+    {e:"☀️",w:"sunny",ipa:"/ˈsʌni/",tr:"Güneşli",ex:"It is sunny today."},
+    {e:"🌧️",w:"rainy",ipa:"/ˈreɪni/",tr:"Yağmurlu",ex:"It is rainy. Take an umbrella."},
+    {e:"🌬️",w:"windy",ipa:"/ˈwɪndi/",tr:"Rüzgârlı",ex:"It is windy. Fly a kite!"},
+    {e:"❄️",w:"snowy",ipa:"/ˈsnoʊi/",tr:"Karlı",ex:"It is snowy and cold."},
+    {e:"☁️",w:"cloudy",ipa:"/ˈklaʊdi/",tr:"Bulutlu",ex:"It is cloudy today."}],
+   tasks:[
+    {type:"song", line:2, blank:"kite", options:["kite","bed","cat"], hint:["What flies in the sky on a windy day?","Rüzgârlı günde gökyüzünde ne uçar?"]},
+    {type:"pick", q:"Which one is RAINY?", tr:"Hangisi yağmurlu?", options:[{e:"☀️",v:"sunny"},{e:"🌧️",v:"rainy"},{e:"❄️",v:"snowy"},{e:"🌬️",v:"windy"}], answer:"rainy", hint:["Rain is water falling from the clouds.","Yağmur, bulutlardan düşen sudur."]},
+    {type:"listen", say:"Brr! It is snowy and very cold today.", q:"What is the weather like?", tr:"Hava nasıl?", options:[{e:"☀️",v:"sunny"},{e:"❄️",v:"snowy"},{e:"🌧️",v:"rainy"}], answer:"snowy", hint:["Listen again: “Brr! It is very cold…”","Tekrar dinle: “Brr! Çok soğuk…”"]},
+    {type:"write", e:"☀️", sentence:"It is ___ today.", answer:"sunny", mask:"S _ N N Y", tr:"Bugün hava güneşli.", hint:["Five letters: s - u - n - n - y.","Beş harf: s - u - n - n - y."]},
+    {type:"speak", sentence:"It is windy today.", tr:"Bugün hava rüzgârlı."}],
+   hard:[
+    {type:"songtype", line:3, blank:"white", hint:["What color is snow? w - h - i - t - e","Kar ne renktir? w - h - i - t - e"]},
+    {type:"dictation", word:"cloudy", e:"☁️", hint:["It starts with “c”. The sky is grey, no sun!","“c” ile başlıyor. Gökyüzü gri, güneş yok!"]},
+    {type:"order", tr:"Bugün hava yağmurlu ve soğuk.", answer:"It is rainy and cold today", extra:"sunny", hint:["Start with: “It is rainy …”","Şöyle başla: “It is rainy …”"]},
+    {type:"story", say:"Today it is sunny and hot. Tomorrow it is rainy. Take your umbrella tomorrow!", q:"What is the weather like tomorrow?", tr:"Yarın hava nasıl?", options:["sunny","rainy","snowy"], answer:"rainy", hint:["TODAY is sunny. Listen for “tomorrow”!","BUGÜN güneşli. “Tomorrow” kelimesini dinle!"]},
+    {type:"speakTr", tr:"Hava karlı ve soğuk.", answer:"It is snowy and cold."}]},
+ { rank:"Moon Jumper", theme:"My Body", tr:"Vücudumuz", icon:"🖐️",
+   song:{ title:"This Is Me", lines:['I have two <b>eyes</b> to see the sun,','I have two <b>legs</b> to jump and run,','I have ten <b>fingers</b>, one, two, three,','And one small <b>nose</b> right here on me!'] },
+   cards:[
+    {e:"👁️",w:"eye",ipa:"/aɪ/",tr:"Göz",ex:"I have two eyes."},
+    {e:"👃",w:"nose",ipa:"/noʊz/",tr:"Burun",ex:"My nose is small."},
+    {e:"👂",w:"ear",ipa:"/ɪr/",tr:"Kulak",ex:"I hear with my ears."},
+    {e:"✋",w:"hand",ipa:"/hænd/",tr:"El",ex:"Raise your hand!"},
+    {e:"🦵",w:"leg",ipa:"/lɛɡ/",tr:"Bacak",ex:"I run with my legs."}],
+   tasks:[
+    {type:"song", line:1, blank:"legs", options:["eyes","legs","nose"], hint:["You jump and run with them!","Onlarla zıplar ve koşarsın!"]},
+    {type:"pick", q:"Which one is an EAR?", tr:"Hangisi kulak?", options:[{e:"👁️",v:"eye"},{e:"👂",v:"ear"},{e:"👃",v:"nose"},{e:"✋",v:"hand"}], answer:"ear", hint:["You hear music with your ears.","Müziği kulaklarınla duyarsın."]},
+    {type:"listen", say:"Touch your nose! Touch your nose!", q:"What do I touch?", tr:"Neye dokunuyorum?", options:[{e:"👂",v:"ear"},{e:"👃",v:"nose"},{e:"🦵",v:"leg"}], answer:"nose", hint:["Listen again: “Touch your n…”","Tekrar dinle: “Touch your n…”"]},
+    {type:"write", e:"✋", sentence:"Raise your ___!", answer:"hand", mask:"H _ N D", tr:"Elini kaldır!", hint:["Four letters: h - a - n - d.","Dört harf: h - a - n - d."]},
+    {type:"speak", sentence:"I have two eyes.", tr:"İki gözüm var."}],
+   hard:[
+    {type:"songtype", line:2, blank:"fingers", hint:["You have ten of them on your hands! f - i - n - g - e - r - s","Ellerinde on tane var: f - i - n - g - e - r - s"]},
+    {type:"dictation", word:"ear", e:"👂", hint:["It starts with “e”. Only three letters!","“e” ile başlıyor. Sadece üç harf!"]},
+    {type:"order", tr:"Kulaklarımla duyarım.", answer:"I hear with my ears", extra:"eyes", hint:["Start with: “I hear with …”","Şöyle başla: “I hear with …”"]},
+    {type:"story", say:"Look at my robot! It has three eyes and one big nose. It has four legs but no hands.", q:"How many eyes does my robot have?", tr:"Robotumun kaç gözü var?", options:["two","three","four"], answer:"three", hint:["Four is for the legs. Listen for “eyes”!","Dört bacak içindi. “Eyes” kelimesini dinle!"]},
+    {type:"speakTr", tr:"Burnum küçük.", answer:"My nose is small."}]},
+ { rank:"Galaxy Guide", theme:"Clothes", tr:"Kıyafetler", icon:"👕",
+   song:{ title:"Getting Dressed", lines:['Put on your <b>shirt</b>, put on your <b>hat</b>,','Put on your <b>shoes</b>, just like that!','A warm red <b>coat</b> when it is cold,','My <b>socks</b> are blue, my scarf is gold!'] },
+   cards:[
+    {e:"👕",w:"shirt",ipa:"/ʃɝt/",tr:"Tişört, gömlek",ex:"My shirt is green."},
+    {e:"🧢",w:"hat",ipa:"/hæt/",tr:"Şapka",ex:"I wear a hat."},
+    {e:"👟",w:"shoes",ipa:"/ʃuz/",tr:"Ayakkabı",ex:"My shoes are new."},
+    {e:"🧥",w:"coat",ipa:"/koʊt/",tr:"Mont",ex:"Put on your coat."},
+    {e:"🧦",w:"socks",ipa:"/sɑks/",tr:"Çorap",ex:"My socks are blue."}],
+   tasks:[
+    {type:"song", line:1, blank:"shoes", options:["shirt","shoes","hat"], hint:["You wear them on your feet to go outside.","Dışarı çıkmak için ayağına giyersin."]},
+    {type:"pick", q:"Which one is a HAT?", tr:"Hangisi şapka?", options:[{e:"👕",v:"shirt"},{e:"🧢",v:"hat"},{e:"👟",v:"shoes"},{e:"🧦",v:"socks"}], answer:"hat", hint:["You wear a hat on your head.","Şapkayı başına takarsın."]},
+    {type:"listen", say:"It is cold outside. Put on your coat!", q:"What do I put on?", tr:"Ne giyiyorum?", options:[{e:"🧥",v:"coat"},{e:"👕",v:"shirt"},{e:"🧦",v:"socks"}], answer:"coat", hint:["Listen again: “Put on your c…”. It is warm!","Tekrar dinle: “Put on your c…”. Sıcak tutar!"]},
+    {type:"write", e:"🧦", sentence:"My ___ are blue.", answer:"socks", mask:"S _ C K S", tr:"Çoraplarım mavi.", hint:["Five letters: s - o - c - k - s.","Beş harf: s - o - c - k - s."]},
+    {type:"speak", sentence:"My shoes are new.", tr:"Ayakkabılarım yeni."}],
+   hard:[
+    {type:"songtype", line:2, blank:"coat", hint:["You wear it over your clothes in winter. c - o - a - t","Kışın kıyafetlerinin üstüne giyersin: c - o - a - t"]},
+    {type:"dictation", word:"shirt", e:"👕", hint:["It starts with “sh”. You wear it every day!","“sh” ile başlıyor. Her gün giyersin!"]},
+    {type:"order", tr:"Soğuk olduğunda mont giyerim.", answer:"I wear a coat when it is cold", extra:"hat", hint:["Start with: “I wear a coat …”","Şöyle başla: “I wear a coat …”"]},
+    {type:"story", say:"Today is Monday. I wear a white shirt and black shoes. My brother wears a red hat.", q:"Who wears a red hat?", tr:"Kırmızı şapkayı kim takıyor?", options:["me","my brother","my sister"], answer:"my brother", hint:["I wear a white shirt. Listen for “red hat”!","Ben beyaz tişört giyiyorum. “Red hat” kısmını dinle!"]},
+    {type:"speakTr", tr:"Şapkam sarı.", answer:"My hat is yellow."}]},
+ { rank:"English Champion", theme:"Hobbies", tr:"Hobiler", icon:"⚽",
+   song:{ title:"I Can Do It", lines:['I can <b>swim</b> and I can <b>run</b>,','I can <b>dance</b>, it’s so much fun!','I can <b>sing</b> a happy song,','I can <b>draw</b> all day long!'] },
+   cards:[
+    {e:"🏊",w:"swim",ipa:"/swɪm/",tr:"Yüzmek",ex:"I can swim."},
+    {e:"🏃",w:"run",ipa:"/rʌn/",tr:"Koşmak",ex:"I can run fast."},
+    {e:"💃",w:"dance",ipa:"/dæns/",tr:"Dans etmek",ex:"We dance at the party."},
+    {e:"🎤",w:"sing",ipa:"/sɪŋ/",tr:"Şarkı söylemek",ex:"I sing a song."},
+    {e:"🎨",w:"draw",ipa:"/drɔ/",tr:"Resim çizmek",ex:"I draw a cat."}],
+   tasks:[
+    {type:"song", line:3, blank:"draw", options:["swim","draw","eat"], hint:["You do it with a pencil and paper.","Kalem ve kâğıtla yaparsın."]},
+    {type:"pick", q:"Which one is SWIM?", tr:"Hangisi yüzmek?", options:[{e:"🏃",v:"run"},{e:"🏊",v:"swim"},{e:"🎤",v:"sing"},{e:"🎨",v:"draw"}], answer:"swim", hint:["You swim in the water.","Suda yüzersin."]},
+    {type:"listen", say:"I love music. I sing every day.", q:"What do I do?", tr:"Ne yapıyorum?", options:[{e:"🎨",v:"draw"},{e:"🎤",v:"sing"},{e:"🏊",v:"swim"}], answer:"sing", hint:["Listen again: “I love music. I s…”","Tekrar dinle: “I love music. I s…”"]},
+    {type:"write", e:"💃", sentence:"I can ___.", answer:"dance", mask:"D _ N C E", tr:"Dans edebilirim.", hint:["Five letters: d - a - n - c - e.","Beş harf: d - a - n - c - e."]},
+    {type:"speak", sentence:"I can run fast.", tr:"Hızlı koşabilirim."}],
+   hard:[
+    {type:"songtype", line:0, blank:"run", hint:["You do it with your legs, very fast! r - u - n","Bacaklarınla, çok hızlı yaparsın: r - u - n"]},
+    {type:"dictation", word:"dance", e:"💃", hint:["It starts with “d”. You move to the music!","“d” ile başlıyor. Müzikle hareket edersin!"]},
+    {type:"order", tr:"Kız kardeşim resim çizebilir.", answer:"My sister can draw pictures", extra:"swim", hint:["Start with: “My sister can …”","Şöyle başla: “My sister can …”"]},
+    {type:"story", say:"My name is Ali. I can swim, but I can't sing. My friend Ela can sing and dance.", q:"What can't Ali do?", tr:"Ali neyi yapamaz?", options:["swim","sing","dance"], answer:"sing", hint:["Listen for “I can't …”","“I can't …” kısmını dinle."]},
+    {type:"speakTr", tr:"Yüzebilirim ama şarkı söyleyemem.", answer:"I can swim, but I can't sing."}]}
+];
+
+const HARD = [
+ [ {type:"songtype", line:2, blank:"cow", hint:["It says “Moo” all day and gives milk. c - o - w","“Möö” der ve süt verir: c - o - w"]},
+   {type:"dictation", word:"duck", e:"🦆", hint:["It starts with “d”. It can swim and says quack!","“d” ile başlıyor. Yüzer ve “vak vak” der!"]},
+   {type:"order", tr:"Köpek büyük ve kahverengi.", answer:"The dog is big and brown", extra:"cat", hint:["Start with: “The dog is …”","Şöyle başla: “The dog is …”"]},
+   {type:"story", say:"Hello! I have a pet. It is small and white. It says meow. It likes milk.", q:"What is my pet?", tr:"Benim evcil hayvanım ne?", options:["a dog","a cat","a fish"], answer:"a cat", hint:["Listen again: what animal says “meow”?","Tekrar dinle: hangi hayvan “miyav” der?"]},
+   {type:"speakTr", tr:"Ördek yüzebilir.", answer:"The duck can swim."} ],
+ [ {type:"songtype", line:3, blank:"grass", hint:["It is green and it grows in the garden. g - r - a - s - s","Yeşil ve bahçede büyür: g - r - a - s - s"]},
+   {type:"dictation", word:"yellow", e:"🌞", hint:["It starts with “y”. The sun is this color!","“y” ile başlıyor. Güneşin rengi!"]},
+   {type:"order", tr:"Çantam pembe ve yeşil.", answer:"My bag is pink and green", extra:"red", hint:["Start with: “My bag is …”","Şöyle başla: “My bag is …”"]},
+   {type:"story", say:"I have a big ball. My ball is red and yellow. My sister has a blue ball.", q:"What color is MY ball?", tr:"BENİM topum ne renk?", options:["blue","red and yellow","green"], answer:"red and yellow", hint:["The blue ball is my sister's. Listen again!","Mavi top kız kardeşimin. Tekrar dinle!"]},
+   {type:"speakTr", tr:"Kurbağa yeşil.", answer:"The frog is green."} ],
+ [ {type:"songtype", line:2, blank:"pencil", hint:["You write and draw with it. p - e - n - c - i - l","Onunla yazar ve çizersin: p - e - n - c - i - l"]},
+   {type:"dictation", word:"ruler", e:"📏", hint:["It starts with “r”. It is long and straight!","“r” ile başlıyor. Uzun ve düz!"]},
+   {type:"order", tr:"Çantamda iki kitap var.", answer:"I have two books in my bag", extra:"pen", hint:["Start with: “I have two …”","Şöyle başla: “I have two …”"]},
+   {type:"story", say:"Look at my desk. There is a book and a ruler on it. My pencil is in my bag.", q:"Where is my pencil?", tr:"Kurşun kalemim nerede?", options:["on the desk","in my bag","under the book"], answer:"in my bag", hint:["The book and the ruler are on the desk. Where is the pencil?","Kitap ve cetvel masada. Kalem nerede?"]},
+   {type:"speakTr", tr:"Kırmızı bir kurşun kalemim var.", answer:"I have a red pencil."} ],
+ [ {type:"songtype", line:1, blank:"brother", hint:["Sister and …? A boy in your family. b - r - o - t - h - e - r","Sister ve …? Ailendeki erkek çocuk: b - r - o - t - h - e - r"]},
+   {type:"dictation", word:"father", e:"👨", hint:["It starts with “f”. It means “baba”!","“f” ile başlıyor. “Baba” demek!"]},
+   {type:"order", tr:"Erkek kardeşim futbol oynar.", answer:"My brother plays soccer", extra:"sister", hint:["Start with: “My brother …”","Şöyle başla: “My brother …”"]},
+   {type:"story", say:"This is my family. My mother is a teacher. My father is a doctor. I have one sister.", q:"What is my father's job?", tr:"Babamın mesleği ne?", options:["a teacher","a doctor","a farmer"], answer:"a doctor", hint:["My MOTHER is a teacher. Listen for “father”!","ANNEM öğretmen. “Father” kelimesini dinle!"]},
+   {type:"speakTr", tr:"Bu benim babam.", answer:"This is my father."} ],
+ [ {type:"songtype", line:2, blank:"breakfast", hint:["Your first meal in the morning! b - r - e - a - k - f - a - s - t","Sabahın ilk yemeği: b - r - e - a - k - f - a - s - t"]},
+   {type:"dictation", word:"sleep", e:"😴", hint:["It starts with “s”. You do it in bed at night. Zzz…","“s” ile başlıyor. Gece yatakta yaparsın. Zzz…"]},
+   {type:"order", tr:"Saat yedide uyanırım.", answer:"I wake up at seven", extra:"sleep", hint:["Start with: “I wake up …”","Şöyle başla: “I wake up …”"]},
+   {type:"story", say:"Every day I wake up at seven. I eat breakfast at seven thirty. I go to school at eight.", q:"When do I go to school?", tr:"Okula saat kaçta giderim?", options:["at seven","at seven thirty","at eight"], answer:"at eight", hint:["At seven I wake up. Listen for “school”!","Yedide uyanırım. “School” kelimesini dinle!"]},
+   {type:"speakTr", tr:"Dişlerimi fırçalarım.", answer:"I brush my teeth."} ]
+];
+LEVELS.forEach((L,i)=>{ if(!L.hard) L.hard = HARD[i]; });
+const MORE_SONGS = [
+ [ {title:"Zoo Day", lines:['Let’s go to the zoo today,','The <b>monkeys</b> swing and the <b>parrots</b> say:','“Hello, hello, how are you?”','The <b>giraffe</b> is tall and the sky is blue!']},
+   {title:"Fast and Slow", lines:['The <b>horse</b> is fast, the <b>turtle</b> is slow,','Ready, set, here we go!','The <b>rabbit</b> jumps, the <b>eagle</b> flies,','High, high, up in the skies!']},
+   {title:"Yes, It Can! No, It Can’t!", lines:['Can a <b>snake</b> walk? No, it can’t!','Can an <b>eagle</b> swim? No, it can’t!','Can a <b>dolphin</b> swim? Yes, it can!','Can a <b>monkey</b> climb? Yes, it can!']},
+   {title:"Big Ears, Long Neck", lines:['Big gray ears and a long, long nose,','That’s the <b>elephant</b>, everybody knows!','A long, long neck, eating from a tree,','That’s the <b>giraffe</b>, one, two, three!']} ],
+ [ {title:"Rainbow in the Sky", lines:['After the rain, look up high,','A rainbow is painting the sky!','<b>Red</b> on the top, then <b>yellow</b> and <b>green</b>,','The prettiest colors I have ever seen!']},
+   {title:"What Color Is It?", lines:['What color is the sun? <b>Yellow</b>, <b>yellow</b>!','What color is the sea? <b>Blue</b>, <b>blue</b>, <b>blue</b>!','What color is the frog? <b>Green</b>, <b>green</b>, <b>green</b>!','What color is my bag? It’s <b>pink</b> and new!']},
+   {title:"Mix the Colors", lines:['<b>Red</b> and <b>yellow</b> make orange,','<b>Blue</b> and <b>yellow</b> make <b>green</b>,','<b>Red</b> and white make <b>pink</b>, <b>pink</b>, <b>pink</b>,','The coolest colors you have seen!']},
+   {title:"My Favorite Color", lines:['My favorite color is <b>blue</b>, <b>blue</b>, <b>blue</b>,','What’s your favorite? Tell me, do!','I like <b>pink</b> and she likes <b>red</b>,','<b>Green</b> is the color of my bed!']} ],
+ [ {title:"Pack Your Bag", lines:['Pack your <b>bag</b>, it’s time for school,','<b>Pencil</b>, <b>ruler</b>, that’s the rule!','A <b>book</b> to read, a <b>pen</b> to write,','Zip it up and hold it tight!']},
+   {title:"What’s in My Bag?", lines:['What’s in my <b>bag</b>? Let me see,','One blue <b>book</b> and <b>pencils</b> three,','A long, long <b>ruler</b>, a <b>pen</b> that’s red,','And a yummy sandwich, Mom said!']},
+   {title:"Classroom Rules", lines:['Raise your hand and wait your turn,','Open your <b>book</b>, it’s time to learn!','Don’t run, don’t shout, sit on your chair,','Pick up your <b>pencil</b>, share, share, share!']},
+   {title:"Pencil, Pencil", lines:['<b>Pencil</b>, <b>pencil</b>, yellow and long,','Help me write my English song!','<b>Ruler</b>, <b>ruler</b>, straight and new,','Help me draw a line or two!']} ],
+ [ {title:"Family Tree", lines:['Grandma, Grandpa, Mom and Dad,','The best family I’ve ever had!','My big <b>sister</b>, my little <b>brother</b>,','We all love one another!']},
+   {title:"Who Is This?", lines:['Who is this? This is my dad,','He is funny, he is never sad!','Who is this? This is my mom,','She can sing, la-la, dum-dum!']},
+   {title:"Shh! The Baby Is Sleeping", lines:['Shh, shh, the <b>baby</b> is sleeping,','Tiptoe, tiptoe, no more beeping!','<b>Sister</b> whispers, <b>brother</b> too,','Sweet dreams, <b>baby</b>, we love you!']},
+   {title:"Sunday Fun", lines:['On Sunday we all play,','<b>Mother</b>, <b>father</b>, me all day,','My <b>brother</b> can run, my <b>sister</b> can draw,','Grandpa shouts, “Hooray, hurrah!”']} ],
+ [ {title:"Good Morning, Sun", lines:['Good morning, sun! It’s time to rise,','<b>Wake up</b>, <b>wake up</b>, open your eyes!','<b>Brush</b> your teeth and wash your face,','Grab your bag, it’s a race!']},
+   {title:"What Time Is It?", lines:['What time is it? It’s seven o’clock,','<b>Wake up</b>, <b>wake up</b>, tick-tock, tick-tock!','What time is it? It’s eight o’clock,','<b>Go to school</b>, knock, knock, knock!']},
+   {title:"Sparkly Smile", lines:['Morning and night, I <b>brush</b> my teeth,','Up on top and underneath,','Round and round, nice and slow,','A sparkly smile, now off I go!']},
+   {title:"Good Night", lines:['Put on pajamas, turn off the light,','It’s nine o’clock, so say good night,','Close your eyes and go to <b>sleep</b>,','Tomorrow’s fun is yours to keep!']} ],
+ [ {title:"Breakfast Time", lines:['<b>Eggs</b> and <b>bread</b> and <b>milk</b> for me,','Breakfast time, one, two, three!','<b>Cheese</b> is yellow, <b>apples</b> are red,','Yummy breakfast, then off I head!']},
+   {title:"I Like, I Don’t Like", lines:['I like <b>apples</b>, crunch, crunch, crunch,','I like <b>cheese</b> and <b>bread</b> for lunch,','I don’t like fish, no, no, no,','Give me pizza, here we go!']},
+   {title:"Are You Hungry?", lines:['Are you hungry? Yes, I am!','Do you want some <b>bread</b> and jam?','Are you thirsty? Yes, I am!','<b>Milk</b> for me and juice for Sam!']},
+   {title:"One Little Egg", lines:['One little <b>egg</b>, round and white,','Crack it open, what a sight!','Yellow inside, sizzle and pop,','Breakfast is ready, stop, stop, stop!']} ],
+ [ {title:"Sunny Day", lines:['<b>Sunny</b> day, the sky is blue,','Let’s go out, me and you,','Put on your hat and sunglasses too,','<b>Sunny</b> day, woo-hoo, woo-hoo!']},
+   {title:"Pitter, Patter", lines:['Pitter, patter, rain on my head,','“Take your umbrella!” Mommy said,','It’s <b>rainy</b>, so jump in puddles, splash, splash, splash,','Look up! Thunder! Flash, flash, flash!']},
+   {title:"How’s the Weather?", lines:['How’s the weather? Look and see,','Is it <b>sunny</b>? Yes, it is, yippee!','How’s the weather? Look up high,','It’s <b>cloudy</b>, <b>cloudy</b>, a gray, gray sky!']},
+   {title:"Mister Snow", lines:['<b>Snowy</b>, <b>snowy</b>, cold and white,','We made a snowman, big and bright,','A carrot nose, a hat, a scarf,','He looks so funny, we laugh and laugh!']} ],
+ [ {title:"Touch Your Nose", lines:['Touch your <b>nose</b>, touch your <b>ears</b>,','Clap your <b>hands</b>, let’s give three cheers!','Stamp your feet and turn around,','Now sit down without a sound!']},
+   {title:"Count With Me", lines:['Count my fingers, one to ten,','Count my toes and count again,','Two <b>eyes</b>, two <b>ears</b>, one <b>nose</b>, one mouth,','Two <b>legs</b> to walk north and south!']},
+   {title:"My Monster", lines:['My monster has three big <b>eyes</b>,','It can’t swim, but it can fly,','Four long arms and seven toes,','And a big red, funny <b>nose</b>!']},
+   {title:"Move Your Body", lines:['Put your <b>hands</b> up in the air,','Shake your <b>legs</b> here and there,','Wiggle your <b>nose</b>, wiggle your <b>ears</b>,','Now you’re dancing! Hooray, cheers!']} ],
+ [ {title:"Cold Outside", lines:['Cold, cold, it’s cold outside,','Put on your <b>coat</b> and zip it tight,','A <b>hat</b> for your head, <b>socks</b> for your feet,','Now you’re warm and cozy, sweet!']},
+   {title:"My New Shoes", lines:['I have new <b>shoes</b>, red and bright,','I wear them morning, noon, and night,','Tap, tap, tap, they walk with me,','To school, to the park, and to the sea!']},
+   {title:"Getting Ready", lines:['<b>Shirt</b> on, pants on, one, two, three,','<b>Socks</b> on, <b>shoes</b> on, look at me!','<b>Hat</b> on, <b>coat</b> on, out the door,','Getting dressed is not a chore!']},
+   {title:"What Are You Wearing?", lines:['What are you wearing? Tell me, please!','A green T-<b>shirt</b> and old blue jeans!','What is she wearing? Look and see,','A yellow <b>hat</b>, as cute as can be!']} ],
+ [ {title:"Let’s Play", lines:['Let’s play soccer, kick the ball,','Let’s play outside, one and all!','Let’s ride a bike and fly a kite,','Let’s have fun from morning till night!']},
+   {title:"I Like Swimming", lines:['I like <b>swimming</b> in the pool,','Splash, splash, splash, it’s really cool!','I like <b>drawing</b>, I like to <b>sing</b>,','Weekends are the very best thing!']},
+   {title:"Can You Dance?", lines:['Can you <b>dance</b>? Yes, I can!','Can you <b>swim</b>? Yes, I can!','Can you fly? No, I can’t,','I’m not a bird, and I’m not a plant!']},
+   {title:"My Friend and Me", lines:['My friend can <b>draw</b> and I can <b>sing</b>,','Together we can do anything!','She can <b>run</b> and I can <b>swim</b>,','We are a team, and we always win!']} ]
+];
+LEVELS.forEach((L,i)=>{ L.songs = [L.song].concat(MORE_SONGS[i] || []); });
+
+
+const KIND = {song:["🎵","Song"], pick:["👀","Look & Pick"], listen:["👂","Listen"], write:["✍️","Write"], speak:["🗣️","Speak"],
+  songtype:["🎵","Song: type it"], dictation:["👂","Listen & Write"], order:["🧩","Build the Sentence"], story:["📖","Story Time"], speakTr:["🗣️","Say it in English"]};
+const INTRO = {song:["Sing and fill the gap!","Şarkıyı söyle, boşluğu doldur!"], pick:["Look carefully!","Dikkatlice bak!"],
+  listen:["Listen to me!","Beni dinle! Önce 🔊 düğmesine bas."], write:["Can you write it?","Yazabilir misin?"], speak:["Your turn to talk!","Konuşma sırası sende!"],
+  songtype:["No choices this time!","Bu sefer seçenek yok. Şarkıyı hatırla ve kelimeyi yaz!"], dictation:["Listen and spell it!","Kelimeyi dinle ve harf harf yaz. Resim yok!"],
+  order:["Build the sentence!","Kelimeleri doğru sıraya koy. Bir kelime fazla, dikkat!"], story:["Story time! Listen carefully.","Hikâyeyi dinle ve soruyu cevapla."],
+  speakTr:["Translate and speak!","Türkçe cümleyi İngilizce söyle!"]};
+const PRAISE = [["Awesome!","Harika!"],["Super job!","Süper iş!"],["Fantastic!","Fantastik!"],["You're a star!","Sen bir yıldızsın!"],["Brilliant!","Muhteşem!"]];
+const LESSON = {song:{e:"🎵",n:"Şarkı Dersi"}, cards:{e:"🃏",n:"Kelime Kartları"}, easy:{e:"🐣",n:"Kolay Test"}, hard:{e:"🦅",n:"Zor Test"}, write:{e:"✍️",n:"Yazma Görevi"}};
+const WMIN = 20, WLONG = 40;
+const WRITE = [
+ {title:"My Favorite Animal", en:"Write about your favorite animal. What does it look like? What can it do? What can't it do?", tr:"En sevdiğin hayvanı anlat: Neye benziyor? Ne yapabilir, ne yapamaz?",
+  starters:["My favorite animal is the","It is","It has","It can","but it can't","I like it because"],
+  checks:[{re:/\bcan\b/, t:"“can” kullan (It can swim.)"},{re:/\bcan't\b|\bcannot\b/, t:"“can't” kullan (It can't fly.)"}],
+  model:"My favorite animal is the dolphin. It is gray and it is very smart. It has a long nose. It can swim very fast and it can jump. It can't walk and it can't fly. I like it because it is friendly."},
+ {title:"My Colorful Things", en:"Write about your favorite color and the colors of your things.", tr:"En sevdiğin rengi ve eşyalarının renklerini yaz.",
+  starters:["My favorite color is","My bag is","My shoes are","The sky is","I like it because"],
+  checks:[{re:/\bmy favorite color\b/, t:"“My favorite color is …” yaz"},{re:/\b(is|are) (red|blue|yellow|green|pink|white|black|orange|purple|brown|gray)\b/, t:"Renk cümlesi kur (My bag is blue.)"}],
+  model:"My favorite color is green. My bag is green and yellow. My shoes are white. The sky is blue today. My mom's car is red. I like green because it is the color of trees."},
+ {title:"My School Bag", en:"What do you have in your school bag? Write about your things.", tr:"Okul çantanda neler var? Eşyalarını anlat.",
+  starters:["I have a","My pencil is","There is a","in my bag","I use it in"],
+  checks:[{re:/\bi have\b/, t:"“I have …” kullan"},{re:/\bmy \w+ (is|are)\b/, t:"Bir eşyanı anlat (My pen is blue.)"}],
+  model:"I have a big school bag. It is blue. I have two books and a pencil case in my bag. My pencil is yellow and my ruler is long. I have a red pen too. I use my ruler in math class."},
+ {title:"My Family", en:"Write about your family. Who are they? What can they do?", tr:"Aileni anlat. Kimler var? Neler yapabilirler?",
+  starters:["This is my","He is","She is","He can","She can","I love my family because"],
+  checks:[{re:/\bthis is my\b/, t:"“This is my …” kullan"},{re:/\b(he|she) (is|can|has)\b/, t:"He / She ile cümle kur (She can sing.)"}],
+  model:"This is my family. This is my mother. She is a teacher and she can sing very well. This is my father. He is tall and he can cook. I have one brother. He is six. I love my family because they are funny."},
+ {title:"My Day", en:"Write about your day. What do you do in the morning, afternoon, and evening?", tr:"Gününü anlat: Sabah, öğleden sonra ve akşam neler yaparsın?",
+  starters:["I wake up at","Then I","I go to school at","In the evening, I","I go to bed at"],
+  checks:[{re:/\bat (one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|\d)/, t:"Saat yaz (at seven)"},{re:/\b(then|after school|after that|in the evening|in the morning)\b/, t:"Sıralama kelimesi kullan (Then, In the evening…)"}],
+  model:"I wake up at seven. Then I brush my teeth and eat breakfast. I go to school at eight. After school, I do my homework. In the evening, I watch TV with my family. I go to bed at nine thirty."},
+ {title:"My Favorite Food", en:"What food do you like? What food don't you like?", tr:"Hangi yiyecekleri seversin, hangilerini sevmezsin?",
+  starters:["My favorite food is","I like","I don't like","For breakfast, I eat","It is yummy!"],
+  checks:[{re:/\bi like\b/, t:"“I like …” kullan"},{re:/\bi don't like\b|\bi do not like\b/, t:"“I don't like …” kullan"}],
+  model:"My favorite food is pizza. I like cheese and bread. For breakfast, I eat eggs and drink milk. I don't like fish. My sister likes apples, but I like bananas. Pizza is yummy!"},
+ {title:"Today's Weather", en:"What is the weather like today? What do you do when it is sunny, rainy, or snowy?", tr:"Bugün hava nasıl? Güneşli, yağmurlu ya da karlı havada neler yaparsın?",
+  starters:["It is","today.","When it is sunny, I","When it is rainy, I","I can't"],
+  checks:[{re:/\b(it is|it's) (sunny|rainy|windy|snowy|cloudy|hot|cold)\b/, t:"Hava cümlesi kur (It is sunny.)"},{re:/\bwhen (it is|it's)\b/, t:"“When it is …, I …” kullan"}],
+  model:"It is cloudy and windy today. When it is sunny, I play soccer in the park. When it is rainy, I read a book at home. When it is snowy, I make a snowman. I can't go out when it is very cold."},
+ {title:"My Funny Monster", en:"Imagine a funny monster. How many eyes, ears, and legs does it have? What can it do?", tr:"Komik bir canavar hayal et. Kaç gözü, kulağı, bacağı var? Neler yapabilir?",
+  starters:["My monster is","It has","eyes","It can","It can't"],
+  checks:[{re:/\bhas\b/, t:"“has” kullan (It has three eyes.)"},{re:/\b(two|three|four|five|six|seven|eight|nine|ten)\b/, t:"Sayı kullan (two ears, six legs)"}],
+  model:"My monster is green and very big. It has three eyes and two big ears. It has six legs and four hands. It can run very fast and it can sing. It can't swim. Its name is Bobo!"},
+ {title:"What I Wear", en:"What do you wear to school? What do you wear when it is cold?", tr:"Okula ne giyersin? Soğuk havada ne giyersin?",
+  starters:["On Monday, I wear","When it is cold, I wear","My favorite shirt is","My shoes are","I don't wear"],
+  checks:[{re:/\bi wear\b/, t:"“I wear …” kullan"},{re:/\bwhen (it is|it's)\b|\bon (monday|tuesday|wednesday|thursday|friday|saturday|sunday)s?\b/, t:"Ne zaman? (When it is cold / On Monday)"}],
+  model:"On Monday, I wear a white shirt and blue pants. My shoes are black. When it is cold, I wear a coat and a hat. My favorite shirt is red. My socks are funny. They have cats on them!"},
+ {title:"What I Can Do", en:"Write about your hobbies. What can you do? What can't you do? What about your friend?", tr:"Hobilerini anlat. Neler yapabilirsin, neler yapamazsın? Ya arkadaşın?",
+  starters:["I can","but I can't","My friend can","On weekends, I","I want to learn to"],
+  checks:[{re:/\bi can\b/, t:"“I can …” kullan"},{re:/\bcan't\b|\bcannot\b/, t:"“can't” kullan"}],
+  model:"I can swim and I can ride a bike. I can draw cats, but I can't draw horses. My friend Ela can dance very well. On weekends, we play soccer in the park. I want to learn to play the guitar."}
+];
+function evalWriting(i, text){
+  const W = WRITE[i], L = LEVELS[i];
+  const words = text.match(/[A-Za-z][A-Za-z'’]*/g) || [];
+  const low = " " + text.toLowerCase().replace(/’/g,"'").replace(/\s+/g," ") + " ";
+  const used = L.cards.filter(c=>new RegExp(`\\b${c.w}(s|es)?\\b`).test(low)).map(c=>c.w);
+  const sents = text.split(/[.!?]+/).map(x=>x.trim()).filter(Boolean);
+  const tidy = sents.length > 0 && sents.every(x=>/^[A-Z"“]/.test(x)) && /[.!?]["”]?\s*$/.test(text.trim());
+  const pat = W.checks.map(c=>c.re.test(low));
+  const n = words.length;
+  const checks = [
+    {ok:n>=WMIN, t:`En az ${WMIN} kelime yaz (${n}/${WMIN})`, p:"+20"},
+    {ok:used.length>=3, t:`Bu ünitenin kelimelerinden en az 3 tane kullan (${used.length}/3)`, p:"kelime başı +2"},
+    ...W.checks.map((c,k)=>({ok:pat[k], t:c.t, p:"+5"})),
+    {ok:tidy, t:"Cümleler büyük harfle başlasın, nokta ile bitsin", p:"+5"},
+    {ok:n>=WLONG, t:`Süper yazar: ${WLONG}+ kelime`, p:"+5"}
+  ];
+  const pts = n < WMIN ? 0 : 20 + Math.min(used.length*2, 10) + pat.filter(Boolean).length*5 + (tidy?5:0) + (n>=WLONG?5:0);
+  return {n, used, checks, pts};
+}
+const AVAS = ["🦊","🐼","🐯","🐸","🐰","🦁","🐨","🐙"];
+const DAILY = 50;
+const KEY = "ollie-english-v1";
+const fresh = () => ({unlocked:0, done:LEVELS.map(()=>[]), finished:false});
+
+/* ---------- Accounts & state ---------- */
+const UKEY = "ollie-akademi-accounts";
+const QUESTIONS = ["En sevdiğin hayvan hangisi?","En sevdiğin renk hangisi?","En sevdiğin yemek hangisi?","Öğretmeninin adı ne?","Doğduğun şehir hangisi?"];
+const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}});
+function normalize(s){
+  s = s || {};
+  if(!(s.p && s.p.easy && s.p.hard)){
+    s = Array.isArray(s.done) ? {score:s.score||0, p:{easy:{unlocked:s.unlocked||0, done:s.done, finished:!!s.finished}, hard:fresh()}} : blankData();
+  }
+  for(const m of ["easy","hard"]){ const p = s.p[m]; while(p.done.length < LEVELS.length) p.done.push([]); }
+  s.score = s.score||0; s.lessons = s.lessons||{}; s.days = s.days||[]; s.today = s.today||{d:"",pts:0};
+  s.name = s.name||""; s.avatar = s.avatar||"🦊"; s.writings = s.writings||{}; s.sung = s.sung||{};
+  if(!s.badges){ s.badges = []; s.needBadgeInit = true; }
+  return s;
+}
+function legacyData(){ try{ const s = JSON.parse(localStorage.getItem(KEY)); return s ? normalize(s) : null; }catch(e){ return null; } }
+function loadStore(){ try{ const s = JSON.parse(localStorage.getItem(UKEY)); if(s && s.accounts) return s; }catch(e){} return {accounts:{}, current:null, last:null}; }
+let store = loadStore(), storageOk = true;
+try{ localStorage.setItem("ollie-test","1"); localStorage.removeItem("ollie-test"); }catch(e){ storageOk = false; }
+function saveStore(){ try{ localStorage.setItem(UKEY, JSON.stringify(store)); }catch(e){ storageOk = false; } }
+let S = null;
+function save(){ if(!S || !store.current || !store.accounts[store.current]) return; store.accounts[store.current].data = S; saveStore(); }
+const ukey = n => n.trim().toLocaleLowerCase("tr-TR").replace(/\s+/g," ");
+function randHex(){ const a = new Uint8Array(16); crypto.getRandomValues(a); return [...a].map(x=>x.toString(16).padStart(2,"0")).join(""); }
+async function digest(salt, text){
+  const data = new TextEncoder().encode(salt+":"+text);
+  try{ if(crypto.subtle){ const b = await crypto.subtle.digest("SHA-256", data); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); } }catch(e){}
+  let h = 2166136261; for(const x of data){ h ^= x; h = Math.imul(h, 16777619)>>>0; } return "f"+h.toString(16);
+}
+function enter(key){
+  store.current = key; store.last = key; saveStore();
+  S = normalize(store.accounts[key].data);
+  if(S.needBadgeInit){ delete S.needBadgeInit; checkBadges(true); }
+  save();
+}
+function go(h){ if(location.hash.slice(1) === h) route(); else location.hash = h; }
+
+const $ = s => document.querySelector(s);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const plain = h => h.replace(/<[^>]+>/g,"");
+const norm = s => s.toLowerCase().replace(/[’']/g,"'").replace(/[.,!?]/g,"").replace(/\s+/g," ").trim();
+const dayKey = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const todayKey = () => dayKey(new Date());
+
+const easyDone = i => S.p.easy.done[i].length >= 5;
+const hardDone = i => S.p.hard.done[i].length >= 5;
+const unitOpen = i => i === 0 || easyDone(i-1);
+const easyCount = () => LEVELS.filter((_,i)=>easyDone(i)).length;
+const hardCount = () => LEVELS.filter((_,i)=>hardDone(i)).length;
+const lessonCount = k => LEVELS.filter((_,i)=>S.lessons[k+i]).length;
+const unitSteps = i => (S.lessons["s"+i]?1:0) + (S.lessons["c"+i]?1:0) + S.p.easy.done[i].length + S.p.hard.done[i].length;
+const unitPct = i => Math.round(unitSteps(i)/12*100);
+const lessonsDone = () => lessonCount("s") + lessonCount("c") + easyCount() + hardCount();
+const title = () => LEVELS[Math.min(easyCount(), LEVELS.length-1)].rank;
+function streak(){
+  const set = new Set(S.days); const d = new Date(); let n = 0;
+  if(!set.has(dayKey(d))) d.setDate(d.getDate()-1);
+  while(set.has(dayKey(d))){ n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+function todayPts(){ return S.today.d === todayKey() ? S.today.pts : 0; }
+function addPts(n){
+  S.score += n;
+  const t = todayKey();
+  if(S.today.d !== t) S.today = {d:t, pts:0};
+  S.today.pts += n;
+  if(!S.days.includes(t)) S.days.push(t);
+  S.days = S.days.slice(-90);
+  save(); updateTop(true); checkBadges();
+}
+function nextStep(){
+  for(let i=0;i<LEVELS.length;i++){
+    if(!S.lessons["s"+i]) return {i, kind:"song"};
+    if(!S.lessons["c"+i]) return {i, kind:"cards"};
+    if(!easyDone(i)) return {i, kind:"easy"};
+    if(!(S.writings[i] && S.writings[i].best) && !S.lessons["s"+(i+1)]) return {i, kind:"write"};
+  }
+  for(let i=0;i<LEVELS.length;i++) if(!hardDone(i)) return {i, kind:"hard"};
+  return null;
+}
+
+/* ---------- Badges ---------- */
+const BADGES = [
+  {id:"first", e:"🌱", n:"İlk Adım", d:"İlk yıldızını kazan.", ok:()=>S.score>0},
+  {id:"singer", e:"🎵", n:"Küçük Şarkıcı", d:"3 şarkı dersini bitir.", ok:()=>lessonCount("s")>=3},
+  {id:"cards", e:"🃏", n:"Kelime Avcısı", d:"5 kelime kartı dersini bitir.", ok:()=>lessonCount("c")>=5},
+  {id:"unit1", e:"🏅", n:"İlk Ünite", d:"Bir ünitenin kolay testini bitir.", ok:()=>easyCount()>=1},
+  {id:"hard1", e:"🦅", n:"Cesur Kartal", d:"Bir zor testi bitir.", ok:()=>hardCount()>=1},
+  {id:"streak3", e:"🔥", n:"3 Gün Seri", d:"3 gün üst üste çalış.", ok:()=>streak()>=3},
+  {id:"streak7", e:"📅", n:"Bir Hafta", d:"7 gün üst üste çalış.", ok:()=>streak()>=7},
+  {id:"s100", e:"⭐", n:"100 Yıldız", d:"Toplam 100 yıldız topla.", ok:()=>S.score>=100},
+  {id:"s500", e:"💎", n:"500 Yıldız", d:"Toplam 500 yıldız topla.", ok:()=>S.score>=500},
+  {id:"half", e:"🚀", n:"Yarı Yol", d:"5 ünitenin kolay testini bitir.", ok:()=>easyCount()>=5},
+  {id:"champ", e:"🏆", n:"Şampiyon", d:"10 ünitenin kolay testlerini bitir.", ok:()=>easyCount()>=10},
+  {id:"writer1", e:"✍️", n:"Küçük Yazar", d:"İlk yazma görevini bitir.", ok:()=>Object.values(S.writings).some(w=>w.best)},
+  {id:"writer5", e:"📝", n:"Usta Yazar", d:"5 ünitenin yazma görevini bitir.", ok:()=>Object.values(S.writings).filter(w=>w.best).length>=5},
+  {id:"songs25", e:"🎤", n:"Şarkı Yıldızı", d:"25 şarkı söyle.", ok:()=>Object.values(S.sung).reduce((a,x)=>a+x.length,0)>=25},
+  {id:"legend", e:"👑", n:"Efsane", d:"10 ünitenin zor testlerini bitir.", ok:()=>hardCount()>=10}
+];
+function checkBadges(silent){
+  const fresh = BADGES.filter(b=>!S.badges.includes(b.id) && b.ok());
+  if(!fresh.length) return;
+  fresh.forEach(b=>S.badges.push(b.id)); save();
+  if(!silent) fresh.forEach((b,k)=>setTimeout(()=>toast(`${b.e} Yeni rozet: ${b.n}!`), 900 + k*2600));
+}
+
+/* ---------- UI helpers ---------- */
+function say(en, tr){ $("#sayEn").textContent = en; $("#sayTr").textContent = tr; const o=$("#owl"); o.classList.remove("hop"); void o.getBBox(); o.classList.add("hop"); }
+function updateTop(bump){
+  document.body.classList.toggle("out", !S);
+  if(!S) return;
+  $("#score").textContent = S.score; $("#streak").textContent = streak();
+  $("#sideAva").textContent = S.avatar; $("#sideName").textContent = S.name || "Öğrenci"; $("#sideRank").textContent = title();
+  if(bump){ const p=$("#scorePill"); p.classList.remove("bump"); void p.offsetWidth; p.classList.add("bump"); }
+}
+function toast(msg){
+  const t = document.createElement("div"); t.className = "toast"; t.textContent = msg;
+  $("#toastBox").appendChild(t); setTimeout(()=>t.remove(), 2400);
+}
+function confetti(){
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const set = ["⭐","🌟","✨","🎈","🎉"];
+  for(let k=0;k<26;k++){ const s=document.createElement("span"); s.className="confetti"; s.textContent=set[k%set.length];
+    s.style.left = Math.random()*100+"vw"; s.style.animationDuration = (2+Math.random()*2)+"s"; s.style.animationDelay = Math.random()*.6+"s";
+    document.body.appendChild(s); setTimeout(()=>s.remove(), 5000); }
+}
+
+/* ---------- Speech ---------- */
+let voice = null;
+function pickVoice(){ try{ const v = speechSynthesis.getVoices(); voice = v.find(x=>/en[-_]US/i.test(x.lang)) || v.find(x=>/^en/i.test(x.lang)) || null; }catch(e){} }
+try{ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }catch(e){}
+function speak(text, onend, rate){
+  try{
+    if(!("speechSynthesis" in window)) throw 0;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US"; u.rate = rate || .82; u.pitch = 1.1; if(voice) u.voice = voice;
+    if(onend){ u.onend = onend; u.onerror = onend; }
+    speechSynthesis.speak(u);
+  }catch(e){ say("Oops, no sound here.", "Bu cihazda ses çıkmıyor. Metni okuyabilirsin!"); onend && onend(); }
+}
+let singing = false;
+function stopSpeech(){ singing = false; try{ speechSynthesis.cancel(); }catch(e){} }
+
+/* ---------- Router ---------- */
+let page = "home", unitArg = 0, play = null;
+function route(){
+  stopSpeech(); play = null;
+  const h = location.hash.slice(1) || "home";
+  if(!S){ page = ["register","forgot"].includes(h) ? h : "login"; if(page!=="forgot") forgotKey = null; render(true); return; }
+  if(["login","register","forgot"].includes(h)){ history.replaceState(null, "", "#home"); }
+  const m = h.match(/^unit-(\d+)$/);
+  if(m && +m[1]>=1 && +m[1]<=LEVELS.length){ page = "unit"; unitArg = +m[1]-1; }
+  else page = ["home","units","words","badges","profile"].includes(h) ? h : "home";
+  render(true);
+}
+function render(greet){
+  updateTop();
+  const nav = play || page==="unit" ? "units" : page;
+  document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("on", a.dataset.nav===nav));
+  const el = $("#screen");
+  if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
+  if(play) el.innerHTML = play.kind==="song" ? songHTML() : play.kind==="cards" ? cardsHTML() : play.kind==="write" ? writeHTML() : quizHTML();
+  else el.innerHTML = ({home:homeHTML, units:unitsHTML, unit:unitHTML, words:wordsHTML, badges:badgesHTML, profile:profileHTML})[page]();
+  if(play && play.order) renderOrder();
+  if(!play && page==="words") renderWords();
+  window.scrollTo({top:0});
+  if(greet && !play) greetPage();
+}
+function greetPage(){
+  const n = S && S.name ? `, ${S.name}` : "";
+  const g = {
+    login:["Welcome to Ollie Akademi! 🦉","Derslerine devam etmek için giriş yap."],
+    register:["Let's make your account!","Adını, şifreni ve gizli sorunu seç. Bir yetişkin yardım edebilir."],
+    forgot:["Don't worry! 🔑","Gizli sorunun cevabıyla yeni bir şifre belirleyebilirsin."],
+    home:[`Hello${n}! 👋`, `Bugünkü hedefin ${DAILY} yıldız. Hadi başlayalım!`],
+    units:["Here are your units!","Her ünitede 4 ders var: şarkı, kelime kartları, kolay test ve zor test."],
+    unit:[`Unit ${unitArg+1}: ${LEVELS[unitArg]?.theme}`, "Dersleri sırayla yap. Kolay testi bitirince sonraki ünite açılır."],
+    words:["My dictionary!","Bir kelimeye dokun, Ollie sana okusun."],
+    badges:["Look at your badges!","Ders yaptıkça yeni rozetler kazanırsın."],
+    profile:["This is you!","Adını ve hayvan avatarını buradan değiştirebilirsin."]
+  }[page];
+  say(g[0], g[1]);
+}
+window.addEventListener("hashchange", route);
+
+/* ---------- Login pages ---------- */
+let forgotKey = null, regAvatar = "🦊"; const fails = {};
+const tabsHTML = cur => `<div class="tabs">${[["login","Giriş Yap"],["register","Kayıt Ol"]].map(([h,n])=>`<a href="#${h}" class="${cur===h?"on":""}">${n}</a>`).join("")}</div>`;
+const storageNote = () => storageOk ? "" : `<div class="fb try">Bu tarayıcı bilgi kaydetmeye izin vermiyor (gizli sekme olabilir). Giriş yapabilirsin ama sayfayı kapatınca hesap ve ilerleme silinir.</div>`;
+function loginHTML(){
+  const accs = Object.values(store.accounts);
+  const last = store.last && store.accounts[store.last] ? store.accounts[store.last].data.name : "";
+  return `<section class="panel auth">${tabsHTML("login")}
+    <h1>Giriş Yap <span class="tr">Log in</span></h1>${storageNote()}
+    ${accs.length ? `<div><b>Bu cihazdaki hesaplar</b> <span class="tr">· adına dokun</span></div>
+      <div class="row">${accs.map(a=>`<button class="chip" type="button" data-act="pickUser" data-arg="${esc(a.data.name)}">${a.data.avatar} ${esc(a.data.name)}</button>`).join("")}</div>` : ""}
+    <form id="loginForm" class="stack" novalidate>
+      <label for="lu">Kullanıcı adı</label><input class="field" id="lu" autocomplete="username" maxlength="20" value="${esc(last)}">
+      <label for="lp">Şifre</label><input class="field" id="lp" type="password" autocomplete="current-password" maxlength="40">
+      <div id="authMsg" role="alert"></div>
+      <div class="row between"><button class="btn" type="submit">Giriş yap ▶</button><a class="link" href="#forgot">🔑 Şifremi unuttum</a></div>
+    </form>
+    <p class="tr">Hesabın yok mu? <a class="link" href="#register">Kayıt ol</a></p></section>`;
+}
+function registerHTML(){
+  const first = !Object.keys(store.accounts).length, old = first ? legacyData() : null;
+  return `<section class="panel auth">${tabsHTML("register")}
+    <h1>Kayıt Ol <span class="tr">Sign up</span></h1>${storageNote()}
+    ${old && old.score>0 ? `<div class="fb good">Bu cihazda ⭐ ${old.score} yıldızlık eski bir ilerleme var. Hesabını açınca ona eklenecek.</div>` : ""}
+    <form id="regForm" class="stack" novalidate>
+      <label for="ru">Kullanıcı adın</label><input class="field" id="ru" autocomplete="username" maxlength="20" placeholder="Örn. Ada">
+      <label for="rp1">Şifre <span class="tr">(en az 4 karakter)</span></label><input class="field" id="rp1" type="password" autocomplete="new-password" maxlength="40">
+      <label for="rp2">Şifre tekrar</label><input class="field" id="rp2" type="password" autocomplete="new-password" maxlength="40">
+      <label>Avatarın</label>
+      <div class="avas">${AVAS.map(a=>`<button type="button" data-act="avatar" data-arg="${a}" class="${a===regAvatar?"on":""}" aria-label="${a}">${a}</button>`).join("")}</div>
+      <label for="rq">Gizli soru</label>
+      <select class="field" id="rq">${QUESTIONS.map((q,i)=>`<option value="${i}">${q}</option>`).join("")}</select>
+      <label for="ra">Gizli sorunun cevabı</label><input class="field" id="ra" maxlength="40" autocomplete="off">
+      <span class="tr">Şifreni unutursan bu cevapla yeni şifre alacaksın. Cevabı bir yetişkinle birlikte seç ve unutma!</span>
+      <div id="authMsg" role="alert"></div>
+      <div><button class="btn" type="submit">Hesap oluştur 🚀</button></div>
+    </form>
+    <p class="tr">Zaten hesabın var mı? <a class="link" href="#login">Giriş yap</a></p></section>`;
+}
+function forgotHTML(){
+  const acc = forgotKey && store.accounts[forgotKey];
+  if(!acc) return `<section class="panel auth"><a class="link" href="#login">← Girişe dön</a>
+    <h1>Şifremi Unuttum 🔑</h1>
+    <p class="muted">Kullanıcı adını yaz. Sonra kayıt olurken seçtiğin gizli soruyu cevaplayıp yeni şifre belirleyeceksin.</p>
+    <form id="forgot1" class="stack" novalidate>
+      <label for="fu">Kullanıcı adı</label><input class="field" id="fu" autocomplete="username" maxlength="20">
+      <div id="authMsg" role="alert"></div>
+      <div><button class="btn" type="submit">Devam ▶</button></div>
+    </form></section>`;
+  return `<section class="panel auth"><button class="link" style="align-self:flex-start" data-act="forgotBack">← Başka kullanıcı</button>
+    <h1>Yeni şifre <span class="tr">${acc.data.avatar} ${esc(acc.data.name)}</span></h1>
+    <form id="forgot2" class="stack" novalidate>
+      <label for="fa">Gizli soru: ${QUESTIONS[acc.q]}</label><input class="field" id="fa" maxlength="40" autocomplete="off">
+      <label for="fp1">Yeni şifre <span class="tr">(en az 4 karakter)</span></label><input class="field" id="fp1" type="password" autocomplete="new-password" maxlength="40">
+      <label for="fp2">Yeni şifre tekrar</label><input class="field" id="fp2" type="password" autocomplete="new-password" maxlength="40">
+      <div id="authMsg" role="alert"></div>
+      <div><button class="btn" type="submit">Şifremi yenile ✓</button></div>
+    </form>
+    <p class="tr">Cevabı da hatırlamıyorsan bir yetişkinden yardım iste. Gerekirse yeni bir hesap açılabilir, ama eski yıldızlar o hesaba geçmez.</p></section>`;
+}
+function authMsg(t, ok, id){ const el = $(id||"#authMsg"); if(el) el.innerHTML = `<div class="fb ${ok?"good":"try"}">${t}</div>`; }
+function locked(k, id){ const f = fails[k]; if(f && f.until > Date.now()){ authMsg(`Çok fazla yanlış deneme. ${Math.ceil((f.until-Date.now())/1000)} saniye sonra tekrar dene.`, false, id); return true; } return false; }
+function fail(k){ const f = fails[k] || {n:0}; f.n++; if(f.n >= 5){ f.until = Date.now()+60000; f.n = 0; } fails[k] = f; }
+function checkPw(p1, p2, id){
+  if(p1.length < 4){ authMsg("Şifre en az 4 karakter olmalı.", false, id); return false; }
+  if(p1 !== p2){ authMsg("İki şifre aynı değil. Tekrar yaz.", false, id); return false; }
+  return true;
+}
+async function onLogin(){
+  const u = $("#lu").value, p = $("#lp").value, k = ukey(u);
+  if(!k || !p) return authMsg("Kullanıcı adını ve şifreni yaz.");
+  const acc = store.accounts[k];
+  if(!acc) return authMsg(`“${esc(u.trim())}” adında bir hesap yok. <a class="link" href="#register">Kayıt ol</a>`);
+  if(locked(k)) return;
+  if(await digest(acc.salt, p) !== acc.hash){ fail(k); $("#lp").value = ""; return authMsg(`Şifre yanlış. Tekrar dene ya da <a class="link" href="#forgot">Şifremi unuttum</a>'a bas.`); }
+  delete fails[k]; enter(k); go("home");
+}
+async function onRegister(){
+  const name = $("#ru").value.trim().replace(/\s+/g," "), k = ukey(name), p1 = $("#rp1").value, p2 = $("#rp2").value, a = ukey($("#ra").value);
+  if(name.length < 2) return authMsg("Kullanıcı adın en az 2 harf olmalı.");
+  if(store.accounts[k]) return authMsg(`“${esc(name)}” adı bu cihazda zaten var. Başka bir ad seç ya da <a class="link" href="#login">giriş yap</a>.`);
+  if(!checkPw(p1, p2)) return;
+  if(!a) return authMsg("Gizli sorunun cevabını yaz.");
+  const first = !Object.keys(store.accounts).length, old = first ? legacyData() : null;
+  const data = old && old.score > 0 ? old : blankData();
+  data.name = name; data.avatar = regAvatar;
+  const salt = randHex(), aSalt = randHex();
+  store.accounts[k] = {salt, hash: await digest(salt, p1), q: +$("#rq").value, aSalt, aHash: await digest(aSalt, a), data, created: Date.now()};
+  enter(k); go("home");
+  toast(old && old.score > 0 ? `Hesabın hazır! Eski ⭐ ${old.score} yıldızın eklendi.` : "Hesabın hazır! 🎉");
+}
+async function onForgot1(){
+  const u = $("#fu").value, k = ukey(u);
+  if(!k) return authMsg("Kullanıcı adını yaz.");
+  if(!store.accounts[k]) return authMsg(`“${esc(u.trim())}” adında bir hesap bu cihazda yok.`);
+  forgotKey = k; render();
+}
+async function onForgot2(){
+  const k = forgotKey, acc = store.accounts[k]; if(!acc) return;
+  if(locked(k)) return;
+  if(await digest(acc.aSalt, ukey($("#fa").value)) !== acc.aHash){ fail(k); return authMsg("Cevap tutmadı. Yazımını kontrol et. Büyük-küçük harf fark etmez."); }
+  const p1 = $("#fp1").value, p2 = $("#fp2").value;
+  if(!checkPw(p1, p2)) return;
+  acc.salt = randHex(); acc.hash = await digest(acc.salt, p1);
+  delete fails[k]; forgotKey = null; enter(k); go("home"); toast("Şifren yenilendi! 🔑");
+}
+async function onChangePw(){
+  const acc = store.accounts[store.current], id = "#pwMsg";
+  if(await digest(acc.salt, $("#cp0").value) !== acc.hash) return authMsg("Şu anki şifren yanlış.", false, id);
+  const p1 = $("#cp1").value, p2 = $("#cp2").value;
+  if(!checkPw(p1, p2, id)) return;
+  acc.salt = randHex(); acc.hash = await digest(acc.salt, p1); saveStore();
+  ["#cp0","#cp1","#cp2"].forEach(x=>$(x).value=""); authMsg("Şifren değişti ✓", true, id);
+}
+
+/* ---------- Pages ---------- */
+function ringHTML(){
+  const p = Math.min(todayPts(), DAILY), c = 2*Math.PI*52;
+  return `<div class="ring" role="img" aria-label="Günlük hedef ${p}/${DAILY} yıldız">
+    <svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="52"/><circle class="fill" cx="60" cy="60" r="52" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-p/DAILY)}"/></svg>
+    <div class="lbl"><div><b>${p}/${DAILY}</b><span class="tr">günlük ⭐</span></div></div></div>`;
+}
+function weekHTML(){
+  const names = ["Pz","Pt","Sa","Ça","Pe","Cu","Ct"], set = new Set(S.days), out = [];
+  for(let k=6;k>=0;k--){ const d = new Date(); d.setDate(d.getDate()-k); const y = set.has(dayKey(d));
+    out.push(`<div class="${y?"yes":""} ${k===0?"now":""}"><i>${y?"⭐":""}</i>${k===0?"Bugün":names[d.getDay()]}</div>`); }
+  return `<div class="week">${out.join("")}</div>`;
+}
+function stepLabel(st){ const L = LEVELS[st.i], l = LESSON[st.kind]; return {L, l}; }
+function homeHTML(){
+  const st = nextStep();
+  const cont = st ? (()=>{ const {L,l} = stepLabel(st); return `<div class="continue"><span class="ic">${L.icon}</span>
+      <div class="txt"><div class="eyebrow">Kaldığın yerden devam et</div><h3>Ünite ${st.i+1}: ${L.theme} · ${l.e} ${l.n}</h3><span class="tr">${L.tr}</span></div>
+      <button class="btn" data-act="startStep" data-arg="${st.i}:${st.kind}">Devam et ▶</button></div>`; })()
+    : `<div class="continue"><span class="ic">👑</span><div class="txt"><h3>Bütün dersleri bitirdin!</h3><span class="tr">İstediğin dersi tekrar edebilirsin.</span></div></div>`;
+  const preview = LEVELS.map((L,i)=>({L,i})).filter(x=>unitOpen(x.i)).slice(-3);
+  return `<section class="panel">
+    <div class="hero">
+      <div class="row" style="flex-direction:column;align-items:flex-start;gap:12px">
+        <div class="eyebrow">${new Date().toLocaleDateString("tr-TR",{weekday:"long", day:"numeric", month:"long"})}</div>
+        <h1>Merhaba, ${esc(S.name)}! ${S.avatar}</h1>
+        <p class="muted">Unvanın: <b>${title()}</b>. ${todayPts()>=DAILY ? "Bugünkü hedefini tamamladın, harikasın! 🎉" : `Bugünkü hedefe ${DAILY-todayPts()} yıldız kaldı.`}</p>
+      </div>
+      ${ringHTML()}
+    </div>
+    ${cont}
+  </section>
+  <div class="stats">
+    <div class="stat"><b>⭐ ${S.score}</b><span>Toplam yıldız</span></div>
+    <div class="stat"><b>🔥 ${streak()}</b><span>Gün serisi</span></div>
+    <div class="stat"><b>✅ ${lessonsDone()}/40</b><span>Tamamlanan ders</span></div>
+    <div class="stat"><b>🏅 ${S.badges.length}/${BADGES.length}</b><span>Rozet</span></div>
+  </div>
+  <div class="grid g2">
+    <section class="panel">
+      <div class="row between"><h2>Derslerim</h2><a class="link" href="#units">Tümünü gör →</a></div>
+      ${preview.map(({L,i})=>`<a class="unit" href="#unit-${i+1}"><div class="top"><span class="ic">${L.icon}</span><div><div class="no">Ünite ${i+1}</div><div class="nm">${L.theme} <span class="tr">${L.tr}</span></div></div></div>
+        <div class="bar"><i style="width:${unitPct(i)}%"></i></div><div class="meta"><span>${unitSteps(i)}/12 adım</span><span>%${unitPct(i)}</span></div></a>`).join("")}
+    </section>
+    <section class="panel">
+      <h2>Bu hafta</h2>
+      ${weekHTML()}
+      <p class="tr">Her gün en az bir ders yap, seri büyüsün! 3 gün üst üste çalışınca 🔥 rozetini kazanırsın.</p>
+    </section>
+  </div>`;
+}
+function unitCard(L,i){
+  const open = unitOpen(i), pct = unitPct(i);
+  const status = !open ? `<span class="chip">🔒 Kilitli</span>` : hardDone(i) ? `<span class="chip ok">👑 Tamam</span>` : easyDone(i) ? `<span class="chip ok">✓ Kolay bitti</span>` : unitSteps(i) ? `<span class="chip">Devam ediyor</span>` : `<span class="chip">Yeni</span>`;
+  return `<a class="unit ${open?"":"locked"}" href="#unit-${i+1}" ${open?"":'aria-disabled="true"'}>
+    <div class="top"><span class="ic">${L.icon}</span><div style="min-width:0"><div class="no">Ünite ${i+1} · ${L.rank}</div><div class="nm">${L.theme}</div><div class="tr">${L.tr}</div></div></div>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <div class="meta"><span>${status}</span><span>%${pct}</span></div></a>`;
+}
+function unitsHTML(){
+  return `<section class="panel">
+    <div class="eyebrow">Derslerim · My Units</div>
+    <h1>10 ünite, 40 ders</h1>
+    <p class="muted">Her ünitede sırayla: 🎵 Şarkı · 🃏 Kelime Kartları · 🐣 Kolay Test · 🦅 Zor Test. Kolay testi bitirdiğinde sonraki ünite açılır.</p>
+  </section>
+  <div class="grid g3">${LEVELS.map(unitCard).join("")}</div>`;
+}
+function lessonRow(i, kind){
+  const l = LESSON[kind], L = LEVELS[i];
+  let done, locked = !unitOpen(i), sub, prog = "";
+  if(kind==="song"){ done = !!S.lessons["s"+i]; const n = (S.sung[i]||[]).length; prog = `${done?5:n}/5`; sub = `5 şarkı: ${L.songs.map(x=>x.title).join(" · ")}`; }
+  else if(kind==="cards"){ done = !!S.lessons["c"+i]; sub = `${L.cards.length} yeni kelime: ${L.cards.map(c=>c.w).join(", ")}.`; }
+  else if(kind==="write"){ const w = S.writings[i]; done = !!(w && w.best); if(!easyDone(i)) locked = true;
+    sub = locked && unitOpen(i) ? "Kolay testi bitirince açılır. Ek puan fırsatı! ⭐" : `“${WRITE[i].title}” · ${done ? `En iyi puanın ⭐ ${w.best}/50. Geliştir, farkı kazan!` : "BONUS: 50 ⭐'a kadar ek puan!"}`; }
+  else { const d = S.p[kind].done[i].length; done = d>=5; prog = `${d}/5`;
+    if(kind==="hard" && !easyDone(i)) locked = true;
+    sub = kind==="easy" ? "Resimli seçenekler, her hatada ipucu. Doğru cevap ⭐+10." : (locked && unitOpen(i) ? "Önce kolay testi bitir." : "Seçenek yok: dinle-yaz, cümle kur, hikâye, çeviri. ⭐+20."); }
+  const btn = locked ? `<span class="chip">🔒</span>` : `<button class="btn ${done?"ghost":""} small" data-act="startStep" data-arg="${i}:${kind}">${kind==="write" ? (done?"Geliştir":"Yaz ✍️") : (done?"Tekrar":"Başla")} ▶</button>`;
+  return `<div class="lesson ${done?"done":""} ${locked?"locked":""}"><span class="ic">${done?"✅":l.e}</span>
+    <div class="txt"><div class="t">${l.n} ${prog?`<span class="chip">${prog}</span>`:""}</div><div class="tr">${sub}</div></div>${btn}</div>`;
+}
+function unitHTML(){
+  const i = unitArg, L = LEVELS[i];
+  if(!unitOpen(i)) return `<section class="panel"><div class="uhead"><span class="ic">🔒</span><div><div class="eyebrow">Ünite ${i+1}</div><h1>${L.theme}</h1></div></div>
+    <p>Bu ünite henüz kilitli. Önce <a class="link" href="#unit-${i}">Ünite ${i}: ${LEVELS[i-1].theme}</a> kolay testini bitir.</p></section>`;
+  return `<div class="row"><a class="link" href="#units">← Derslerim</a></div>
+  <section class="panel">
+    <div class="uhead"><span class="ic">${L.icon}</span><div style="flex:1;min-width:200px"><div class="eyebrow">Ünite ${i+1} · ${L.rank}</div><h1>${L.theme} <span class="tr">${L.tr}</span></h1>
+      <div class="bar" style="margin-top:10px"><i style="width:${unitPct(i)}%"></i></div></div></div>
+    <div class="row">${L.cards.map(c=>`<span class="chip">${c.e} ${esc(c.w)}</span>`).join("")}</div>
+  </section>
+  <section class="panel"><h2>Dersler</h2><div class="lessons">${["song","cards","easy","write","hard"].map(k=>lessonRow(i,k)).join("")}</div></section>
+  <div class="row between">${i>0?`<a class="link" href="#unit-${i}">← Ünite ${i}</a>`:"<span></span>"}${i<LEVELS.length-1?`<a class="link" href="#unit-${i+2}">Ünite ${i+2} →</a>`:""}</div>`;
+}
+let wq = "", wu = "all";
+function wordsHTML(){
+  return `<section class="panel">
+    <div class="eyebrow">Sözlük · Dictionary</div>
+    <h1>${LEVELS.reduce((a,L)=>a+L.cards.length,0)} kelime</h1>
+    <div class="row">
+      <input class="field" id="wq" type="search" placeholder="Ara: cat, kedi…" value="${esc(wq)}" autocomplete="off" aria-label="Kelime ara">
+      <select class="field" id="wu" aria-label="Ünite seç"><option value="all">Bütün üniteler</option>${LEVELS.map((L,i)=>`<option value="${i}" ${String(i)===wu?"selected":""}>Ünite ${i+1}: ${L.theme}</option>`).join("")}</select>
+    </div>
+  </section>
+  <div class="words" id="wordGrid"></div>`;
+}
+function renderWords(){
+  const q = norm(wq), out = [];
+  LEVELS.forEach((L,i)=>{ if(wu!=="all" && +wu!==i) return;
+    L.cards.forEach(c=>{ if(q && !norm(c.w+" "+c.tr).includes(q)) return;
+      out.push(`<div class="word"><div class="row between"><span class="e">${c.e}</span><button class="btn ghost small" data-act="sayText" data-arg="${esc(c.w)}" aria-label="Listen ${esc(c.w)}">🔊</button></div>
+        <div class="w">${esc(c.w)}</div><div class="ipa">${esc(c.ipa)}</div><div>${esc(c.tr)}</div>
+        <button class="tr" style="text-align:left;font-style:italic" data-act="sayText" data-arg="${esc(c.ex)}">“${esc(c.ex)}” 🔊</button>
+        <div class="u">Ünite ${i+1} · ${L.theme}</div></div>`); }); });
+  $("#wordGrid").innerHTML = out.join("") || `<p class="muted">“${esc(wq)}” bulunamadı. Başka bir kelime dene.</p>`;
+}
+function badgesHTML(){
+  return `<section class="panel"><div class="eyebrow">Rozetler · Badges</div><h1>${S.badges.length} / ${BADGES.length} rozet</h1>
+    <p class="muted">Gri rozetleri kazanmak için altındaki görevi yap.</p></section>
+  <div class="grid g3">${BADGES.map(b=>{ const got = S.badges.includes(b.id);
+    return `<div class="badge ${got?"got":"off"}"><span class="e">${b.e}</span><span class="n">${b.n}</span><span class="tr">${b.d}</span>${got?'<span class="chip ok">✓ Kazanıldı</span>':""}</div>`; }).join("")}</div>`;
+}
+function profileHTML(){
+  return `<section class="panel">
+    <div class="eyebrow">Profil · Profile</div>
+    <div class="row"><span class="ava" style="width:72px;height:72px;font-size:2.4rem">${S.avatar}</span><div><h1>${esc(S.name||"Öğrenci")}</h1><span class="muted">Unvan: <b>${title()}</b></span></div></div>
+    <div class="tr">Kullanıcı adın: <b>${esc(S.name)}</b></div>
+    <div><b>Avatarın</b></div>
+    <div class="avas">${AVAS.map(a=>`<button data-act="avatar" data-arg="${a}" class="${a===S.avatar?"on":""}" aria-label="${a}">${a}</button>`).join("")}</div>
+  </section>
+  <section class="panel"><h2>İlerleme</h2>
+    <div class="stats">
+      <div class="stat"><b>${lessonCount("s")}/10</b><span>🎵 Şarkı dersi</span></div>
+      <div class="stat"><b>${lessonCount("c")}/10</b><span>🃏 Kelime dersi</span></div>
+      <div class="stat"><b>${easyCount()}/10</b><span>🐣 Kolay test</span></div>
+      <div class="stat"><b>${hardCount()}/10</b><span>🦅 Zor test</span></div>
+    </div>
+    <p class="tr">Hesabın ve ilerlemen bu cihazdaki tarayıcıda saklanır. Başka bir cihazda yeni hesap açman gerekir.</p>
+    <div class="row" id="resetRow"><button class="btn ghost small" data-act="reset">↺ İlerlemeyi sıfırla</button></div>
+  </section>
+  <section class="panel"><h2>Şifre değiştir</h2>
+    <form id="pwForm" class="stack" novalidate>
+      <label for="cp0">Şu anki şifre</label><input class="field" id="cp0" type="password" autocomplete="current-password" maxlength="40">
+      <label for="cp1">Yeni şifre</label><input class="field" id="cp1" type="password" autocomplete="new-password" maxlength="40">
+      <label for="cp2">Yeni şifre tekrar</label><input class="field" id="cp2" type="password" autocomplete="new-password" maxlength="40">
+      <div id="pwMsg" role="alert"></div>
+      <div><button class="btn" type="submit">Şifreyi değiştir</button></div>
+    </form>
+  </section>
+  <div><button class="btn ghost" data-act="logout">🚪 Çıkış yap</button></div>`;
+}
+
+/* ---------- Lesson player ---------- */
+function backBar(){ return `<div class="row between"><a class="link" href="#unit-${play.unit+1}" data-act="leave">← Ünite ${play.unit+1}: ${LEVELS[play.unit].theme}</a><span class="chip">${LESSON[play.kind==="quiz"?play.mode:play.kind].e} ${LESSON[play.kind==="quiz"?play.mode:play.kind].n}</span></div>`; }
+function songHTML(){
+  const i = play.unit, L = LEVELS[i], k = play.songIdx, song = L.songs[k], sung = S.sung[i] || [], done = S.lessons["s"+i], mine = sung.includes(k);
+  return `${backBar()}<section class="panel">
+    <div class="eyebrow">Ünite ${i+1} · Şarkı Dersi · ${sung.length}/5 şarkı söylendi</div>
+    <div class="row">${L.songs.map((x,n)=>`<button class="chip ${sung.includes(n)?"ok":""}" type="button" data-act="pickSong" data-arg="${n}" ${n===k?'aria-current="true" style="border-color:var(--accent)"':""}>${sung.includes(n)?"✓":"🎵"} ${n+1}. ${esc(x.title)}</button>`).join("")}</div>
+    <h1>🎵 ${esc(song.title)} <span class="tr">· Şarkı ${k+1}/5</span></h1>
+    <div class="song" id="song">${song.lines.map(l=>`<p>${l}</p>`).join("")}</div>
+    <div class="row"><button class="btn" data-act="sing">🔊 Sing along</button><span class="tr">Dinle, sonra yüksek sesle tekrar et. Kalın kelimeler ünitenin kelimeleri.</span></div>
+    <div class="row">${mine ? `<span class="chip ok">✓ Bu şarkıyı söyledin</span>` : ""}
+      <button class="btn ${mine?"ghost":""}" data-act="finishSong">${mine ? (sung.length>=5 ? "Sonraki ders ▶" : "Sıradaki şarkı ▶") : "Bu şarkıyı söyledim ✓ (+2 ⭐)"}</button></div>
+    <div class="tr">${done ? "Şarkı dersini bitirdin! Şarkıları istediğin zaman tekrar söyleyebilirsin." : "5 şarkının hepsini söyleyince şarkı dersi tamamlanır ve ⭐ +5 bonus kazanırsın."} Bütün şarkılar Ollie Akademi için yazıldı.</div>
+  </section>`;
+}
+function cardsHTML(){
+  const L = LEVELS[play.unit], c = L.cards[play.cardIdx], done = S.lessons["c"+play.unit], n = L.cards.length, all = play.seen.size >= n;
+  return `${backBar()}<section class="panel">
+    <div class="eyebrow">Ünite ${play.unit+1} · Kelime Kartları · ${play.seen.size}/${n} kart görüldü</div>
+    <div class="cardwrap">
+      <button class="arrow" data-act="prevCard" aria-label="Önceki kart">‹</button>
+      <div class="card3d" id="card" tabindex="0" role="button" aria-label="Kartı çevir: ${esc(c.w)}">
+        <div class="in">
+          <div class="face"><div class="emo">${c.e}</div><div class="word">${esc(c.w.toUpperCase())}</div><div class="hint">Çevirmek için dokun</div></div>
+          <div class="face back"><div class="emo" style="font-size:2.6rem">${c.e}</div><div class="ipa">${esc(c.ipa)}</div>
+            <div><b>Türkçe:</b> ${esc(c.tr)}</div><div class="ex">“${esc(c.ex)}”</div></div>
+        </div>
+      </div>
+      <button class="arrow" data-act="nextCard" aria-label="Sonraki kart">›</button>
+    </div>
+    <div class="dots">${L.cards.map((_,k)=>`<i class="${k===play.cardIdx?"on":play.seen.has(k)?"seen":""}"></i>`).join("")}</div>
+    <div class="row center"><button class="btn ghost small" data-act="sayText" data-arg="${esc(c.w)}">🔊 Kelime</button><button class="btn ghost small" data-act="sayText" data-arg="${esc(c.ex)}">🔊 Cümle</button></div>
+    <div class="row center">${all||done ? `<button class="btn" data-act="finishCards">${done?"Sonraki ders ▶":`${n} kelimeyi öğrendim ✓ (+5 ⭐)`}</button>` : `<span class="tr">Dersi bitirmek için ${n} kartın hepsine bak.</span>`}</div>
+  </section>`;
+}
+function writeHTML(){
+  const i = play.unit, W = WRITE[i], L = LEVELS[i], w = S.writings[i] || {}, text = w.draft != null ? w.draft : (w.text || "");
+  return `${backBar()}<section class="panel">
+    <div class="eyebrow">Ünite ${i+1} · Yazma Görevi · Bonus</div>
+    <h1>✍️ ${W.title}</h1>
+    <p style="font-family:var(--display);font-size:1.15rem">${esc(W.en)}</p><p class="tr">${esc(W.tr)}</p>
+    <div class="bonus">⭐ Ek puan: ${WMIN}+ kelime <b>+20</b> · ünite kelimesi başı <b>+2</b> · her kalıp <b>+5</b> · düzgün cümleler <b>+5</b> · ${WLONG}+ kelime <b>+5</b> = en fazla <b>50 ⭐</b>
+      ${w.best ? `<div class="tr">En iyi puanın: ⭐ ${w.best}. Metnini geliştirirsen aradaki farkı kazanırsın!</div>` : ""}</div>
+    <div><b>Kelime bankası</b> <span class="tr">· dokun, metne eklensin</span></div>
+    <div class="row">${L.cards.map(c=>`<button class="chip" type="button" data-act="insert" data-arg="${esc(c.w)}">${c.e} ${esc(c.w)}</button>`).join("")}</div>
+    <div><b>Cümle başlangıçları</b></div>
+    <div class="row">${W.starters.map(x=>`<button class="chip" type="button" data-act="insert" data-arg="${esc(x)}">${esc(x)} …</button>`).join("")}</div>
+    <textarea class="essay" id="wt" spellcheck="true" lang="en" placeholder="Start writing here… Buraya İngilizce yaz…">${esc(text)}</textarea>
+    <div class="row between"><span class="wc" id="wc"></span><button class="btn ghost small" data-act="showModel">👀 Örnek metin</button></div>
+    <div class="model" id="model" hidden>${esc(W.model)} <button class="link" data-act="sayText" data-arg="${esc(W.model)}">🔊</button><div class="tr" style="font-style:normal">Kopyalama! Fikir almak için oku, sonra kendi cümlelerini yaz.</div></div>
+    <div><b>Kontrol listesi</b></div>
+    <ul class="checks" id="checks"></ul>
+    <div class="row"><button class="btn ghost" data-act="readMine">🔊 Metnimi oku</button><button class="btn" data-act="submitWrite">Bitir ve puan al ⭐</button></div>
+    <div id="wfb"></div>
+  </section>`;
+}
+function liveWrite(){
+  const ta = $("#wt"); if(!ta) return;
+  const r = evalWriting(play.unit, ta.value);
+  $("#wc").textContent = `${r.n} kelime · ${r.n >= WMIN ? `şimdiki puan ⭐ ${r.pts}` : `${WMIN-r.n} kelime daha yaz`}`;
+  $("#checks").innerHTML = r.checks.map(c=>`<li class="${c.ok?"ok":""}"><span class="m">${c.ok?"✅":"⬜"}</span><span>${c.t} <span class="tr">${c.p}</span></span></li>`).join("");
+  return r;
+}
+function submitWrite(){
+  const i = play.unit, text = $("#wt").value.trim(), r = liveWrite();
+  if(r.n < WMIN){ say("Keep going! ✍️", `Biraz daha yaz! ${WMIN-r.n} kelime kaldı. Cümle başlangıçlarından yardım alabilirsin.`);
+    $("#wfb").innerHTML = `<div class="fb try"><div class="en">Great start! Write ${WMIN-r.n} more words.</div><div class="tr">Puan almak için en az ${WMIN} kelime gerekiyor.</div></div>`; return; }
+  const prev = (S.writings[i] && S.writings[i].best) || 0, gain = Math.max(0, r.pts - prev), first = !prev;
+  S.writings[i] = {text, draft:text, best:Math.max(prev, r.pts), at:Date.now()};
+  if(gain > 0) addPts(gain); else save();
+  if(first){ confetti(); speak("Wonderful writing! You are a real writer!"); }
+  const miss = r.checks.filter(c=>!c.ok);
+  say(gain ? `Wonderful writing! ⭐ +${gain}` : "Nice work!", gain ? `Harika yazdın! ${gain} ek yıldız kazandın.` : "Bu puanı daha önce almıştın. Geliştirirsen ek yıldız gelir!");
+  $("#wfb").innerHTML = `<div class="fb good"><div class="en">${gain ? `Wonderful writing! ⭐ +${gain}` : "Nice work! ⭐ +0"} <span class="tr">· Bu metnin puanı: ${r.pts}/50</span></div>
+    ${r.used.length ? `<div>Kullandığın ünite kelimeleri: ${r.used.map(x=>`<span class="chip ok">${esc(x)}</span>`).join(" ")}</div>` : ""}
+    ${miss.length ? `<div class="tr" style="margin-top:6px">Daha fazla yıldız için: ${miss.map(c=>c.t).join(" · ")}</div>` : `<div>Bütün maddeleri tamamladın, mükemmel! 🏆</div>`}</div>
+    <div class="row" style="margin-top:12px"><button class="btn" data-act="readMine">🔊 Ollie metnini okusun</button>${i < LEVELS.length-1 ? `<a class="btn ghost" href="#unit-${i+2}" data-act="leave">Ünite ${i+2} ▶</a>` : ""}<a class="btn ghost" href="#unit-${i+1}" data-act="leave">Ünite sayfası</a></div>`;
+}
+
+const tasksOf = () => LEVELS[play.unit][play.mode==="hard"?"hard":"tasks"];
+const blankLine = (L,t) => L.song.lines[t.line].replace(new RegExp(`(<b>)?\\b${t.blank}\\b(</b>)?`,"i"), '<span class="blank">?</span>');
+const formHTML = () => `<form class="row center" id="wform"><input class="write" id="w-${play.mode}-${play.unit}-${play.task}" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type here…" aria-label="Cevabın"><button class="btn" type="submit">Check ✓</button></form>`;
+function revealHTML(open, t){
+  return open
+    ? `<div style="width:100%" class="say">“${esc(t.answer)}”</div>
+       <button class="btn ghost" data-act="sayText" data-arg="${esc(t.answer)}">🔊 Listen</button><button class="btn" data-act="gotIt">✅ I said it right!</button><button class="btn ghost" data-act="notYet">🔁 Not yet</button>`
+    : `<button class="btn" data-act="reveal">👀 Show answer</button>`;
+}
+function quizHTML(){
+  const L = LEVELS[play.unit], t = tasksOf()[play.task], k = KIND[t.type];
+  const prog = [0,1,2,3,4].map(i=>`<span class="${play.local.has(i)?"done":i===play.task?"now":""}"></span>`).join("");
+  let body = "";
+  if(t.type==="song"){
+    body = `<div class="q">Fill in the song! <span class="tr">Şarkıdaki boşluğu doldur!</span></div>
+      <div class="songline" id="sline">${blankLine(L,t)}</div>
+      <div class="opts">${t.options.map(o=>`<button class="opt" data-v="${o}">${o}</button>`).join("")}</div>`;
+  } else if(t.type==="songtype"){
+    body = `<div class="q">Write the missing word! <span class="tr">Şarkıdaki eksik kelimeyi yaz!</span></div>
+      <div class="songline" id="sline">${blankLine(L,t)}</div>${formHTML()}`;
+  } else if(t.type==="pick" || t.type==="listen" || t.type==="story"){
+    const audio = t.type==="pick" ? "" : `<div class="row center"><button class="btn" data-act="play">🔊 Listen to Ollie</button><button class="btn ghost small" data-act="slow">🐢 Slow</button><button class="btn ghost small" data-act="showTxt">Show the text</button></div>
+      <div class="sentence hidden-text" id="txt" hidden>“${esc(t.say)}”</div>`;
+    body = audio + `<div class="q">${esc(t.q)} <span class="tr">${esc(t.tr)}</span></div>
+      <div class="opts">${t.options.map(o=> typeof o==="string"
+        ? `<button class="opt" data-v="${esc(o)}">${esc(o)}</button>`
+        : `<button class="opt" data-v="${o.v}" aria-label="${o.v}">${o.c?`<span class="sw" style="background:${o.c}"></span>`:`<span class="emo">${o.e}</span>`}</button>`).join("")}</div>`;
+  } else if(t.type==="dictation"){
+    body = `<div class="q">Listen and write the word! <span class="tr">Dinle ve kelimeyi yaz!</span></div>
+      <div class="row center"><button class="btn" data-act="play">🔊 Listen</button><button class="btn ghost" data-act="slow">🐢 Slow</button></div>
+      <div class="bigemo" id="dictEmo">❓</div>${formHTML()}`;
+  } else if(t.type==="write"){
+    body = `<div class="q">Write the missing word! <span class="tr">Eksik kelimeyi yaz!</span></div>
+      <div class="bigemo">${t.e}</div><div class="mask">${t.mask}</div>
+      <div class="sentence">${esc(t.sentence).replace("___",'<span class="blank">?</span>')} <span class="tr">(${esc(t.tr)})</span></div>${formHTML()}`;
+  } else if(t.type==="order"){
+    body = `<div class="q">Build the sentence! <span class="tr">Cümleyi kur!</span></div>
+      <div class="say" style="font-size:1.25rem">🇹🇷 “${esc(t.tr)}”</div>
+      <div class="build" id="build" aria-label="Senin cümlen"></div><div class="bank" id="bank"></div>
+      <div class="row center"><button class="btn ghost small" data-act="clearOrder">↺ Clear</button><button class="btn" data-act="checkOrder">Check ✓</button></div>
+      <div class="tr" style="text-align:center">Dikkat: kelimelerden biri fazla! 🕵️</div>`;
+  } else if(t.type==="speakTr"){
+    body = `<div class="q">Say it in English! <span class="tr">Bunu İngilizce söyle!</span></div>
+      <div class="say">🇹🇷 “${esc(t.tr)}”</div>
+      <div class="tr" style="text-align:center">1) Önce kendin yüksek sesle İngilizce söyle · 2) "Show answer" ile kontrol et</div>
+      <div class="row center" id="reveal">${revealHTML(false,t)}</div>`;
+  } else {
+    body = `<div class="q">Say it out loud! <span class="tr">Yüksek sesle söyle!</span></div>
+      <div class="say">“${esc(t.sentence)}”<div class="tr" style="font-family:var(--body);font-weight:400">${esc(t.tr)}</div></div>
+      <div class="row center"><button class="btn ghost" data-act="play">🔊 Listen first</button><button class="btn" data-act="said">🎙️ I said it!</button></div>
+      <div class="tr" style="text-align:center">1) Ollie'yi dinle · 2) Sen yüksek sesle söyle · 3) "I said it!" düğmesine bas</div>`;
+  }
+  return `${backBar()}<section class="panel">
+    <div class="eyebrow">Ünite ${play.unit+1} · ${L.theme} · Görev ${play.task+1}/5${play.replay?" · Tekrar (⭐+2)":""}</div>
+    <div class="progress">${prog}</div>
+    <span class="kind">${k[0]} ${k[1]}</span>
+    ${body}
+    <div id="fb"></div>
+  </section>`;
+}
+function startOrder(t){
+  const words = t.answer.split(" ").concat(t.extra);
+  let tiles; do{ tiles = words.slice().sort(()=>Math.random()-.5); }while(tiles.slice(0,words.length-1).join(" ")===t.answer);
+  play.order = {tiles, picked:[]};
+}
+function renderOrder(){
+  const b=$("#build"), k=$("#bank"); if(!b||!k) return; const o = play.order;
+  b.innerHTML = o.picked.map(i=>`<button class="tile" data-i="${i}">${esc(o.tiles[i])}</button>`).join("");
+  k.innerHTML = o.tiles.map((w,i)=> o.picked.includes(i) ? "" : `<button class="tile" data-i="${i}">${esc(w)}</button>`).join("");
+}
+
+function startStep(i, kind){
+  stopSpeech();
+  if(location.hash !== `#unit-${i+1}`){ history.replaceState(null, "", `#unit-${i+1}`); }
+  page = "unit"; unitArg = i;
+  if(kind==="song"){ const sg = S.sung[i]||[]; play = {kind, unit:i, songIdx: Math.max(0,[0,1,2,3,4].findIndex(n=>!sg.includes(n)))}; render(); say("Let's sing! 🎤", "Önce 🔊 Sing along düğmesine bas, sonra sen de söyle."); return; }
+  if(kind==="write"){ play = {kind, unit:i}; render(); liveWrite(); say("Writing time! ✍️", "Küçük bir metin yaz, ek yıldız kazan! Yazarken kontrol listesindeki kutular dolacak."); return; }
+  if(kind==="cards"){ play = {kind, unit:i, cardIdx:0, seen:new Set([0])}; render(); say("New words! 🃏", "Karta dokun ve çevir. Kelimeyi dinle, sonra sen de söyle."); return; }
+  const done = S.p[kind].done[i], replay = done.length >= 5;
+  play = {kind:"quiz", mode:kind, unit:i, replay, local:new Set(replay ? [] : done), task:0};
+  play.task = [0,1,2,3,4].find(n=>!play.local.has(n));
+  startTask();
+}
+function startTask(){
+  play.tries = 0; play.solved = false; play.order = null;
+  const t = tasksOf()[play.task];
+  if(t.type==="order") startOrder(t);
+  render();
+  const m = INTRO[t.type]; say(m[0], m[1]);
+  const inp = document.querySelector("input.write"); if(inp) setTimeout(()=>inp.focus(), 50);
+}
+function correct(note){
+  if(play.solved) return; play.solved = true;
+  const hard = play.mode==="hard", fresh = !S.p[play.mode].done[play.unit].includes(play.task);
+  const pts = !fresh ? 2 : hard ? (play.tries===0 ? 20 : 10) : (play.tries===0 ? 10 : 5);
+  if(fresh) S.p[play.mode].done[play.unit].push(play.task);
+  play.local.add(play.task);
+  addPts(pts);
+  const p = PRAISE[Math.floor(Math.random()*PRAISE.length)];
+  say(`${p[0]} ⭐ +${pts}!`, `${p[1]} ${pts} yıldız kazandın!`);
+  const last = play.local.size >= 5;
+  $("#fb").innerHTML = `<div class="fb good"><div class="en">${p[0]} ⭐ +${pts}</div>${note?`<div>${note}</div>`:""}</div>
+    <div class="row center" style="margin-top:12px"><button class="btn" data-act="nextTask">${last?"🏆 Testi bitir":"Next task ▶"}</button></div>`;
+  $('[data-act="nextTask"]').focus();
+}
+function wrong(t){
+  play.tries++;
+  if(play.mode==="hard" && play.tries===1){
+    say("Almost! Try once more.", "Neredeyse! Bir kez daha dene.");
+    $("#fb").innerHTML = `<div class="fb try"><div class="en">Almost! Think again. 🤔</div><div class="tr">Bir daha dene. Bir kez daha yanılırsan Ollie ipucu verecek.</div></div>`;
+    return;
+  }
+  say("Great try! But remember…", "Güzel deneme! Ama hatırla…");
+  $("#fb").innerHTML = `<div class="fb try"><div class="en">Great try! But remember… ${esc(t.hint[0])}</div><div class="tr">${esc(t.hint[1])}</div></div>`;
+}
+function nextTask(){
+  if(play.local.size >= 5) return finishQuiz();
+  let n = play.task; do{ n = (n+1)%5; } while(play.local.has(n));
+  play.task = n; startTask();
+}
+function finishQuiz(){
+  const i = play.unit, mode = play.mode, nx = LEVELS[i+1];
+  confetti(); speak(mode==="hard" ? "Amazing! You are a brave eagle!" : "Unit complete! Great job!");
+  say("Test complete! 🎉", "Testi bitirdin, süpersin!");
+  const btns = [];
+  if(mode==="easy") btns.push(`<button class="btn" data-act="startStep" data-arg="${i}:write">✍️ Yaz, ek puan kazan!</button>`, `<button class="btn ghost" data-act="startStep" data-arg="${i}:hard">🦅 Zor teste geç</button>`);
+  if(nx) btns.push(`<a class="btn ${mode==="easy"?"ghost":""}" href="#unit-${i+2}" data-act="close">Ünite ${i+2}: ${nx.theme} ▶</a>`);
+  btns.push(`<a class="btn ghost" href="#unit-${i+1}" data-act="close">Ünite sayfası</a>`);
+  const ov = document.createElement("div"); ov.className = "overlay";
+  ov.innerHTML = `<div class="modal" role="dialog" aria-label="Test tamamlandı">
+    <div style="font-size:3.5rem">${mode==="hard"?"🦅":"🏆"}</div>
+    <h2>${mode==="hard"?"Brave Eagle!":"Unit Complete!"}</h2>
+    <div>Ünite ${i+1}: <b>${LEVELS[i].theme}</b> · ${LESSON[mode].n} tamam!</div>
+    ${mode==="easy" && nx && !play.replay ? `<div class="chip ok">🔓 Ünite ${i+2}: ${nx.theme} açıldı!</div>` : ""}
+    ${mode==="easy" && !nx ? `<div class="chip ok">👑 Bütün üniteleri bitirdin!</div>` : ""}
+    ${mode==="easy" ? `<div class="bonus">✍️ Şimdi “${WRITE[i].title}” hakkında kısa bir metin yaz, <b>50 ⭐'a kadar ek puan</b> kazan!</div>` : ""}
+    <div class="pill star">⭐ ${S.score} yıldız</div>
+    <div class="row center">${btns.join("")}</div></div>`;
+  document.body.appendChild(ov);
+  play = null;
+  ov.querySelector(".btn").focus();
+}
+
+/* ---------- Events ---------- */
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act],.opt,.tile,#card"); if(!b) return;
+  const ov = b.closest(".overlay"); if(ov) ov.remove();
+  const act = b.dataset.act, arg = b.dataset.arg;
+  if(b.id==="card"){ b.classList.toggle("flip"); return; }
+  if(b.classList.contains("tile")){ if(play.solved) return; const i=+b.dataset.i, o=play.order;
+    o.picked = o.picked.includes(i) ? o.picked.filter(x=>x!==i) : o.picked.concat(i); renderOrder(); return; }
+  if(b.classList.contains("opt")) return answerOpt(b);
+  const t = play && play.kind==="quiz" ? tasksOf()[play.task] : null;
+  switch(act){
+    case "close": return;
+    case "leave": stopSpeech(); return;
+    case "logout": stopSpeech(); save(); store.current = null; saveStore(); S = null; play = null; go("login"); return;
+    case "pickUser": $("#lu").value = arg; $("#lp").value = ""; $("#lp").focus(); say(`Hi, ${arg}!`, "Şimdi şifreni yaz."); return;
+    case "forgotBack": forgotKey = null; render(); return;
+    case "avatar": if(!S){ regAvatar = arg; document.querySelectorAll(".avas button").forEach(x=>x.classList.toggle("on", x.dataset.arg===arg)); return; } S.avatar = arg; save(); updateTop(); document.querySelectorAll(".avas button").forEach(x=>x.classList.toggle("on", x.dataset.arg===arg)); if(page==="profile") render(); say("Nice choice!", `${arg} çok yakıştı!`); return;
+    case "startStep": { const [i,k] = arg.split(":"); return startStep(+i, k); }
+    case "sayText": return speak(arg);
+    case "insert": { const ta = $("#wt"); if(!ta) return; const a = ta.selectionStart ?? ta.value.length, b2 = ta.selectionEnd ?? a;
+      const before = ta.value.slice(0,a), sp = before && !/\s$/.test(before) ? " " : "";
+      ta.value = before + sp + arg + " " + ta.value.slice(b2); const pos = (before+sp+arg+" ").length; ta.focus(); ta.setSelectionRange(pos,pos);
+      S.writings[play.unit] = Object.assign({}, S.writings[play.unit], {draft:ta.value}); save(); liveWrite(); return; }
+    case "showModel": { const m = $("#model"); m.hidden = !m.hidden; return; }
+    case "readMine": { const t2 = ($("#wt").value||"").trim(); if(!t2){ say("Write something first!","Önce bir şeyler yaz!"); return; } return speak(t2); }
+    case "submitWrite": return submitWrite();
+    case "sing": return sing();
+    case "pickSong": stopSpeech(); play.songIdx = +arg; render(); say(`Song ${+arg+1}: ${LEVELS[play.unit].songs[+arg].title}`, "Önce 🔊 Sing along'a bas, sonra sen de söyle!"); return;
+    case "finishSong": {
+      const i = play.unit, sg = S.sung[i] = S.sung[i] || [], k = play.songIdx;
+      stopSpeech();
+      if(!sg.includes(k)){ sg.push(k); addPts(2); say("Beautiful singing! ⭐ +2", `Harika söyledin! ${sg.length}/5 şarkı tamam.`); }
+      if(sg.length >= 5 && !S.lessons["s"+i]){ S.lessons["s"+i] = true; addPts(5); confetti(); say("All 5 songs! ⭐ +5 bonus!", "Beş şarkının hepsini söyledin! Sıradaki ders: Kelime Kartları."); toast("🎵 Şarkı dersi tamam! +5 ⭐"); }
+      const nextK = [0,1,2,3,4].find(n=>!sg.includes(n));
+      if(nextK !== undefined){ play.songIdx = nextK; render(); return; }
+      return startStep(i, S.lessons["c"+i] ? (easyDone(i) ? "hard" : "easy") : "cards");
+    }
+    case "prevCard": case "nextCard":
+      { const n = LEVELS[play.unit].cards.length; play.cardIdx = (play.cardIdx + (act==="nextCard"?1:n-1)) % n; } play.seen.add(play.cardIdx); render(); return;
+    case "finishCards": {
+      const i = play.unit;
+      if(!S.lessons["c"+i]){ S.lessons["c"+i] = true; addPts(5); }
+      return startStep(i, easyDone(i) ? "hard" : "easy");
+    }
+    case "reset": $("#resetRow").innerHTML = `<div class="confirm"><span>Bu hesabın bütün yıldızları, dersleri ve rozetleri silinsin mi?</span><button class="btn small" data-act="resetYes">Evet, sil</button><button class="btn ghost small" data-act="resetNo">Vazgeç</button></div>`; return;
+    case "resetYes": S = Object.assign(blankData(), {name:S.name, avatar:S.avatar}); save(); go("home"); toast("İlerleme sıfırlandı."); return;
+    case "resetNo": render(); return;
+    case "nextTask": return nextTask();
+    case "play": return speak(t.say || t.word || t.sentence);
+    case "slow": return speak(t.say || t.word, null, .5);
+    case "showTxt": { const x=$("#txt"); x.hidden=!x.hidden; return; }
+    case "said": return correct(`Wonderful speaking! <span class="tr">Konuşman harikaydı!</span>`);
+    case "reveal": $("#reveal").innerHTML = revealHTML(true,t); speak(t.answer); say("Did you say it like this?","Sen de böyle mi söyledin?"); return;
+    case "gotIt": return correct(`“${esc(t.answer)}” <span class="tr">Türkçeden İngilizceye çevirdin, bu çok zor bir iş!</span>`);
+    case "notYet": play.tries++; $("#reveal").innerHTML = revealHTML(false,t); say("That's OK! Try again.","Sorun değil! Cevabı aklında tut ve bir daha söyle."); return;
+    case "clearOrder": if(!play.solved){ play.order.picked=[]; renderOrder(); } return;
+    case "checkOrder": {
+      if(play.solved) return;
+      const s = play.order.picked.map(i=>play.order.tiles[i]).join(" ");
+      if(!s){ say("Tap the words first!","Önce kelimelere dokun!"); return; }
+      if(norm(s)===norm(t.answer)){ correct(`“${esc(t.answer)}.” <span class="tr">${esc(t.tr)}</span>`); speak(t.answer); }
+      else wrong(t);
+      return;
+    }
+  }
+});
+function answerOpt(b){
+  if(!play || play.solved) return;
+  const L = LEVELS[play.unit], t = tasksOf()[play.task];
+  if(b.dataset.v === (t.type==="song" ? t.blank : t.answer)){
+    b.classList.add("right");
+    if(t.type==="song"){ $("#sline").innerHTML = L.song.lines[t.line]; correct(`“${plain(L.song.lines[t.line])}”`); }
+    else { correct(""); speak(PRAISE[0][0]); }
+  } else { b.classList.add("wrong"); setTimeout(()=>b.classList.remove("wrong"),600); wrong(t); }
+}
+document.addEventListener("keydown", e => {
+  if(e.target.id==="card" && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); e.target.classList.toggle("flip"); }
+});
+document.addEventListener("input", e => {
+  if(e.target.id==="wq"){ wq = e.target.value; renderWords(); }
+  if(e.target.id==="wt" && play){ S.writings[play.unit] = Object.assign({}, S.writings[play.unit], {draft:e.target.value}); save(); liveWrite(); }
+});
+document.addEventListener("change", e => { if(e.target.id==="wu"){ wu = e.target.value; renderWords(); } });
+document.addEventListener("submit", e => {
+  e.preventDefault();
+  const f = {loginForm:onLogin, regForm:onRegister, forgot1:onForgot1, forgot2:onForgot2, pwForm:onChangePw}[e.target.id];
+  if(f){ const btn = e.target.querySelector('[type="submit"]'); btn.disabled = true; f().finally(()=>{ btn.disabled = false; }); return; }
+  if(!play || play.solved) return;
+  const L = LEVELS[play.unit], t = tasksOf()[play.task], inp = $("input.write");
+  const v = norm(inp.value);
+  if(!v){ say("Type the word first!","Önce kelimeyi yaz!"); return; }
+  const ans = t.type==="songtype" ? t.blank : t.type==="dictation" ? t.word : t.answer;
+  if(v === ans || (t.alts||[]).includes(v)){
+    inp.style.borderColor="var(--leaf)";
+    if(t.type==="songtype"){ $("#sline").innerHTML = L.song.lines[t.line]; correct(`“${plain(L.song.lines[t.line])}”`); speak(plain(L.song.lines[t.line])); }
+    else if(t.type==="dictation"){ $("#dictEmo").textContent = t.e; correct(`${t.e} <b>${esc(t.word)}</b>`); speak(t.word); }
+    else { const full = t.sentence.replace("___",t.answer); correct(`“${esc(full)}”`); speak(full); }
+  } else wrong(t);
+});
+function sing(){
+  if(singing){ stopSpeech(); document.querySelectorAll("#song p").forEach(p=>p.classList.remove("on")); return; }
+  const ps = [...document.querySelectorAll("#song p")], lines = LEVELS[play.unit].songs[play.songIdx||0].lines.map(plain);
+  singing = true; let i = 0;
+  const step = () => {
+    ps.forEach(p=>p.classList.remove("on"));
+    if(!singing || i>=lines.length || !document.body.contains(ps[0])){ singing=false; return; }
+    ps[i].classList.add("on"); speak(lines[i], ()=>{ i++; setTimeout(step, 250); });
+  };
+  say("Sing with me! 🎤","Benimle söyle! Alkışla ritim tut 👏👏");
+  step();
+}
+
+if(store.current && store.accounts[store.current]) enter(store.current); else store.current = null;
+route();
+</script>
+
+</body></html>
