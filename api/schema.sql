@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS parents (
   pw_hash TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'parent',      -- 'parent' | 'admin'
   status TEXT NOT NULL DEFAULT 'active',    -- 'active' | 'suspended'
+  email_verified INTEGER NOT NULL DEFAULT 0,
   created_at INTEGER NOT NULL,
   last_seen INTEGER
 );
@@ -39,3 +40,12 @@ CREATE TABLE IF NOT EXISTS login_fails (
   count INTEGER NOT NULL,
   until INTEGER NOT NULL
 );
+-- E-posta doğrulama ve şifre sıfırlama bağlantıları (sadece özetleri saklanır)
+CREATE TABLE IF NOT EXISTS email_tokens (
+  token_hash TEXT PRIMARY KEY,
+  parent_id INTEGER NOT NULL REFERENCES parents(id) ON DELETE CASCADE,
+  kind TEXT NOT NULL,                       -- 'verify' | 'reset'
+  expires_at INTEGER NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_email_tokens_parent ON email_tokens(parent_id, kind);

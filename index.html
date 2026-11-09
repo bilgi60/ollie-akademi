@@ -1035,6 +1035,14 @@ let page = "home", unitArg = 0, play = null;
 function route(){
   stopSpeech(); stopRec(); play = null; sk = null;
   const h = location.hash.slice(1) || "home";
+  const tk = h.match(/^(reset|verify)-([0-9a-f]{64})$/);
+  if(tk){
+    if(tk[1] === "verify"){ history.replaceState(null, "", "#" + (S ? "home" : auth ? "profiles" : "login")); verifyEmail(tk[2]); return route(); }
+    resetToken = tk[2]; history.replaceState(null, "", "#reset");
+    if(S){ sync(); S = null; childId = null; }
+    page = "reset"; render(true); return;
+  }
+  if(h === "reset" && !S && resetToken){ page = "reset"; render(true); return; }
   if(!S){
     if(auth){ page = ["profiles","parent"].includes(h) ? h : "profiles"; if(page !== h) history.replaceState(null, "", "#"+page); }
     else page = ["register","forgot"].includes(h) ? h : "login";
@@ -1053,7 +1061,7 @@ function render(greet){
   const nav = play || page==="unit" ? "units" : page;
   document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("on", a.dataset.nav===nav));
   const el = $("#screen");
-  if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML, profiles:profilesHTML, parent:parentHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
+  if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML, reset:resetHTML, profiles:profilesHTML, parent:parentHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
   if(play) el.innerHTML = play.kind==="song" ? songHTML() : play.kind==="cards" ? cardsHTML() : play.kind==="write" ? writeHTML() : quizHTML();
   else el.innerHTML = ({home:homeHTML, units:unitsHTML, unit:unitHTML, words:wordsHTML, badges:badgesHTML, profile:profileHTML,
     reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
@@ -1068,6 +1076,7 @@ function greetPage(){
     login:["Welcome to Ollie Akademi! 🦉","Veli hesabıyla giriş yap, sonra profilini seç."],
     register:["Hello, parents! 👋","Veli hesabını aç, sonra çocuklarını profil olarak ekle."],
     forgot:["Don't worry! 🔑","Yıldızların ve ilerlemen hesabında güvende."],
+    reset:["New password! 🔑","Yeni şifreni iki kez yaz ve kaydet."],
     profiles:["Who's learning today? 🦉","Profiline dokun ve derslere başla!"],
     parent:["Parent panel","Çocuklarının ilerlemesini buradan görebilirsin."],
     home:[`Hello${n}! 👋`, `Bugünkü hedefin ${DAILY} yıldız. Hadi başlayalım!`],
@@ -1127,14 +1136,33 @@ function registerHTML(){
 function forgotHTML(){
   return `<section class="panel auth"><a class="link" href="#login">← Girişe dön</a>
     <h1>Şifremi Unuttum 🔑</h1>
-    <p>Şifreni unuttuysan site yöneticisine kayıtlı e-posta adresinden yaz. Hesabın doğrulandıktan sonra sana geçici bir şifre verilir. Giriş yapınca <b>Veli Paneli</b>'nden kendi şifreni belirleyebilirsin.</p>
+    <p>Veli hesabının e-posta adresini yaz. Sana yeni şifre belirleyebileceğin bir bağlantı gönderelim.</p>
+    <form id="forgotForm" class="stack" novalidate>
+      <label for="fe">E-posta</label><input class="field" id="fe" type="email" autocomplete="email" inputmode="email" maxlength="200" value="${esc(store.lastEmail||"")}">
+      <div id="authMsg" role="alert"></div>
+      <div><button class="btn" type="submit">Sıfırlama bağlantısı gönder ✉️</button></div>
+    </form>
     <p class="tr">Çocukların yıldızları ve ilerlemesi silinmez, hepsi hesabında kalır.</p></section>`;
 }
+let resetToken = null;
+function resetHTML(){
+  return `<section class="panel auth"><a class="link" href="#login">← Girişe dön</a>
+    <h1>Yeni şifre belirle 🔑</h1>
+    <form id="resetForm" class="stack" novalidate>
+      <label for="np1">Yeni şifre <span class="tr">(en az 8 karakter)</span></label><input class="field" id="np1" type="password" autocomplete="new-password" maxlength="200">
+      <label for="np2">Yeni şifre tekrar</label><input class="field" id="np2" type="password" autocomplete="new-password" maxlength="200">
+      <div id="authMsg" role="alert"></div>
+      <div><button class="btn" type="submit">Şifremi kaydet ✓</button></div>
+    </form>
+    <p class="tr">Şifren değişince bütün cihazlardaki oturumlar kapanır. Bu cihazda otomatik olarak giriş yapılır.</p></section>`;
+}
+const verifyNote = () => auth && auth.mail && auth.verified === false ? `<div class="fb try stack" id="verifyBox"><b>📧 E-posta adresini doğrula</b><span><b>${esc(auth.email)}</b> adresine bir doğrulama bağlantısı gönderdik. Gelen kutunu ve gereksiz (spam) klasörünü kontrol et. Doğrulanmış e-posta, şifreni unutursan hesabını kurtarmanı sağlar.</span><div><button class="btn ghost small" data-act="resendVerify">Bağlantıyı tekrar gönder</button></div></div>` : "";
 function profilesHTML(){
   const kids = auth.children || [], locals = localAccounts();
   return `<section class="panel auth">
     <div class="eyebrow">Kim çalışacak? · Who's learning?</div>
     <h1>Profilini seç</h1>
+    ${verifyNote()}
     ${kids.length ? `<div class="kids">${kids.map(c=>`<button type="button" class="kid" data-act="pickChild" data-arg="${c.id}"><span class="ava">${c.avatar}</span><b>${esc(c.name)}</b><span class="tr">⭐ ${c.score}</span></button>`).join("")}</div>`
       : `<p class="muted">Henüz çocuk profili yok. Aşağıdan ilk profili ekle.</p>`}
     ${locals.length ? `<div class="fb good stack"><b>Bu cihazda eski hesaplar bulundu</b><span>Yıldızları ve ilerlemeleriyle birlikte veli hesabına aktarabilirsin.</span>
@@ -1153,6 +1181,7 @@ function parentHTML(){
   return `<section class="panel"><a class="link" href="#profiles">← Profillere dön</a>
     <div class="eyebrow">Veli Paneli · Parent</div>
     <h1>${esc(auth.email)}</h1>
+    ${verifyNote()}
     <h2>Çocuklar</h2>
     ${kids.length ? `<div class="stack">${kids.map(c=>`<div class="row between kidrow"><span class="row"><span class="ava">${c.avatar}</span><span><b>${esc(c.name)}</b><br><span class="tr">⭐ ${c.score} yıldız · son çalışma: ${fmtDate(c.updated_at)}</span></span></span>
       <span class="row" id="del-${c.id}"><button class="btn ghost small" data-act="delChild" data-arg="${c.id}">Sil</button></span></div>`).join("")}</div>` : `<p class="muted">Henüz çocuk profili yok.</p>`}
@@ -1179,7 +1208,7 @@ function checkPw(p1, p2, id){
   return true;
 }
 function setAuth(r){
-  auth = {token: r.token || auth.token, email: r.parent.email, role: r.parent.role, children: r.children, lastChild: auth && auth.lastChild || null};
+  auth = {token: r.token || auth.token, email: r.parent.email, role: r.parent.role, verified: !!r.parent.email_verified, mail: !!r.mail, children: r.children, lastChild: auth && auth.lastChild || null};
   store.lastEmail = r.parent.email; saveStore(); saveAuth();
 }
 async function refreshMe(){
@@ -1199,9 +1228,10 @@ async function onRegister(){
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)) return authMsg("Geçerli bir e-posta adresi yaz.");
   if(!checkPw(p1, p2)) return;
   if(!$("#rc").checked) return authMsg("Devam etmek için veli onayını işaretle.");
-  try{ setAuth(await api("/register", {body:{email:e, password:p1, consent:true}})); }
+  let r; try{ r = await api("/register", {body:{email:e, password:p1, consent:true}}); setAuth(r); }
   catch(err){ return authMsg(esc(err.message)); }
   addOpen = true; go("profiles"); toast("Veli hesabın hazır! 🎉 Şimdi çocuğunu ekle.");
+  if(r.mail) setTimeout(()=>toast(`✉️ ${auth.email} adresine doğrulama bağlantısı gönderdik.`), 3000);
 }
 async function onAddChild(){
   const name = $("#cn").value.trim().replace(/\s+/g," ");
@@ -1232,6 +1262,38 @@ function skipLocal(k){
   if(!confirm("Bu eski hesap aktarılmasın mı? Bu cihazda saklanmaya devam eder ama listede bir daha gösterilmez.")) return;
   if(k === "__legacy") store.legacyMigrated = true; else if(store.accounts[k]) store.accounts[k].migrated = -1;
   saveStore(); render();
+}
+async function onForgot(){
+  const e = $("#fe").value.trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)) return authMsg("Geçerli bir e-posta adresi yaz.");
+  try{ await api("/forgot", {body:{email:e}}); }
+  catch(err){ return authMsg(esc(err.message)); }
+  store.lastEmail = e; saveStore();
+  authMsg(`<b>${esc(e)}</b> ile kayıtlı bir hesap varsa şifre sıfırlama bağlantısı gönderdik. ✉️<br>Gelen kutunu ve gereksiz (spam) klasörünü kontrol et. Bağlantı 60 dakika geçerli.`, true);
+}
+async function onReset(){
+  const p1 = $("#np1").value, p2 = $("#np2").value;
+  if(!checkPw(p1, p2)) return;
+  let r; try{ r = await api("/reset", {body:{token:resetToken, password:p1}}); }
+  catch(err){ return authMsg(esc(err.message) + (err.status === 410 ? ` <a class="link" href="#forgot">Yeni bağlantı iste →</a>` : "")); }
+  resetToken = null; auth = null; setAuth(r);
+  toast("Şifren değişti ✓ Hoş geldin!");
+  if(auth.children.length === 1 && !localAccounts().length) return enterChild(auth.children[0].id);
+  go("profiles");
+}
+async function verifyEmail(token){
+  try{
+    await api("/verify", {body:{token}});
+    if(auth){ auth.verified = true; saveAuth(); }
+    toast("E-posta adresin doğrulandı ✓");
+    if(!S) render();
+  }catch(err){ toast(err.message); }
+}
+async function resendVerify(){
+  const box = $("#verifyBox"), btn = box && box.querySelector("button"); if(btn) btn.disabled = true;
+  try{ const r = await api("/me/verify-email", {method:"POST"}); if(r.already){ auth.verified = true; saveAuth(); render(); toast("E-posta adresin zaten doğrulanmış ✓"); return; }
+    toast("Doğrulama bağlantısı gönderildi ✉️"); }
+  catch(err){ toast(err.message); if(btn) btn.disabled = false; }
 }
 async function onChangePw(){
   const id = "#pwMsg", p1 = $("#cp1").value, p2 = $("#cp2").value;
@@ -1858,6 +1920,7 @@ document.addEventListener("click", e => {
     case "close": return;
     case "leave": stopSpeech(); return;
     case "logout": return parentLogout();
+    case "resendVerify": return resendVerify();
     case "childOut": return childOut();
     case "pickChild": return enterChild(+arg);
     case "addOpen": addOpen = true; render(); setTimeout(()=>$("#cn") && $("#cn").focus(), 50); return;
@@ -1947,7 +2010,7 @@ document.addEventListener("input", e => {
 document.addEventListener("change", e => { if(e.target.id==="wu"){ wu = e.target.value; renderWords(); } });
 document.addEventListener("submit", e => {
   e.preventDefault();
-  const f = {loginForm:onLogin, regForm:onRegister, childForm:onAddChild, pwForm:onChangePw, delForm:onDeleteAccount}[e.target.id];
+  const f = {loginForm:onLogin, regForm:onRegister, forgotForm:onForgot, resetForm:onReset, childForm:onAddChild, pwForm:onChangePw, delForm:onDeleteAccount}[e.target.id];
   if(f){ const btn = e.target.querySelector('[type="submit"]'); btn.disabled = true; f().finally(()=>{ btn.disabled = false; }); return; }
   if(!play || play.solved) return;
   const L = LEVELS[play.unit], t = tasksOf()[play.task], inp = $("input.write");
@@ -1974,7 +2037,7 @@ function sing(){
   step();
 }
 
-if(auth && auth.lastChild && auth.children.some(c=>c.id === auth.lastChild)) enterChild(auth.lastChild); else route();
+if(!/^#(reset|verify)-/.test(location.hash) && auth && auth.lastChild && auth.children.some(c=>c.id === auth.lastChild)) enterChild(auth.lastChild); else route();
 if(auth) refreshMe();
 </script>
 

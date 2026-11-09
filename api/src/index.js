@@ -74,7 +74,7 @@ async function auth(req, env) {
     await env.DB.prepare("UPDATE parents SET last_seen = ? WHERE id = ?").bind(now(), p.id).run();
   return p;
 }
-const publicParent = p => ({ id: p.id, email: p.email, role: p.role, status: p.status, created_at: p.created_at });
+const publicParent = p => ({ id: p.id, email: p.email, role: p.role, status: p.status, email_verified: !!p.email_verified, created_at: p.created_at });
 const childSummary = c => ({ id: c.id, name: c.name, avatar: c.avatar, score: c.score, created_at: c.created_at, updated_at: c.updated_at });
 
 async function getChild(env, parent, id) {
@@ -92,7 +92,7 @@ function parseData(d) {
 
 /* ---------------- Veli uç noktaları ---------------- */
 
-async function register(req, env) {
+async function register(req, env, ctx) {
   const b = await body(req);
   const email = cleanEmail(b.email);
   if (!validEmail(email)) bad("Geçerli bir e-posta adresi yaz.");
@@ -105,7 +105,8 @@ async function register(req, env) {
     .bind(email, salt, await hashPw(salt, pw), now(), now()).run();
   const id = r.meta.last_row_id;
   const p = await env.DB.prepare("SELECT * FROM parents WHERE id = ?").bind(id).first();
-  return json({ token: await newSession(env, id), parent: publicParent(p), children: [] }, 201);
+  if (mailReady(env)) ctx.waitUntil(sendVerify(env, p).catch(e => console.error(e)));
+  return json({ token: await newSession(env, id), parent: publicParent(p), children: [], mail: mailReady(env) }, 201);
 }
 
 async function login(req, env) {
@@ -126,7 +127,7 @@ async function login(req, env) {
   await env.DB.prepare("DELETE FROM sessions WHERE parent_id = ? AND expires_at < ?").bind(p.id, now()).run();
   await env.DB.prepare("UPDATE parents SET last_seen = ? WHERE id = ?").bind(now(), p.id).run();
   const { results } = await env.DB.prepare("SELECT id, name, avatar, score, created_at, updated_at FROM children WHERE parent_id = ? ORDER BY id").bind(p.id).all();
-  return json({ token: await newSession(env, p.id), parent: publicParent(p), children: results.map(childSummary) });
+  return json({ token: await newSession(env, p.id), parent: publicParent(p), children: results.map(childSummary), mail: mailReady(env) });
 }
 
 async function logout(req, env, p) {
@@ -136,7 +137,7 @@ async function logout(req, env, p) {
 
 async function me(req, env, p) {
   const { results } = await env.DB.prepare("SELECT id, name, avatar, score, created_at, updated_at FROM children WHERE parent_id = ? ORDER BY id").bind(p.id).all();
-  return json({ parent: publicParent(p), children: results.map(childSummary) });
+  return json({ parent: publicParent(p), children: results.map(childSummary), mail: mailReady(env) });
 }
 
 async function changePassword(req, env, p) {
@@ -208,6 +209,7 @@ async function removeParent(env, id) {
     env.DB.prepare("DELETE FROM activity WHERE child_id IN (SELECT id FROM children WHERE parent_id = ?)").bind(id),
     env.DB.prepare("DELETE FROM children WHERE parent_id = ?").bind(id),
     env.DB.prepare("DELETE FROM sessions WHERE parent_id = ?").bind(id),
+    env.DB.prepare("DELETE FROM email_tokens WHERE parent_id = ?").bind(id),
     env.DB.prepare("DELETE FROM parents WHERE id = ?").bind(id),
   ]);
 }
@@ -243,7 +245,7 @@ async function adminParents(req, env) {
   const q = (url.searchParams.get("q") || "").trim().toLowerCase();
   const like = `%${q.replace(/[%_\\]/g, m => "\\" + m)}%`;
   const { results } = await env.DB.prepare(
-    `SELECT p.id, p.email, p.role, p.status, p.created_at, p.last_seen,
+    `SELECT p.id, p.email, p.role, p.status, p.email_verified, p.created_at, p.last_seen,
             COUNT(c.id) AS child_count, COALESCE(SUM(c.score), 0) AS total_score, MAX(c.updated_at) AS last_progress,
             GROUP_CONCAT(c.name, ', ') AS child_names
      FROM parents p LEFT JOIN children c ON c.parent_id = p.id
@@ -295,15 +297,135 @@ async function adminResetPassword(req, env, admin, id) {
   return json({ ok: true, temp_password: temp });
 }
 
+
+/* ---------------- E-posta (Resend) ---------------- */
+const RESET_MIN = 60, VERIFY_DAYS = 7, MAIL_PER_HOUR = 3;
+const site = env => (env.SITE_URL || "https://ollieakademi.com").replace(/\/+$/, "");
+const mailReady = env => !!env.RESEND_API_KEY;
+const escH = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function mailHTML(env, title, intro, button, link, foot) {
+  return `<!doctype html><html lang="tr"><body style="margin:0;background:#EEF4EA;font-family:Arial,Helvetica,sans-serif;color:#22304A">
+<div style="max-width:520px;margin:0 auto;padding:24px 16px">
+<div style="background:#fff;border-radius:20px;padding:28px 24px;border:2px solid #DCE6D5">
+<div style="text-align:center"><img src="${site(env)}/img/ollie-256.png" width="96" height="96" alt="Ollie" style="display:inline-block"></div>
+<h1 style="font-size:22px;margin:12px 0 8px;text-align:center">${escH(title)}</h1>
+<p style="font-size:16px;line-height:1.5">${intro}</p>
+<p style="text-align:center;margin:24px 0"><a href="${link}" style="background:#E8742A;color:#fff;text-decoration:none;font-weight:bold;padding:14px 24px;border-radius:14px;display:inline-block">${escH(button)}</a></p>
+<p style="font-size:13px;color:#5B6779;line-height:1.5">Düğme çalışmazsa bu bağlantıyı tarayıcına yapıştır:<br><a href="${link}" style="color:#C2571A;word-break:break-all">${link}</a></p>
+<p style="font-size:13px;color:#5B6779;line-height:1.5">${foot}</p>
+</div><p style="font-size:12px;color:#5B6779;text-align:center">Ollie Akademi · 7–11 yaş için İngilizce · ollieakademi.com</p></div></body></html>`;
+}
+async function sendMail(env, to, subject, html, text) {
+  if (!mailReady(env)) { console.log("E-posta gönderilmedi (RESEND_API_KEY yok):", subject, to); return false; }
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: env.MAIL_FROM || "Ollie Akademi <bilgi@ollieakademi.com>", to: [to], subject, html, text }),
+    });
+    if (!r.ok) { console.error("Resend hatası", r.status, await r.text()); return false; }
+    return true;
+  } catch (e) { console.error("E-posta gönderilemedi", e); return false; }
+}
+async function newEmailToken(env, parentId, kind, ttlMs) {
+  const since = now() - 3600_000;
+  const c = await env.DB.prepare("SELECT COUNT(*) AS n FROM email_tokens WHERE parent_id = ? AND kind = ? AND created_at > ?").bind(parentId, kind, since).first();
+  if (c.n >= MAIL_PER_HOUR) return null;
+  const token = randHex(32);
+  await env.DB.batch([
+    env.DB.prepare("DELETE FROM email_tokens WHERE expires_at < ?").bind(now()),
+    env.DB.prepare("INSERT INTO email_tokens (token_hash, parent_id, kind, expires_at, created_at) VALUES (?, ?, ?, ?, ?)")
+      .bind(await sha256(token), parentId, kind, now() + ttlMs, now()),
+  ]);
+  return token;
+}
+async function useEmailToken(env, token, kind) {
+  if (!/^[0-9a-f]{64}$/.test(String(token || ""))) bad("Bağlantı geçersiz. E-postadaki bağlantıyı tam olarak açtığından emin ol.");
+  const th = await sha256(token);
+  const t = await env.DB.prepare("SELECT * FROM email_tokens WHERE token_hash = ? AND kind = ?").bind(th, kind).first();
+  if (!t || t.expires_at < now()) bad(kind === "reset" ? "Bu şifre sıfırlama bağlantısının süresi dolmuş ya da daha önce kullanılmış. Yeni bir bağlantı iste." : "Bu doğrulama bağlantısının süresi dolmuş ya da daha önce kullanılmış. Veli panelinden yeni bir bağlantı isteyebilirsin.", 410);
+  await env.DB.prepare("DELETE FROM email_tokens WHERE parent_id = ? AND kind = ?").bind(t.parent_id, kind).run();
+  return t.parent_id;
+}
+async function sendVerify(env, p) {
+  const token = await newEmailToken(env, p.id, "verify", VERIFY_DAYS * 86400_000);
+  if (!token) return "limit";
+  const link = `${site(env)}/#verify-${token}`;
+  const ok = await sendMail(env, p.email, "Ollie Akademi: e-posta adresini doğrula",
+    mailHTML(env, "E-posta adresini doğrula", "Merhaba! Ollie Akademi'ye hoş geldin. Veli hesabını güvenceye almak için aşağıdaki düğmeye bas.", "E-postamı doğrula", link,
+      `Bu bağlantı ${VERIFY_DAYS} gün geçerli. Bu hesabı sen açmadıysan bu e-postayı yok sayabilirsin.`),
+    `Ollie Akademi e-posta doğrulama bağlantın (${VERIFY_DAYS} gün geçerli):\n${link}\n\nBu hesabı sen açmadıysan bu e-postayı yok sayabilirsin.`);
+  return ok ? "sent" : "fail";
+}
+
+async function forgot(req, env) {
+  const b = await body(req);
+  const email = cleanEmail(b.email);
+  if (!validEmail(email)) bad("Geçerli bir e-posta adresi yaz.");
+  if (!mailReady(env)) bad("E-postayla şifre sıfırlama henüz açık değil. Site yöneticisine yaz, sana geçici bir şifre versin.", 503);
+  const p = await env.DB.prepare("SELECT * FROM parents WHERE email = ?").bind(email).first();
+  // Hesap var mı yok mu belli etmemek için her durumda aynı cevabı veriyoruz.
+  if (p && p.status === "active") {
+    const token = await newEmailToken(env, p.id, "reset", RESET_MIN * 60_000);
+    if (token) {
+      const link = `${site(env)}/#reset-${token}`;
+      await sendMail(env, p.email, "Ollie Akademi: şifre sıfırlama",
+        mailHTML(env, "Şifreni sıfırla", "Veli hesabın için şifre sıfırlama isteği aldık. Yeni şifreni belirlemek için aşağıdaki düğmeye bas. Çocuklarının yıldızları ve ilerlemesi silinmez.", "Yeni şifre belirle", link,
+          `Bu bağlantı ${RESET_MIN} dakika geçerli ve yalnızca bir kez kullanılabilir. Bu isteği sen yapmadıysan bu e-postayı yok say; şifren değişmez.`),
+        `Ollie Akademi şifre sıfırlama bağlantın (${RESET_MIN} dakika geçerli):\n${link}\n\nBu isteği sen yapmadıysan bu e-postayı yok say; şifren değişmez.`);
+    }
+  }
+  return json({ ok: true });
+}
+
+async function resetPassword(req, env) {
+  const b = await body(req);
+  const pw = checkPw(b.password);
+  const id = await useEmailToken(env, b.token, "reset");
+  const p = await env.DB.prepare("SELECT * FROM parents WHERE id = ?").bind(id).first();
+  if (!p) bad("Hesap bulunamadı.", 404);
+  if (p.status !== "active") bad("Bu hesap askıya alındı. Bilgi için site yöneticisine yaz.", 403);
+  const salt = randHex(16);
+  await env.DB.batch([
+    env.DB.prepare("UPDATE parents SET pw_salt = ?, pw_hash = ?, email_verified = 1, last_seen = ? WHERE id = ?").bind(salt, await hashPw(salt, pw), now(), id),
+    env.DB.prepare("DELETE FROM sessions WHERE parent_id = ?").bind(id),
+    env.DB.prepare("DELETE FROM login_fails WHERE email = ?").bind(p.email),
+  ]);
+  const fresh = await env.DB.prepare("SELECT * FROM parents WHERE id = ?").bind(id).first();
+  const { results } = await env.DB.prepare("SELECT id, name, avatar, score, created_at, updated_at FROM children WHERE parent_id = ? ORDER BY id").bind(id).all();
+  return json({ token: await newSession(env, id), parent: publicParent(fresh), children: results.map(childSummary), mail: mailReady(env) });
+}
+
+async function verifyEmail(req, env) {
+  const b = await body(req);
+  const id = await useEmailToken(env, b.token, "verify");
+  await env.DB.prepare("UPDATE parents SET email_verified = 1 WHERE id = ?").bind(id).run();
+  const p = await env.DB.prepare("SELECT email FROM parents WHERE id = ?").bind(id).first();
+  return json({ ok: true, email: p && p.email });
+}
+
+async function resendVerify(req, env, p) {
+  if (p.email_verified) return json({ ok: true, already: true });
+  if (!mailReady(env)) bad("E-posta gönderimi henüz açık değil. Biraz sonra tekrar dene.", 503);
+  const r = await sendVerify(env, p);
+  if (r === "limit") bad("Son bir saatte çok fazla doğrulama e-postası istendi. Biraz sonra tekrar dene.", 429);
+  if (r === "fail") bad("E-posta gönderilemedi. Biraz sonra tekrar dene.", 502);
+  return json({ ok: true });
+}
+
 /* ---------------- Yönlendirme ---------------- */
 
-async function handle(req, env) {
+async function handle(req, env, ctx) {
   const url = new URL(req.url);
   const path = url.pathname.replace(/\/+$/, "") || "/";
   const M = req.method;
   let m;
   if (path === "/" || path === "/api") return json({ ok: true, service: "ollie-akademi-api" });
-  if (path === "/api/register" && M === "POST") return register(req, env);
+  if (path === "/api/register" && M === "POST") return register(req, env, ctx);
+  if (path === "/api/forgot" && M === "POST") return forgot(req, env);
+  if (path === "/api/reset" && M === "POST") return resetPassword(req, env);
+  if (path === "/api/verify" && M === "POST") return verifyEmail(req, env);
   if (path === "/api/login" && M === "POST") return login(req, env);
 
   const p = await auth(req, env);
@@ -311,6 +433,7 @@ async function handle(req, env) {
   if (path === "/api/me" && M === "GET") return me(req, env, p);
   if (path === "/api/me/password" && M === "POST") return changePassword(req, env, p);
   if (path === "/api/me/delete" && M === "POST") return deleteAccount(req, env, p);
+  if (path === "/api/me/verify-email" && M === "POST") return resendVerify(req, env, p);
   if (path === "/api/children" && M === "POST") return createChild(req, env, p);
   if ((m = path.match(/^\/api\/children\/(\d+)$/))) {
     if (M === "GET") return readChild(req, env, p, +m[1]);
@@ -332,11 +455,11 @@ async function handle(req, env) {
 }
 
 export default {
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
     const ch = cors(req, env);
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: ch });
     try {
-      const res = await handle(req, env);
+      const res = await handle(req, env, ctx);
       for (const [k, v] of Object.entries(ch)) res.headers.set(k, v);
       return res;
     } catch (e) {

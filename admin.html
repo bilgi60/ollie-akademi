@@ -151,7 +151,7 @@ function listView(){
     <form id="sf" class="row" novalidate><input class="field" id="q" placeholder="E-posta ya da çocuk adıyla ara" value="${esc(view.q)}" style="flex:1;min-width:200px"><button class="btn" type="submit">Ara</button>${view.q ? `<button class="btn ghost" type="button" data-act="clear">Temizle</button>` : ""}</form>
     ${msg}
     <div class="tablewrap"><table><thead><tr><th>Veli</th><th>Çocuklar</th><th class="num">⭐ Toplam</th><th class="hide-sm">Kayıt</th><th>Son görülme</th><th>Durum</th></tr></thead><tbody>
-    ${parents.map(p=>`<tr class="click" data-act="open" data-arg="${p.id}"><td><b>${esc(p.email)}</b> ${p.role==="admin" ? `<span class="tag admin">yönetici</span>` : ""}</td><td>${p.child_count ? esc(p.child_names) : `<span class="muted">—</span>`}</td><td class="num">${p.total_score}</td><td class="hide-sm">${fmt(p.created_at)}</td><td>${fmt(Math.max(p.last_seen||0, p.last_progress||0))}</td><td>${p.status==="active" ? `<span class="tag">aktif</span>` : `<span class="tag off">askıda</span>`}</td></tr>`).join("") || `<tr><td colspan="6" class="muted">Kayıt bulunamadı.</td></tr>`}
+    ${parents.map(p=>`<tr class="click" data-act="open" data-arg="${p.id}"><td><b>${esc(p.email)}</b> ${p.role==="admin" ? `<span class="tag admin">yönetici</span>` : ""}${p.email_verified ? "" : ` <span class="tag off" title="E-posta adresi doğrulanmadı">doğrulanmadı</span>`}</td><td>${p.child_count ? esc(p.child_names) : `<span class="muted">—</span>`}</td><td class="num">${p.total_score}</td><td class="hide-sm">${fmt(p.created_at)}</td><td>${fmt(Math.max(p.last_seen||0, p.last_progress||0))}</td><td>${p.status==="active" ? `<span class="tag">aktif</span>` : `<span class="tag off">askıda</span>`}</td></tr>`).join("") || `<tr><td colspan="6" class="muted">Kayıt bulunamadı.</td></tr>`}
     </tbody></table></div></section>`;
 }
 
@@ -159,7 +159,7 @@ function detailView(){
   const {parent:p, children} = detail, self = p.id === auth.id || p.email === auth.email;
   $("#app").innerHTML = header() + `<section class="panel">
     <button class="btn ghost" data-act="back" style="align-self:flex-start">← Listeye dön</button>
-    <div class="row between"><h1>${esc(p.email)}</h1>${p.status==="active" ? `<span class="tag">aktif</span>` : `<span class="tag off">askıda</span>`}</div>
+    <div class="row between"><h1>${esc(p.email)} ${p.email_verified ? `<span class="tag" title="E-posta doğrulandı">✓ e-posta</span>` : `<span class="tag off">e-posta doğrulanmadı</span>`}</h1>${p.status==="active" ? `<span class="tag">aktif</span>` : `<span class="tag off">askıda</span>`}</div>
     <p class="muted small">Kayıt: ${fmt(p.created_at)} · Son görülme: ${fmt(p.last_seen)} · Rol: ${p.role==="admin" ? "yönetici" : "veli"}</p>
     ${msg}
     ${self ? `<p class="muted small">Bu senin hesabın. Askıya alma ve silme kapalı.</p>` : `<div class="row" id="acts">
