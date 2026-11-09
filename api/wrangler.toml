@@ -1,0 +1,12 @@
+name = "ollie-akademi-api"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ollie-akademi-db"
+database_id = "601b4677-e081-4687-a775-b1cba7108218"
+
+[vars]
+ALLOWED_ORIGINS = "https://ollieakademi.com,https://www.ollieakademi.com,https://bilgi60.github.io,http://localhost:8000"
