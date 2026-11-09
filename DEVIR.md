@@ -1,6 +1,6 @@
 # DEVİR NOTU — Ollie Akademi
 
-> **Son durum (2026-11-09, 5. oturum): Reading/Listening/Speaking + e-postayla şifre sıfırlama/doğrulama yazıldı, CANLIYA ALINMADI.**
+> **Son durum (2026-11-09, 5. oturum): Reading/Listening/Speaking + e-postayla şifre sıfırlama/doğrulama YAYINDA (göç yapıldı, sunucu güncellendi, main'e alındı). Kalan tek iş: madde 3 (Resend anahtarı) kullanıcıda.**
 > **Bitenler (dal: `claude/blissful-cori-ulhk0b`):**
 > - Menüye 3 yeni bölüm: 📕 Reading (her ünite için kısa hikâye + 3 soru, sesli okuma, Türkçe çeviri), 🎧 Listening (ünite başına 5 resimli dinleme), 🗣️ Speaking (ünite başına 5 cümle; Chrome/Edge/Safari'de mikrofonla kelime kelime kontrol, diğerlerinde "I said it!"). İçerikler `READING`, `LISTENING`, `SPEAKING` dizilerinde. İlerleme `S.skills.{r,l,s}[ünite]` içinde. 3 yeni rozet, profilde istatistik. Telefonda menü kısa etiketlerle (Read/Listen/Speak) sığıyor.
 > - Sunucu: `/api/forgot`, `/api/reset`, `/api/verify`, `/api/me/verify-email`. Bağlantılar `ollieakademi.com/#reset-<token>` ve `#verify-<token>`; sıfırlama 60 dk, doğrulama 7 gün, saatte en fazla 3 e-posta. E-posta Resend ile gider; `RESEND_API_KEY` yoksa şifremi unuttum "yöneticiye yaz" der ve doğrulama uyarısı gösterilmez (site bozulmaz).
