@@ -1,5 +1,15 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **Son durum (2026-11-09, 5. oturum): Reading/Listening/Speaking + e-postayla şifre sıfırlama/doğrulama yazıldı, CANLIYA ALINMADI.**
+> **Bitenler (dal: `claude/blissful-cori-ulhk0b`):**
+> - Menüye 3 yeni bölüm: 📕 Reading (her ünite için kısa hikâye + 3 soru, sesli okuma, Türkçe çeviri), 🎧 Listening (ünite başına 5 resimli dinleme), 🗣️ Speaking (ünite başına 5 cümle; Chrome/Edge/Safari'de mikrofonla kelime kelime kontrol, diğerlerinde "I said it!"). İçerikler `READING`, `LISTENING`, `SPEAKING` dizilerinde. İlerleme `S.skills.{r,l,s}[ünite]` içinde. 3 yeni rozet, profilde istatistik. Telefonda menü kısa etiketlerle (Read/Listen/Speak) sığıyor.
+> - Sunucu: `/api/forgot`, `/api/reset`, `/api/verify`, `/api/me/verify-email`. Bağlantılar `ollieakademi.com/#reset-<token>` ve `#verify-<token>`; sıfırlama 60 dk, doğrulama 7 gün, saatte en fazla 3 e-posta. E-posta Resend ile gider; `RESEND_API_KEY` yoksa şifremi unuttum "yöneticiye yaz" der ve doğrulama uyarısı gösterilmez (site bozulmaz).
+> - Yönetici panelinde "doğrulanmadı" etiketi. Hepsi yerelde (wrangler dev + tarayıcı) uçtan uca test edildi.
+> **Sıradaki adımlar:**
+> 1. Kullanıcı onayıyla canlı veritabanına göç: `cd api && CLOUDFLARE_API_TOKEN=proxy-injected CLOUDFLARE_ACCOUNT_ID=9a69de8230786ced37e7236b8221b494 npx wrangler d1 execute ollie-akademi-db --remote --yes --file=migrations-0002-email.sql` (bir kez!), sonra `npx wrangler deploy` (aynı değişkenlerle).
+> 2. Dalı main'e al (site GitHub Pages'te main'den yayınlanıyor).
+> 3. E-posta için kullanıcı: resend.com hesabı → Domains → ollieakademi.com ekle → verilen DNS kayıtlarını GoDaddy'ye gir → doğrulanınca API Keys'ten "Sending access" anahtarı oluştur → Cloudflare panelinde Workers → ollie-akademi-api → Settings → Variables and Secrets → Secret `RESEND_API_KEY` olarak ekle. Gönderen adres varsayılanı `bilgi@ollieakademi.com` (`MAIL_FROM` değişkeniyle değişir).
+
 > **Son durum (2026-11-09, 4. oturum): Sunucu + veli hesapları + yönetici paneli yazıldı.**
 > **Bitenler:**
 > - Cloudflare hesabı açıldı. API anahtarı "ollie-akademi" bulut ortamında güvenli olarak saklanıyor (sohbete yazılmadı). Bu ortamla açılan oturumlar Cloudflare'e doğrudan erişir.
