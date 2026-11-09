@@ -1,5 +1,8 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Ollie Akademi</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,7 +48,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,.c
 .side{position:sticky;top:12px;background:var(--surface);border:2px solid var(--line);border-radius:var(--r);padding:16px 12px;display:flex;flex-direction:column;gap:6px}
 .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:1.3rem;padding:4px 8px 12px;text-decoration:none}
 .brand small{display:block;font-weight:500;font-size:.75rem;color:var(--muted);letter-spacing:.04em}
-.brand .mini{width:40px;height:40px}
+.brand .mini{width:44px;height:44px;object-fit:contain}
 .nav{display:flex;flex-direction:column;gap:4px}
 .nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:14px;text-decoration:none;font-weight:800;color:var(--muted)}
 .nav a .i{font-size:1.3rem;width:28px;text-align:center}
@@ -65,9 +68,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,.c
 
 /* Ollie strip */
 .ollie{display:flex;align-items:center;gap:14px}
-.owl{width:76px;height:76px;flex:none}
-.owl .body{fill:var(--owl)} .owl .dark{fill:var(--owl-dark)} .owl .belly{fill:var(--belly)}
-.owl .eye{fill:var(--eye)} .owl .pupil{fill:var(--pupil)} .owl .beak{fill:var(--beak)}
+.owl{width:88px;height:88px;flex:none;object-fit:contain}
 .owl.hop{animation:hop .5s ease}
 @keyframes hop{30%{transform:translateY(-10px) rotate(-4deg)}60%{transform:translateY(0) rotate(3deg)}}
 .bubble{position:relative;flex:1;min-width:0;background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:10px 16px}
@@ -261,26 +262,13 @@ body.out .shell{grid-template-columns:minmax(0,1fr);max-width:720px}
   .hero{grid-template-columns:minmax(0,1fr)}
   .ring{justify-self:center}
 }
-@media (max-width:440px){.q{font-size:1.25rem}.face .emo{font-size:4rem}.owl{width:62px;height:62px}h1{font-size:1.6rem}.pills .pill .lbl{display:none}}
+@media (max-width:440px){.q{font-size:1.25rem}.face .emo{font-size:4rem}.owl{width:70px;height:70px}h1{font-size:1.6rem}.pills .pill .lbl{display:none}}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="owlart" viewBox="0 0 120 120">
-    <path style="fill:var(--owl-dark)" d="M24 22 L38 40 L30 44Z M96 22 L82 40 L90 44Z"/>
-    <ellipse style="fill:var(--owl)" cx="60" cy="68" rx="40" ry="44"/>
-    <ellipse style="fill:var(--owl-dark)" cx="22" cy="76" rx="10" ry="22"/>
-    <ellipse style="fill:var(--owl-dark)" cx="98" cy="76" rx="10" ry="22"/>
-    <ellipse style="fill:var(--belly)" cx="60" cy="84" rx="25" ry="24"/>
-    <circle style="fill:var(--eye)" cx="44" cy="52" r="15"/><circle style="fill:var(--eye)" cx="76" cy="52" r="15"/>
-    <circle style="fill:var(--pupil)" cx="46" cy="53" r="7"/><circle style="fill:var(--pupil)" cx="78" cy="53" r="7"/>
-    <path style="fill:var(--beak)" d="M54 64 L66 64 L60 76Z"/>
-  </symbol>
-</svg>
-
 <div class="shell">
   <aside class="side">
-    <a class="brand" href="#home"><svg class="owl mini"><use href="#owlart"/></svg><span>Ollie Akademi<small>İNGİLİZCE · 7-11 YAŞ</small></span></a>
+    <a class="brand" href="#home"><img class="owl mini" src="img/ollie-bas-96.png" srcset="img/ollie-bas-96.png 1x, img/ollie-bas-160.png 2x" width="44" height="44" alt=""><span>Ollie Akademi<small>İNGİLİZCE · 7-11 YAŞ</small></span></a>
     <nav class="nav" aria-label="Ana menü">
       <a href="#home" data-nav="home"><span class="i">🏠</span><span>Ana Sayfa</span></a>
       <a href="#units" data-nav="units"><span class="i">📚</span><span>Derslerim</span></a>
@@ -293,14 +281,14 @@ body.out .shell{grid-template-columns:minmax(0,1fr);max-width:720px}
 
   <div class="main">
     <div class="topbar">
-      <a class="brand" href="#home"><svg class="owl mini"><use href="#owlart"/></svg><span>Ollie Akademi</span></a>
+      <a class="brand" href="#home"><img class="owl mini" src="img/ollie-bas-96.png" srcset="img/ollie-bas-96.png 1x, img/ollie-bas-160.png 2x" width="44" height="44" alt=""><span>Ollie Akademi</span></a>
       <div class="pills">
         <span class="pill star" id="scorePill">⭐ <span id="score">0</span> <span class="lbl">yıldız</span></span>
         <span class="pill" title="Gün serisi">🔥 <span id="streak">0</span> <span class="lbl">gün</span></span>
       </div>
     </div>
     <div class="ollie">
-      <svg class="owl" id="owl" aria-hidden="true"><use href="#owlart"/></svg>
+      <img class="owl" id="owl" src="img/ollie-256.png" srcset="img/ollie-256.png 1x, img/ollie-512.png 2x" width="88" height="88" alt="Ollie">
       <div class="bubble" aria-live="polite"><div class="en" id="sayEn">Hello!</div><div class="tr" id="sayTr">Merhaba!</div></div>
     </div>
     <main id="screen"></main>
@@ -749,7 +737,7 @@ function checkBadges(silent){
 }
 
 /* ---------- UI helpers ---------- */
-function say(en, tr){ $("#sayEn").textContent = en; $("#sayTr").textContent = tr; const o=$("#owl"); o.classList.remove("hop"); void o.getBBox(); o.classList.add("hop"); }
+function say(en, tr){ $("#sayEn").textContent = en; $("#sayTr").textContent = tr; const o=$("#owl"); o.classList.remove("hop"); void o.offsetWidth; o.classList.add("hop"); }
 function updateTop(bump){
   document.body.classList.toggle("out", !S);
   if(!S) return;
