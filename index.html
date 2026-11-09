@@ -48,7 +48,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,.c
 .side{position:sticky;top:12px;background:var(--surface);border:2px solid var(--line);border-radius:var(--r);padding:16px 12px;display:flex;flex-direction:column;gap:6px}
 .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:1.3rem;padding:4px 8px 12px;text-decoration:none}
 .brand small{display:block;font-weight:500;font-size:.75rem;color:var(--muted);letter-spacing:.04em}
-.brand .mini{width:44px;height:44px;object-fit:contain}
+.brand .mini{width:48px;height:48px;object-fit:contain}
+.side .brand{gap:6px;padding-left:2px;padding-right:2px}.brand>span{white-space:nowrap}
 .nav{display:flex;flex-direction:column;gap:4px}
 .nav a{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:14px;text-decoration:none;font-weight:800;color:var(--muted)}
 .nav a .i{font-size:1.3rem;width:28px;text-align:center}
@@ -268,7 +269,7 @@ body.out .shell{grid-template-columns:minmax(0,1fr);max-width:720px}
 
 <div class="shell">
   <aside class="side">
-    <a class="brand" href="#home"><img class="owl mini" src="img/ollie-bas-96.png" srcset="img/ollie-bas-96.png 1x, img/ollie-bas-160.png 2x" width="44" height="44" alt=""><span>Ollie Akademi<small>İNGİLİZCE · 7-11 YAŞ</small></span></a>
+    <a class="brand" href="#home"><img class="owl mini" src="img/ollie-mini-96.png" srcset="img/ollie-mini-96.png 1x, img/ollie-mini-160.png 2x" width="48" height="48" alt=""><span>Ollie Akademi<small>İNGİLİZCE · 7-11 YAŞ</small></span></a>
     <nav class="nav" aria-label="Ana menü">
       <a href="#home" data-nav="home"><span class="i">🏠</span><span>Ana Sayfa</span></a>
       <a href="#units" data-nav="units"><span class="i">📚</span><span>Derslerim</span></a>
@@ -281,7 +282,7 @@ body.out .shell{grid-template-columns:minmax(0,1fr);max-width:720px}
 
   <div class="main">
     <div class="topbar">
-      <a class="brand" href="#home"><img class="owl mini" src="img/ollie-bas-96.png" srcset="img/ollie-bas-96.png 1x, img/ollie-bas-160.png 2x" width="44" height="44" alt=""><span>Ollie Akademi</span></a>
+      <a class="brand" href="#home"><img class="owl mini" src="img/ollie-mini-96.png" srcset="img/ollie-mini-96.png 1x, img/ollie-mini-160.png 2x" width="48" height="48" alt=""><span>Ollie Akademi</span></a>
       <div class="pills">
         <span class="pill star" id="scorePill">⭐ <span id="score">0</span> <span class="lbl">yıldız</span></span>
         <span class="pill" title="Gün serisi">🔥 <span id="streak">0</span> <span class="lbl">gün</span></span>
