@@ -246,6 +246,13 @@ button.chip{cursor:pointer;border:2px solid transparent}
 button.chip:hover{border-color:var(--accent)}
 .side .me .link{font-size:.85rem}
 body.out .side,body.out .pills{display:none}
+.kids{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px}
+.kid{display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 10px;background:var(--soft);border:2px solid transparent;border-radius:18px;cursor:pointer;font:inherit;color:inherit}
+.kid:hover,.kid:focus-visible{border-color:var(--accent)}
+.kid .ava{width:64px;height:64px;font-size:2.2rem}
+.kid b{font-size:1.1rem}
+.kidrow{background:var(--soft);border-radius:16px;padding:10px 14px;flex-wrap:wrap;gap:8px}
+a.btn{text-decoration:none}
 body.out .shell{grid-template-columns:minmax(0,1fr);max-width:720px}
 
 /* Phone: sidebar becomes a bottom tab bar */
@@ -277,7 +284,7 @@ body.out .shell{grid-template-columns:minmax(0,1fr);max-width:720px}
       <a href="#badges" data-nav="badges"><span class="i">🏅</span><span>Rozetler</span></a>
       <a href="#profile" data-nav="profile"><span class="i">👤</span><span>Profil</span></a>
     </nav>
-    <div class="me"><span class="ava" id="sideAva">🦊</span><div><b id="sideName">Öğrenci</b><div class="tr" id="sideRank"></div><button class="link" data-act="logout">Çıkış yap</button></div></div>
+    <div class="me"><span class="ava" id="sideAva">🦊</span><div><b id="sideName">Öğrenci</b><div class="tr" id="sideRank"></div><button class="link" data-act="childOut">Profil değiştir</button></div></div>
   </aside>
 
   <div class="main">
@@ -633,7 +640,6 @@ const fresh = () => ({unlocked:0, done:LEVELS.map(()=>[]), finished:false});
 
 /* ---------- Accounts & state ---------- */
 const UKEY = "ollie-akademi-accounts";
-const QUESTIONS = ["En sevdiğin hayvan hangisi?","En sevdiğin renk hangisi?","En sevdiğin yemek hangisi?","Öğretmeninin adı ne?","Doğduğun şehir hangisi?"];
 const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}});
 function normalize(s){
   s = s || {};
@@ -651,20 +657,68 @@ function loadStore(){ try{ const s = JSON.parse(localStorage.getItem(UKEY)); if(
 let store = loadStore(), storageOk = true;
 try{ localStorage.setItem("ollie-test","1"); localStorage.removeItem("ollie-test"); }catch(e){ storageOk = false; }
 function saveStore(){ try{ localStorage.setItem(UKEY, JSON.stringify(store)); }catch(e){ storageOk = false; } }
-let S = null;
-function save(){ if(!S || !store.current || !store.accounts[store.current]) return; store.accounts[store.current].data = S; saveStore(); }
-const ukey = n => n.trim().toLocaleLowerCase("tr-TR").replace(/\s+/g," ");
-function randHex(){ const a = new Uint8Array(16); crypto.getRandomValues(a); return [...a].map(x=>x.toString(16).padStart(2,"0")).join(""); }
-async function digest(salt, text){
-  const data = new TextEncoder().encode(salt+":"+text);
-  try{ if(crypto.subtle){ const b = await crypto.subtle.digest("SHA-256", data); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); } }catch(e){}
-  let h = 2166136261; for(const x of data){ h ^= x; h = Math.imul(h, 16777619)>>>0; } return "f"+h.toString(16);
+/* ---------- Sunucu bağlantısı ---------- */
+const API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? "http://localhost:8787/api" : "https://ollie-akademi-api.ollieakademi.workers.dev/api";
+const AKEY = "ollie-akademi-auth";
+let auth = (()=>{ try{ const a = JSON.parse(localStorage.getItem(AKEY)); return a && a.token ? a : null; }catch(e){ return null; } })();
+function saveAuth(){ try{ auth ? localStorage.setItem(AKEY, JSON.stringify(auth)) : localStorage.removeItem(AKEY); }catch(e){} }
+async function api(path, opt={}){
+  const headers = {"Content-Type":"application/json"};
+  if(auth && auth.token) headers.Authorization = "Bearer " + auth.token;
+  let res;
+  try{ res = await fetch(API + path, {method: opt.method || (opt.body ? "POST" : "GET"), headers, body: opt.body ? JSON.stringify(opt.body) : undefined, keepalive: !!opt.keepalive}); }
+  catch(e){ const err = new Error("İnternet bağlantısı yok gibi görünüyor. Bağlantını kontrol edip tekrar dene."); err.offline = true; throw err; }
+  let data = {}; try{ data = await res.json(); }catch(e){}
+  if((res.status === 401 || res.status === 403) && auth && path !== "/me/password" && path !== "/me/delete"){
+    auth = null; saveAuth(); S = null; childId = null; play = null; go("login");
+    setTimeout(()=>authMsg(esc(data.error || "Yeniden giriş yap.")), 50);
+  }
+  if(!res.ok){ const err = new Error(data.error || "Bir sorun oldu, tekrar dene."); err.status = res.status; throw err; }
+  return data;
 }
-function enter(key){
-  store.current = key; store.last = key; saveStore();
-  S = normalize(store.accounts[key].data);
+let S = null, childId = null, syncTimer = null, syncing = false;
+const cacheKey = id => "ollie-akademi-child-" + id;
+function readCache(id){ try{ return JSON.parse(localStorage.getItem(cacheKey(id))); }catch(e){ return null; } }
+function writeCache(id, data, dirty){ try{ localStorage.setItem(cacheKey(id), JSON.stringify({data, dirty})); }catch(e){} }
+function save(){
+  if(!S || !childId) return;
+  writeCache(childId, S, true);
+  clearTimeout(syncTimer); syncTimer = setTimeout(sync, 1500);
+}
+async function sync(keepalive){
+  clearTimeout(syncTimer);
+  if(!childId || !auth) return;
+  const id = childId, c = readCache(id);
+  if(!c || !c.dirty) return;
+  if(syncing && !keepalive){ syncTimer = setTimeout(sync, 1500); return; }
+  syncing = true;
+  try{
+    await api("/children/" + id, {method:"PUT", body:{data:c.data, name:c.data.name || undefined, avatar:c.data.avatar}, keepalive});
+    const cur = readCache(id); if(cur && JSON.stringify(cur.data) === JSON.stringify(c.data)) writeCache(id, c.data, false);
+    const k = auth && auth.children.find(x=>x.id === id);
+    if(k){ k.name = c.data.name || k.name; k.avatar = c.data.avatar; k.score = c.data.score; k.updated_at = Date.now(); saveAuth(); }
+  }catch(e){ if(e.offline || e.status >= 500) syncTimer = setTimeout(sync, 15000); }
+  finally{ syncing = false; }
+}
+addEventListener("pagehide", ()=>sync(true));
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState === "hidden") sync(true); });
+addEventListener("online", ()=>sync());
+async function enterChild(id){
+  const c = readCache(id), info = auth.children.find(x=>x.id === id);
+  let data;
+  try{
+    const r = await api("/children/" + id);
+    data = c && c.dirty ? c.data : r.child.data;
+    if(!(c && c.dirty)) writeCache(id, data, false);
+  }catch(e){
+    if(e.offline && c){ data = c.data; toast("Bağlantı yok. İlerlemen bu cihazda tutulacak, internet gelince kaydedilecek."); }
+    else { toast(e.message); if(auth) go("profiles"); return; }
+  }
+  childId = id; auth.lastChild = id; saveAuth();
+  S = normalize(data);
+  if(info){ S.name = S.name || info.name; S.avatar = S.avatar || info.avatar; }
   if(S.needBadgeInit){ delete S.needBadgeInit; checkBadges(true); }
-  save();
+  go("home");
 }
 function go(h){ if(location.hash.slice(1) === h) route(); else location.hash = h; }
 
@@ -780,8 +834,12 @@ let page = "home", unitArg = 0, play = null;
 function route(){
   stopSpeech(); play = null;
   const h = location.hash.slice(1) || "home";
-  if(!S){ page = ["register","forgot"].includes(h) ? h : "login"; if(page!=="forgot") forgotKey = null; render(true); return; }
-  if(["login","register","forgot"].includes(h)){ history.replaceState(null, "", "#home"); }
+  if(!S){
+    if(auth){ page = ["profiles","parent"].includes(h) ? h : "profiles"; if(page !== h) history.replaceState(null, "", "#"+page); }
+    else page = ["register","forgot"].includes(h) ? h : "login";
+    render(true); return;
+  }
+  if(["login","register","forgot","profiles","parent"].includes(h)){ history.replaceState(null, "", "#home"); }
   const m = h.match(/^unit-(\d+)$/);
   if(m && +m[1]>=1 && +m[1]<=LEVELS.length){ page = "unit"; unitArg = +m[1]-1; }
   else page = ["home","units","words","badges","profile"].includes(h) ? h : "home";
@@ -792,7 +850,7 @@ function render(greet){
   const nav = play || page==="unit" ? "units" : page;
   document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("on", a.dataset.nav===nav));
   const el = $("#screen");
-  if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
+  if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML, profiles:profilesHTML, parent:parentHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
   if(play) el.innerHTML = play.kind==="song" ? songHTML() : play.kind==="cards" ? cardsHTML() : play.kind==="write" ? writeHTML() : quizHTML();
   else el.innerHTML = ({home:homeHTML, units:unitsHTML, unit:unitHTML, words:wordsHTML, badges:badgesHTML, profile:profileHTML})[page]();
   if(play && play.order) renderOrder();
@@ -803,9 +861,11 @@ function render(greet){
 function greetPage(){
   const n = S && S.name ? `, ${S.name}` : "";
   const g = {
-    login:["Welcome to Ollie Akademi! 🦉","Derslerine devam etmek için giriş yap."],
-    register:["Let's make your account!","Adını, şifreni ve gizli sorunu seç. Bir yetişkin yardım edebilir."],
-    forgot:["Don't worry! 🔑","Gizli sorunun cevabıyla yeni bir şifre belirleyebilirsin."],
+    login:["Welcome to Ollie Akademi! 🦉","Veli hesabıyla giriş yap, sonra profilini seç."],
+    register:["Hello, parents! 👋","Veli hesabını aç, sonra çocuklarını profil olarak ekle."],
+    forgot:["Don't worry! 🔑","Yıldızların ve ilerlemen hesabında güvende."],
+    profiles:["Who's learning today? 🦉","Profiline dokun ve derslere başla!"],
+    parent:["Parent panel","Çocuklarının ilerlemesini buradan görebilirsin."],
     home:[`Hello${n}! 👋`, `Bugünkü hedefin ${DAILY} yıldız. Hadi başlayalım!`],
     units:["Here are your units!","Her ünitede 4 ders var: şarkı, kelime kartları, kolay test ve zor test."],
     unit:[`Unit ${unitArg+1}: ${LEVELS[unitArg]?.theme}`, "Dersleri sırayla yap. Kolay testi bitirince sonraki ünite açılır."],
@@ -817,119 +877,174 @@ function greetPage(){
 }
 window.addEventListener("hashchange", route);
 
-/* ---------- Login pages ---------- */
-let forgotKey = null, regAvatar = "🦊"; const fails = {};
+/* ---------- Login pages (veli hesabı + çocuk profilleri) ---------- */
+let regAvatar = "🦊", addOpen = false, busy = false;
 const tabsHTML = cur => `<div class="tabs">${[["login","Giriş Yap"],["register","Kayıt Ol"]].map(([h,n])=>`<a href="#${h}" class="${cur===h?"on":""}">${n}</a>`).join("")}</div>`;
-const storageNote = () => storageOk ? "" : `<div class="fb try">Bu tarayıcı bilgi kaydetmeye izin vermiyor (gizli sekme olabilir). Giriş yapabilirsin ama sayfayı kapatınca hesap ve ilerleme silinir.</div>`;
+const storageNote = () => storageOk ? "" : `<div class="fb try">Bu tarayıcı bilgi kaydetmeye izin vermiyor (gizli sekme olabilir). Her açılışta yeniden giriş yapman gerekir.</div>`;
+const avasHTML = cur => `<div class="avas">${AVAS.map(a=>`<button type="button" data-act="avatar" data-arg="${a}" class="${a===cur?"on":""}" aria-label="${a}">${a}</button>`).join("")}</div>`;
+const fmtDate = t => t ? new Date(t).toLocaleDateString("tr-TR", {day:"numeric", month:"long", year:"numeric"}) : "—";
+function localAccounts(){
+  const list = Object.entries(store.accounts).filter(([,a])=>!a.migrated && a.data).map(([k,a])=>({k, name:a.data.name, avatar:a.data.avatar||"🦊", score:a.data.score||0}));
+  if(!Object.keys(store.accounts).length && !store.legacyMigrated){ const old = legacyData(); if(old && old.score > 0) list.push({k:"__legacy", name:"", avatar:"🦊", score:old.score}); }
+  return list;
+}
 function loginHTML(){
-  const accs = Object.values(store.accounts);
-  const last = store.last && store.accounts[store.last] ? store.accounts[store.last].data.name : "";
   return `<section class="panel auth">${tabsHTML("login")}
-    <h1>Giriş Yap <span class="tr">Log in</span></h1>${storageNote()}
-    ${accs.length ? `<div><b>Bu cihazdaki hesaplar</b> <span class="tr">· adına dokun</span></div>
-      <div class="row">${accs.map(a=>`<button class="chip" type="button" data-act="pickUser" data-arg="${esc(a.data.name)}">${a.data.avatar} ${esc(a.data.name)}</button>`).join("")}</div>` : ""}
+    <h1>Veli Girişi <span class="tr">Parent log in</span></h1>${storageNote()}
+    <p class="muted">Veli e-postası ve şifresiyle giriş yap, sonra çocuğunun profilini seç.</p>
+    ${localAccounts().length ? `<div class="fb good">Ollie Akademi artık veli hesabıyla çalışıyor. Bu cihazdaki eski hesaplar (${localAccounts().map(a=>`${a.avatar} ${esc(a.name||"Eski ilerleme")}`).join(", ")}) kaybolmadı. <a class="link" href="#register">Veli hesabı açınca</a> yıldızlarıyla birlikte aktarabilirsin.</div>` : ""}
     <form id="loginForm" class="stack" novalidate>
-      <label for="lu">Kullanıcı adı</label><input class="field" id="lu" autocomplete="username" maxlength="20" value="${esc(last)}">
-      <label for="lp">Şifre</label><input class="field" id="lp" type="password" autocomplete="current-password" maxlength="40">
+      <label for="le">E-posta</label><input class="field" id="le" type="email" autocomplete="email" maxlength="200" value="${esc(auth && auth.email || store.lastEmail || "")}">
+      <label for="lp">Şifre</label><input class="field" id="lp" type="password" autocomplete="current-password" maxlength="200">
       <div id="authMsg" role="alert"></div>
       <div class="row between"><button class="btn" type="submit">Giriş yap ▶</button><a class="link" href="#forgot">🔑 Şifremi unuttum</a></div>
     </form>
-    <p class="tr">Hesabın yok mu? <a class="link" href="#register">Kayıt ol</a></p></section>`;
+    <p class="tr">Hesabın yok mu? <a class="link" href="#register">Veli hesabı aç</a></p></section>`;
 }
 function registerHTML(){
-  const first = !Object.keys(store.accounts).length, old = first ? legacyData() : null;
+  const locals = localAccounts();
   return `<section class="panel auth">${tabsHTML("register")}
-    <h1>Kayıt Ol <span class="tr">Sign up</span></h1>${storageNote()}
-    ${old && old.score>0 ? `<div class="fb good">Bu cihazda ⭐ ${old.score} yıldızlık eski bir ilerleme var. Hesabını açınca ona eklenecek.</div>` : ""}
+    <h1>Veli Hesabı Aç <span class="tr">Sign up</span></h1>${storageNote()}
+    <p class="muted">Hesabı veli açar. Çocuklarını sonra profil olarak eklersin. Çocuktan e-posta istenmez.</p>
+    ${locals.length ? `<div class="fb good">Bu cihazda eski hesaplar var (${locals.map(a=>`${a.avatar} ${esc(a.name||"Eski ilerleme")}`).join(", ")}). Hesabını açınca yıldızlarıyla birlikte aktarabileceksin.</div>` : ""}
     <form id="regForm" class="stack" novalidate>
-      <label for="ru">Kullanıcı adın</label><input class="field" id="ru" autocomplete="username" maxlength="20" placeholder="Örn. Ada">
-      <label for="rp1">Şifre <span class="tr">(en az 4 karakter)</span></label><input class="field" id="rp1" type="password" autocomplete="new-password" maxlength="40">
-      <label for="rp2">Şifre tekrar</label><input class="field" id="rp2" type="password" autocomplete="new-password" maxlength="40">
-      <label>Avatarın</label>
-      <div class="avas">${AVAS.map(a=>`<button type="button" data-act="avatar" data-arg="${a}" class="${a===regAvatar?"on":""}" aria-label="${a}">${a}</button>`).join("")}</div>
-      <label for="rq">Gizli soru</label>
-      <select class="field" id="rq">${QUESTIONS.map((q,i)=>`<option value="${i}">${q}</option>`).join("")}</select>
-      <label for="ra">Gizli sorunun cevabı</label><input class="field" id="ra" maxlength="40" autocomplete="off">
-      <span class="tr">Şifreni unutursan bu cevapla yeni şifre alacaksın. Cevabı bir yetişkinle birlikte seç ve unutma!</span>
+      <label for="re">Veli e-postası</label><input class="field" id="re" type="email" autocomplete="email" maxlength="200" placeholder="ornek@eposta.com">
+      <label for="rp1">Şifre <span class="tr">(en az 8 karakter)</span></label><input class="field" id="rp1" type="password" autocomplete="new-password" maxlength="200">
+      <label for="rp2">Şifre tekrar</label><input class="field" id="rp2" type="password" autocomplete="new-password" maxlength="200">
+      <label class="row" style="font-weight:600;align-items:flex-start;gap:10px"><input type="checkbox" id="rc" style="width:22px;height:22px;flex:none;margin-top:2px"> <span>Bu hesabı veli olarak açıyorum. Çocuğumun adının ve ders ilerlemesinin Ollie Akademi'de saklanmasını kabul ediyorum.</span></label>
       <div id="authMsg" role="alert"></div>
       <div><button class="btn" type="submit">Hesap oluştur 🚀</button></div>
     </form>
     <p class="tr">Zaten hesabın var mı? <a class="link" href="#login">Giriş yap</a></p></section>`;
 }
 function forgotHTML(){
-  const acc = forgotKey && store.accounts[forgotKey];
-  if(!acc) return `<section class="panel auth"><a class="link" href="#login">← Girişe dön</a>
+  return `<section class="panel auth"><a class="link" href="#login">← Girişe dön</a>
     <h1>Şifremi Unuttum 🔑</h1>
-    <p class="muted">Kullanıcı adını yaz. Sonra kayıt olurken seçtiğin gizli soruyu cevaplayıp yeni şifre belirleyeceksin.</p>
-    <form id="forgot1" class="stack" novalidate>
-      <label for="fu">Kullanıcı adı</label><input class="field" id="fu" autocomplete="username" maxlength="20">
+    <p>Şifreni unuttuysan site yöneticisine kayıtlı e-posta adresinden yaz. Hesabın doğrulandıktan sonra sana geçici bir şifre verilir. Giriş yapınca <b>Veli Paneli</b>'nden kendi şifreni belirleyebilirsin.</p>
+    <p class="tr">Çocukların yıldızları ve ilerlemesi silinmez, hepsi hesabında kalır.</p></section>`;
+}
+function profilesHTML(){
+  const kids = auth.children || [], locals = localAccounts();
+  return `<section class="panel auth">
+    <div class="eyebrow">Kim çalışacak? · Who's learning?</div>
+    <h1>Profilini seç</h1>
+    ${kids.length ? `<div class="kids">${kids.map(c=>`<button type="button" class="kid" data-act="pickChild" data-arg="${c.id}"><span class="ava">${c.avatar}</span><b>${esc(c.name)}</b><span class="tr">⭐ ${c.score}</span></button>`).join("")}</div>`
+      : `<p class="muted">Henüz çocuk profili yok. Aşağıdan ilk profili ekle.</p>`}
+    ${locals.length ? `<div class="fb good stack"><b>Bu cihazda eski hesaplar bulundu</b><span>Yıldızları ve ilerlemeleriyle birlikte veli hesabına aktarabilirsin.</span>
+      ${locals.map(a=>`<div class="row between"><span>${a.avatar} <b>${esc(a.name||"Eski ilerleme")}</b> · ⭐ ${a.score}</span><span class="row"><button class="btn small" data-act="importLocal" data-arg="${esc(a.k)}">Hesabıma aktar</button><button class="btn ghost small" data-act="skipLocal" data-arg="${esc(a.k)}">Aktarma</button></span></div>`).join("")}</div>` : ""}
+    ${addOpen || !kids.length ? `<form id="childForm" class="stack" novalidate>
+      <h2>Çocuk ekle</h2>
+      <label for="cn">Çocuğun adı</label><input class="field" id="cn" maxlength="30" autocomplete="off" placeholder="Örn. Ada">
+      <label>Avatarı</label>${avasHTML(regAvatar)}
       <div id="authMsg" role="alert"></div>
-      <div><button class="btn" type="submit">Devam ▶</button></div>
-    </form></section>`;
-  return `<section class="panel auth"><button class="link" style="align-self:flex-start" data-act="forgotBack">← Başka kullanıcı</button>
-    <h1>Yeni şifre <span class="tr">${acc.data.avatar} ${esc(acc.data.name)}</span></h1>
-    <form id="forgot2" class="stack" novalidate>
-      <label for="fa">Gizli soru: ${QUESTIONS[acc.q]}</label><input class="field" id="fa" maxlength="40" autocomplete="off">
-      <label for="fp1">Yeni şifre <span class="tr">(en az 4 karakter)</span></label><input class="field" id="fp1" type="password" autocomplete="new-password" maxlength="40">
-      <label for="fp2">Yeni şifre tekrar</label><input class="field" id="fp2" type="password" autocomplete="new-password" maxlength="40">
-      <div id="authMsg" role="alert"></div>
-      <div><button class="btn" type="submit">Şifremi yenile ✓</button></div>
+      <div class="row"><button class="btn" type="submit">Profili oluştur ✓</button>${kids.length ? `<button class="btn ghost" type="button" data-act="addClose">Vazgeç</button>` : ""}</div>
+    </form>` : `<div class="row">${kids.length < 6 ? `<button class="btn ghost" data-act="addOpen">➕ Çocuk ekle</button>` : ""}<a class="btn ghost" href="#parent">👤 Veli paneli</a>${auth.role==="admin" ? `<a class="btn ghost" href="admin.html">🛠 Yönetici paneli</a>` : ""}</div>`}
+  </section>`;
+}
+function parentHTML(){
+  const kids = auth.children || [];
+  return `<section class="panel"><a class="link" href="#profiles">← Profillere dön</a>
+    <div class="eyebrow">Veli Paneli · Parent</div>
+    <h1>${esc(auth.email)}</h1>
+    <h2>Çocuklar</h2>
+    ${kids.length ? `<div class="stack">${kids.map(c=>`<div class="row between kidrow"><span class="row"><span class="ava">${c.avatar}</span><span><b>${esc(c.name)}</b><br><span class="tr">⭐ ${c.score} yıldız · son çalışma: ${fmtDate(c.updated_at)}</span></span></span>
+      <span class="row" id="del-${c.id}"><button class="btn ghost small" data-act="delChild" data-arg="${c.id}">Sil</button></span></div>`).join("")}</div>` : `<p class="muted">Henüz çocuk profili yok.</p>`}
+    <p class="tr">İlerleme hesabına kaydedilir. Bu hesapla giriş yaptığın her cihazdan (telefon, tablet, bilgisayar) kaldığın yerden devam edebilirsin.</p>
+  </section>
+  <section class="panel"><h2>Şifre değiştir</h2>
+    <form id="pwForm" class="stack" novalidate>
+      <label for="cp0">Şu anki şifre</label><input class="field" id="cp0" type="password" autocomplete="current-password" maxlength="200">
+      <label for="cp1">Yeni şifre <span class="tr">(en az 8 karakter)</span></label><input class="field" id="cp1" type="password" autocomplete="new-password" maxlength="200">
+      <label for="cp2">Yeni şifre tekrar</label><input class="field" id="cp2" type="password" autocomplete="new-password" maxlength="200">
+      <div id="pwMsg" role="alert"></div>
+      <div><button class="btn" type="submit">Şifreyi değiştir</button></div>
     </form>
-    <p class="tr">Cevabı da hatırlamıyorsan bir yetişkinden yardım iste. Gerekirse yeni bir hesap açılabilir, ama eski yıldızlar o hesaba geçmez.</p></section>`;
+  </section>
+  <section class="panel"><h2>Hesap</h2>
+    <div class="row"><button class="btn ghost" data-act="logout">🚪 Çıkış yap</button><button class="btn ghost small" data-act="delAccount">Hesabımı sil</button></div>
+    <div id="delAcc"></div>
+  </section>`;
 }
 function authMsg(t, ok, id){ const el = $(id||"#authMsg"); if(el) el.innerHTML = `<div class="fb ${ok?"good":"try"}">${t}</div>`; }
-function locked(k, id){ const f = fails[k]; if(f && f.until > Date.now()){ authMsg(`Çok fazla yanlış deneme. ${Math.ceil((f.until-Date.now())/1000)} saniye sonra tekrar dene.`, false, id); return true; } return false; }
-function fail(k){ const f = fails[k] || {n:0}; f.n++; if(f.n >= 5){ f.until = Date.now()+60000; f.n = 0; } fails[k] = f; }
 function checkPw(p1, p2, id){
-  if(p1.length < 4){ authMsg("Şifre en az 4 karakter olmalı.", false, id); return false; }
+  if(p1.length < 8){ authMsg("Şifre en az 8 karakter olmalı.", false, id); return false; }
   if(p1 !== p2){ authMsg("İki şifre aynı değil. Tekrar yaz.", false, id); return false; }
   return true;
 }
+function setAuth(r){
+  auth = {token: r.token || auth.token, email: r.parent.email, role: r.parent.role, children: r.children, lastChild: auth && auth.lastChild || null};
+  store.lastEmail = r.parent.email; saveStore(); saveAuth();
+}
+async function refreshMe(){
+  if(!auth) return;
+  try{ const r = await api("/me"); setAuth(r); if(!S && ["profiles","parent"].includes(page)) render(); }catch(e){}
+}
 async function onLogin(){
-  const u = $("#lu").value, p = $("#lp").value, k = ukey(u);
-  if(!k || !p) return authMsg("Kullanıcı adını ve şifreni yaz.");
-  const acc = store.accounts[k];
-  if(!acc) return authMsg(`“${esc(u.trim())}” adında bir hesap yok. <a class="link" href="#register">Kayıt ol</a>`);
-  if(locked(k)) return;
-  if(await digest(acc.salt, p) !== acc.hash){ fail(k); $("#lp").value = ""; return authMsg(`Şifre yanlış. Tekrar dene ya da <a class="link" href="#forgot">Şifremi unuttum</a>'a bas.`); }
-  delete fails[k]; enter(k); go("home");
+  const e = $("#le").value.trim(), p = $("#lp").value;
+  if(!e || !p) return authMsg("E-postanı ve şifreni yaz.");
+  try{ setAuth(await api("/login", {body:{email:e, password:p}})); }
+  catch(err){ $("#lp").value = ""; return authMsg(esc(err.message)); }
+  if(auth.children.length === 1 && !localAccounts().length) return enterChild(auth.children[0].id);
+  go("profiles");
 }
 async function onRegister(){
-  const name = $("#ru").value.trim().replace(/\s+/g," "), k = ukey(name), p1 = $("#rp1").value, p2 = $("#rp2").value, a = ukey($("#ra").value);
-  if(name.length < 2) return authMsg("Kullanıcı adın en az 2 harf olmalı.");
-  if(store.accounts[k]) return authMsg(`“${esc(name)}” adı bu cihazda zaten var. Başka bir ad seç ya da <a class="link" href="#login">giriş yap</a>.`);
+  const e = $("#re").value.trim(), p1 = $("#rp1").value, p2 = $("#rp2").value;
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)) return authMsg("Geçerli bir e-posta adresi yaz.");
   if(!checkPw(p1, p2)) return;
-  if(!a) return authMsg("Gizli sorunun cevabını yaz.");
-  const first = !Object.keys(store.accounts).length, old = first ? legacyData() : null;
-  const data = old && old.score > 0 ? old : blankData();
-  data.name = name; data.avatar = regAvatar;
-  const salt = randHex(), aSalt = randHex();
-  store.accounts[k] = {salt, hash: await digest(salt, p1), q: +$("#rq").value, aSalt, aHash: await digest(aSalt, a), data, created: Date.now()};
-  enter(k); go("home");
-  toast(old && old.score > 0 ? `Hesabın hazır! Eski ⭐ ${old.score} yıldızın eklendi.` : "Hesabın hazır! 🎉");
+  if(!$("#rc").checked) return authMsg("Devam etmek için veli onayını işaretle.");
+  try{ setAuth(await api("/register", {body:{email:e, password:p1, consent:true}})); }
+  catch(err){ return authMsg(esc(err.message)); }
+  addOpen = true; go("profiles"); toast("Veli hesabın hazır! 🎉 Şimdi çocuğunu ekle.");
 }
-async function onForgot1(){
-  const u = $("#fu").value, k = ukey(u);
-  if(!k) return authMsg("Kullanıcı adını yaz.");
-  if(!store.accounts[k]) return authMsg(`“${esc(u.trim())}” adında bir hesap bu cihazda yok.`);
-  forgotKey = k; render();
+async function onAddChild(){
+  const name = $("#cn").value.trim().replace(/\s+/g," ");
+  if(name.length < 2) return authMsg("Ad en az 2 harf olmalı.");
+  const data = Object.assign(blankData(), {name, avatar:regAvatar});
+  let r; try{ r = await api("/children", {body:{name, avatar:regAvatar, data}}); }catch(err){ return authMsg(esc(err.message)); }
+  auth.children.push(r.child); saveAuth(); addOpen = false; regAvatar = "🦊";
+  writeCache(r.child.id, r.child.data, false);
+  toast(`${r.child.avatar} ${r.child.name} profili hazır!`);
+  render();
 }
-async function onForgot2(){
-  const k = forgotKey, acc = store.accounts[k]; if(!acc) return;
-  if(locked(k)) return;
-  if(await digest(acc.aSalt, ukey($("#fa").value)) !== acc.aHash){ fail(k); return authMsg("Cevap tutmadı. Yazımını kontrol et. Büyük-küçük harf fark etmez."); }
-  const p1 = $("#fp1").value, p2 = $("#fp2").value;
-  if(!checkPw(p1, p2)) return;
-  acc.salt = randHex(); acc.hash = await digest(acc.salt, p1);
-  delete fails[k]; forgotKey = null; enter(k); go("home"); toast("Şifren yenilendi! 🔑");
+async function importLocal(k){
+  if(busy) return; busy = true;
+  try{
+    const acc = k === "__legacy" ? null : store.accounts[k];
+    const data = acc ? normalize(acc.data) : legacyData();
+    if(!data) return;
+    let name = (data.name || "").trim();
+    if(!name){ name = prompt("Bu ilerleme hangi çocuğa ait? Adını yaz:") || ""; name = name.trim(); if(name.length < 2) return; data.name = name; }
+    const r = await api("/children", {body:{name, avatar:data.avatar||"🦊", data}});
+    if(acc) acc.migrated = r.child.id; else store.legacyMigrated = true;
+    saveStore(); auth.children.push(r.child); saveAuth(); writeCache(r.child.id, r.child.data, false);
+    toast(`${r.child.avatar} ${r.child.name} aktarıldı! ⭐ ${r.child.score}`); render();
+  }catch(err){ toast(err.message); }
+  finally{ busy = false; }
+}
+function skipLocal(k){
+  if(!confirm("Bu eski hesap aktarılmasın mı? Bu cihazda saklanmaya devam eder ama listede bir daha gösterilmez.")) return;
+  if(k === "__legacy") store.legacyMigrated = true; else if(store.accounts[k]) store.accounts[k].migrated = -1;
+  saveStore(); render();
 }
 async function onChangePw(){
-  const acc = store.accounts[store.current], id = "#pwMsg";
-  if(await digest(acc.salt, $("#cp0").value) !== acc.hash) return authMsg("Şu anki şifren yanlış.", false, id);
-  const p1 = $("#cp1").value, p2 = $("#cp2").value;
+  const id = "#pwMsg", p1 = $("#cp1").value, p2 = $("#cp2").value;
   if(!checkPw(p1, p2, id)) return;
-  acc.salt = randHex(); acc.hash = await digest(acc.salt, p1); saveStore();
-  ["#cp0","#cp1","#cp2"].forEach(x=>$(x).value=""); authMsg("Şifren değişti ✓", true, id);
+  try{ await api("/me/password", {body:{old:$("#cp0").value, password:p1}}); }catch(err){ return authMsg(esc(err.message), false, id); }
+  ["#cp0","#cp1","#cp2"].forEach(x=>$(x).value=""); authMsg("Şifren değişti ✓ Diğer cihazlarda yeniden giriş yapman gerekecek.", true, id);
+}
+async function parentLogout(){
+  await sync(); try{ await api("/logout", {method:"POST"}); }catch(e){}
+  auth = null; saveAuth(); S = null; childId = null; go("login");
+}
+async function onDeleteAccount(){
+  try{ await api("/me/delete", {body:{password:$("#dp").value}}); }catch(err){ return authMsg(esc(err.message), false, "#delMsg"); }
+  for(const c of auth.children){ try{ localStorage.removeItem(cacheKey(c.id)); }catch(e){} }
+  auth = null; saveAuth(); S = null; childId = null; go("login"); toast("Hesabın silindi.");
+}
+function childOut(){
+  stopSpeech(); sync(); S = null; play = null; childId = null;
+  if(auth){ auth.lastChild = null; saveAuth(); }
+  refreshMe(); go(auth ? "profiles" : "login");
 }
 
 /* ---------- Pages ---------- */
@@ -1058,7 +1173,6 @@ function profileHTML(){
   return `<section class="panel">
     <div class="eyebrow">Profil · Profile</div>
     <div class="row"><span class="ava" style="width:72px;height:72px;font-size:2.4rem">${S.avatar}</span><div><h1>${esc(S.name||"Öğrenci")}</h1><span class="muted">Unvan: <b>${title()}</b></span></div></div>
-    <div class="tr">Kullanıcı adın: <b>${esc(S.name)}</b></div>
     <div><b>Avatarın</b></div>
     <div class="avas">${AVAS.map(a=>`<button data-act="avatar" data-arg="${a}" class="${a===S.avatar?"on":""}" aria-label="${a}">${a}</button>`).join("")}</div>
   </section>
@@ -1069,19 +1183,10 @@ function profileHTML(){
       <div class="stat"><b>${easyCount()}/10</b><span>🐣 Kolay test</span></div>
       <div class="stat"><b>${hardCount()}/10</b><span>🦅 Zor test</span></div>
     </div>
-    <p class="tr">Hesabın ve ilerlemen bu cihazdaki tarayıcıda saklanır. Başka bir cihazda yeni hesap açman gerekir.</p>
+    <p class="tr">İlerlemen veli hesabına kaydedilir. Aynı hesapla giriş yapılan her cihazdan kaldığın yerden devam edebilirsin.</p>
     <div class="row" id="resetRow"><button class="btn ghost small" data-act="reset">↺ İlerlemeyi sıfırla</button></div>
   </section>
-  <section class="panel"><h2>Şifre değiştir</h2>
-    <form id="pwForm" class="stack" novalidate>
-      <label for="cp0">Şu anki şifre</label><input class="field" id="cp0" type="password" autocomplete="current-password" maxlength="40">
-      <label for="cp1">Yeni şifre</label><input class="field" id="cp1" type="password" autocomplete="new-password" maxlength="40">
-      <label for="cp2">Yeni şifre tekrar</label><input class="field" id="cp2" type="password" autocomplete="new-password" maxlength="40">
-      <div id="pwMsg" role="alert"></div>
-      <div><button class="btn" type="submit">Şifreyi değiştir</button></div>
-    </form>
-  </section>
-  <div><button class="btn ghost" data-act="logout">🚪 Çıkış yap</button></div>`;
+  <div><button class="btn ghost" data-act="childOut">🔄 Profil değiştir</button></div>`;
 }
 
 /* ---------- Lesson player ---------- */
@@ -1319,9 +1424,17 @@ document.addEventListener("click", e => {
   switch(act){
     case "close": return;
     case "leave": stopSpeech(); return;
-    case "logout": stopSpeech(); save(); store.current = null; saveStore(); S = null; play = null; go("login"); return;
-    case "pickUser": $("#lu").value = arg; $("#lp").value = ""; $("#lp").focus(); say(`Hi, ${arg}!`, "Şimdi şifreni yaz."); return;
-    case "forgotBack": forgotKey = null; render(); return;
+    case "logout": return parentLogout();
+    case "childOut": return childOut();
+    case "pickChild": return enterChild(+arg);
+    case "addOpen": addOpen = true; render(); setTimeout(()=>$("#cn") && $("#cn").focus(), 50); return;
+    case "addClose": addOpen = false; render(); return;
+    case "importLocal": return importLocal(arg);
+    case "skipLocal": return skipLocal(arg);
+    case "delChild": { const c = auth.children.find(x=>x.id === +arg); $("#del-"+arg).innerHTML = `<span class="confirm"><span>${esc(c.name)} ve tüm ilerlemesi silinsin mi?</span><button class="btn small" data-act="delChildYes" data-arg="${arg}">Evet, sil</button><button class="btn ghost small" data-act="delNo">Vazgeç</button></span>`; return; }
+    case "delChildYes": api("/children/"+arg, {method:"DELETE"}).then(()=>{ auth.children = auth.children.filter(x=>x.id !== +arg); saveAuth(); try{ localStorage.removeItem(cacheKey(+arg)); }catch(e){} toast("Profil silindi."); render(); }).catch(e=>toast(e.message)); return;
+    case "delNo": render(); return;
+    case "delAccount": $("#delAcc").innerHTML = `<form id="delForm" class="stack" novalidate><div class="fb try">Veli hesabın ve bütün çocuk profilleri kalıcı olarak silinir. Bu işlem geri alınamaz.</div><label for="dp">Onaylamak için şifreni yaz</label><input class="field" id="dp" type="password" autocomplete="current-password"><div id="delMsg" role="alert"></div><div class="row"><button class="btn small" type="submit">Hesabımı kalıcı olarak sil</button><button class="btn ghost small" type="button" data-act="delNo">Vazgeç</button></div></form>`; return;
     case "avatar": if(!S){ regAvatar = arg; document.querySelectorAll(".avas button").forEach(x=>x.classList.toggle("on", x.dataset.arg===arg)); return; } S.avatar = arg; save(); updateTop(); document.querySelectorAll(".avas button").forEach(x=>x.classList.toggle("on", x.dataset.arg===arg)); if(page==="profile") render(); say("Nice choice!", `${arg} çok yakıştı!`); return;
     case "startStep": { const [i,k] = arg.split(":"); return startStep(+i, k); }
     case "sayText": return speak(arg);
@@ -1391,7 +1504,7 @@ document.addEventListener("input", e => {
 document.addEventListener("change", e => { if(e.target.id==="wu"){ wu = e.target.value; renderWords(); } });
 document.addEventListener("submit", e => {
   e.preventDefault();
-  const f = {loginForm:onLogin, regForm:onRegister, forgot1:onForgot1, forgot2:onForgot2, pwForm:onChangePw}[e.target.id];
+  const f = {loginForm:onLogin, regForm:onRegister, childForm:onAddChild, pwForm:onChangePw, delForm:onDeleteAccount}[e.target.id];
   if(f){ const btn = e.target.querySelector('[type="submit"]'); btn.disabled = true; f().finally(()=>{ btn.disabled = false; }); return; }
   if(!play || play.solved) return;
   const L = LEVELS[play.unit], t = tasksOf()[play.task], inp = $("input.write");
@@ -1418,8 +1531,8 @@ function sing(){
   step();
 }
 
-if(store.current && store.accounts[store.current]) enter(store.current); else store.current = null;
-route();
+if(auth && auth.lastChild && auth.children.some(c=>c.id === auth.lastChild)) enterChild(auth.lastChild); else route();
+if(auth) refreshMe();
 </script>
 
 </body></html>

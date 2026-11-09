@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Ollie Yönetim</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;800&display=swap">
+<style>
+:root{
+  --bg:#EDF4E8; --surface:#FFFFFF; --soft:#F7F1E4; --ink:#22304A; --muted:#5E6A7C; --line:#D6E2D0;
+  --accent:#E8742A; --accent-2:#C95E18; --on-accent:#FFFFFF;
+  --leaf:#2C9A66; --leaf-soft:#DDF3E7; --berry:#D2486A; --berry-soft:#FBE3E9;
+  --display:"Fredoka","Trebuchet MS",system-ui,sans-serif; --body:"Nunito","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121933; --surface:#1C2546; --soft:#232E57; --ink:#F1F3FA; --muted:#A9B3CD; --line:#2F3A66;
+  --accent:#FF9149; --accent-2:#FFAA70; --on-accent:#1A1206; --leaf:#4CC58D; --leaf-soft:#1C3B3A; --berry:#FF7C98; --berry-soft:#3D2340;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121933; --surface:#1C2546; --soft:#232E57; --ink:#F1F3FA; --muted:#A9B3CD; --line:#2F3A66;
+  --accent:#FF9149; --accent-2:#FFAA70; --on-accent:#1A1206; --leaf:#4CC58D; --leaf-soft:#1C3B3A; --berry:#FF7C98; --berry-soft:#3D2340;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding:16px 16px 48px}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;line-height:1.2}
+h1{font-size:1.7rem} h2{font-size:1.25rem}
+p{margin:0}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1100px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:1.3rem;font-weight:600}
+.brand img{width:44px;height:44px}
+.panel{background:var(--surface);border:2px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.muted{color:var(--muted)} .small{font-size:.88rem}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.btn{background:var(--accent);color:var(--on-accent);font-weight:800;border-radius:12px;padding:8px 16px;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn.ghost{background:var(--soft);color:var(--ink)}
+.btn.danger{background:var(--berry);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.field{width:100%;padding:10px 14px;border:2px solid var(--line);border-radius:12px;background:var(--surface)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--soft);border-radius:16px;padding:14px 16px}
+.tile b{display:block;font-family:var(--display);font-size:1.9rem;font-weight:600;font-variant-numeric:tabular-nums}
+.tile span{color:var(--muted);font-weight:700;font-size:.88rem}
+.chart{display:flex;align-items:flex-end;gap:6px;height:140px;padding-top:18px}
+.chart .c{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;min-width:0}
+.chart .bar{width:100%;max-width:34px;background:var(--accent);border-radius:6px 6px 2px 2px;min-height:2px;position:relative}
+.chart .n{font-size:.75rem;font-weight:800;font-variant-numeric:tabular-nums}
+.chart .d{font-size:.7rem;color:var(--muted);white-space:nowrap}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+td.num{font-variant-numeric:tabular-nums}
+tr.click{cursor:pointer} tr.click:hover td{background:var(--soft)}
+.tag{display:inline-block;border-radius:99px;padding:1px 10px;font-weight:800;font-size:.78rem;background:var(--leaf-soft);color:var(--leaf)}
+.tag.off{background:var(--berry-soft);color:var(--berry)}
+.tag.admin{background:var(--soft);color:var(--accent-2)}
+.fb{border-radius:12px;padding:10px 14px;font-weight:600}
+.fb.good{background:var(--leaf-soft);border:2px solid var(--leaf)}
+.fb.try{background:var(--berry-soft);border:2px solid var(--berry)}
+.kid{background:var(--soft);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.kid .head{display:flex;align-items:center;gap:10px}
+.kid .ava{font-size:2rem}
+.kid .tile{background:var(--surface)}
+.units{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.unit{background:var(--surface);border-radius:10px;padding:6px 10px;font-size:.85rem}
+.meter{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:4px}
+.meter i{display:block;height:100%;background:var(--leaf)}
+.temp{font-family:ui-monospace,monospace;font-size:1.2rem;font-weight:800;user-select:all}
+.login{max-width:420px;margin:40px auto}
+@media (max-width:640px){ .hide-sm{display:none} }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? "http://localhost:8787/api" : "https://ollie-akademi-api.ollieakademi.workers.dev/api";
+const AKEY = "ollie-akademi-auth";
+const UNITS = ["Animals","Colors","School Things","Family","Daily Routines","Food","Weather","My Body","Clothes","Hobbies"];
+let auth = (()=>{ try{ const a = JSON.parse(localStorage.getItem(AKEY)); return a && a.token ? a : null; }catch(e){ return null; } })();
+const $ = s => document.querySelector(s);
+const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = t => t ? new Date(t).toLocaleString("tr-TR", {day:"numeric", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"}) : "—";
+const fmtDay = d => new Date(d+"T12:00:00").toLocaleDateString("tr-TR", {day:"numeric", month:"short"});
+let view = {name:"list", q:"", id:null}, stats = null, parents = [], detail = null, msg = "";
+
+async function api(path, opt={}){
+  const headers = {"Content-Type":"application/json"};
+  if(auth) headers.Authorization = "Bearer " + auth.token;
+  let res;
+  try{ res = await fetch(API + path, {method: opt.method || (opt.body ? "POST" : "GET"), headers, body: opt.body ? JSON.stringify(opt.body) : undefined}); }
+  catch(e){ throw new Error("Sunucuya ulaşılamadı. İnternet bağlantını kontrol et."); }
+  let data = {}; try{ data = await res.json(); }catch(e){}
+  if(res.status === 401 && auth){ auth = null; try{ localStorage.removeItem(AKEY); }catch(e){} }
+  if(!res.ok){ const err = new Error(data.error || "Bir sorun oldu."); err.status = res.status; throw err; }
+  return data;
+}
+const header = () => `<div class="top"><div class="brand"><img src="img/ollie-mini-96.png" alt="">Ollie Akademi · Yönetim</div>
+  <div class="row"><a class="btn ghost" href="./">← Siteye dön</a>${auth ? `<button class="btn ghost" data-act="logout">Çıkış</button>` : ""}</div></div>`;
+
+function loginView(err){
+  $("#app").innerHTML = `<section class="panel login">
+    <div class="brand"><img src="img/ollie-mini-96.png" alt="">Yönetici girişi</div>
+    <p class="muted">Yönetici hesabınla giriş yap.</p>
+    <form id="lf" class="row" style="flex-direction:column;align-items:stretch" novalidate>
+      <label for="e"><b>E-posta</b></label><input class="field" id="e" type="email" autocomplete="email">
+      <label for="p"><b>Şifre</b></label><input class="field" id="p" type="password" autocomplete="current-password">
+      ${err ? `<div class="fb try">${esc(err)}</div>` : ""}
+      <button class="btn" type="submit" style="align-self:flex-start">Giriş yap</button>
+    </form>
+    <a class="small muted" href="./">← Siteye dön</a></section>`;
+}
+function denied(){
+  $("#app").innerHTML = header() + `<section class="panel"><h1>Erişim yok</h1><p>Bu sayfayı sadece site yöneticisi görebilir. <b>${esc(auth.email)}</b> hesabı yönetici değil.</p></section>`;
+}
+
+function childStats(d){
+  d = d || {};
+  const easy = (d.p && d.p.easy && d.p.easy.done) || [], hard = (d.p && d.p.hard && d.p.hard.done) || [];
+  const L = d.lessons || {};
+  const units = UNITS.map((n,i)=>{ const steps = (L["s"+i]?1:0) + (L["c"+i]?1:0) + (easy[i]||[]).length + (hard[i]||[]).length; return {n, pct: Math.round(steps/12*100), easy:(easy[i]||[]).length>=5, hard:(hard[i]||[]).length>=5, write: !!(d.writings && d.writings[i] && d.writings[i].best)}; });
+  const days = (d.days || []).slice().sort();
+  return {score:d.score||0, easy:units.filter(u=>u.easy).length, hard:units.filter(u=>u.hard).length, writes:units.filter(u=>u.write).length,
+    badges:(d.badges||[]).length, days:days.length, lastDay:days[days.length-1], units};
+}
+
+function listView(){
+  const s = stats;
+  const max = s ? Math.max(1, ...s.daily.map(x=>x.n)) : 1;
+  $("#app").innerHTML = header() + (s ? `<section class="panel"><h2>Genel durum</h2>
+    <div class="tiles">
+      <div class="tile"><b>${s.parents}</b><span>Veli hesabı</span></div>
+      <div class="tile"><b>${s.children}</b><span>Çocuk profili</span></div>
+      <div class="tile"><b>${s.active_today}</b><span>Bugün aktif çocuk</span></div>
+      <div class="tile"><b>${s.active_week}</b><span>Son 7 günde aktif</span></div>
+      <div class="tile"><b>${s.new_parents_week}</b><span>Son 7 günde yeni veli</span></div>
+      <div class="tile"><b>${s.suspended}</b><span>Askıdaki hesap</span></div>
+    </div>
+    <div><b>Günlük aktif çocuk</b> <span class="muted small">· son 14 gün, yıldız kazanan çocuk sayısı</span></div>
+    <div class="chart" role="img" aria-label="Son 14 günün günlük aktif çocuk sayıları">${s.daily.map(x=>`<div class="c"><span class="n">${x.n||""}</span><div class="bar" style="height:${x.n/max*100}%" title="${fmtDay(x.day)}: ${x.n}"></div><span class="d">${fmtDay(x.day).split(" ")[0]}</span></div>`).join("")}</div>
+  </section>` : "") + `<section class="panel">
+    <div class="row between"><h2>Veliler ve çocuklar</h2><span class="muted small">${parents.length} sonuç</span></div>
+    <form id="sf" class="row" novalidate><input class="field" id="q" placeholder="E-posta ya da çocuk adıyla ara" value="${esc(view.q)}" style="flex:1;min-width:200px"><button class="btn" type="submit">Ara</button>${view.q ? `<button class="btn ghost" type="button" data-act="clear">Temizle</button>` : ""}</form>
+    ${msg}
+    <div class="tablewrap"><table><thead><tr><th>Veli</th><th>Çocuklar</th><th class="num">⭐ Toplam</th><th class="hide-sm">Kayıt</th><th>Son görülme</th><th>Durum</th></tr></thead><tbody>
+    ${parents.map(p=>`<tr class="click" data-act="open" data-arg="${p.id}"><td><b>${esc(p.email)}</b> ${p.role==="admin" ? `<span class="tag admin">yönetici</span>` : ""}</td><td>${p.child_count ? esc(p.child_names) : `<span class="muted">—</span>`}</td><td class="num">${p.total_score}</td><td class="hide-sm">${fmt(p.created_at)}</td><td>${fmt(Math.max(p.last_seen||0, p.last_progress||0))}</td><td>${p.status==="active" ? `<span class="tag">aktif</span>` : `<span class="tag off">askıda</span>`}</td></tr>`).join("") || `<tr><td colspan="6" class="muted">Kayıt bulunamadı.</td></tr>`}
+    </tbody></table></div></section>`;
+}
+
+function detailView(){
+  const {parent:p, children} = detail, self = p.id === auth.id || p.email === auth.email;
+  $("#app").innerHTML = header() + `<section class="panel">
+    <button class="btn ghost" data-act="back" style="align-self:flex-start">← Listeye dön</button>
+    <div class="row between"><h1>${esc(p.email)}</h1>${p.status==="active" ? `<span class="tag">aktif</span>` : `<span class="tag off">askıda</span>`}</div>
+    <p class="muted small">Kayıt: ${fmt(p.created_at)} · Son görülme: ${fmt(p.last_seen)} · Rol: ${p.role==="admin" ? "yönetici" : "veli"}</p>
+    ${msg}
+    ${self ? `<p class="muted small">Bu senin hesabın. Askıya alma ve silme kapalı.</p>` : `<div class="row" id="acts">
+      ${p.status==="active" ? `<button class="btn ghost" data-act="suspend">⏸ Askıya al</button>` : `<button class="btn ghost" data-act="activate">▶ Yeniden aç</button>`}
+      <button class="btn ghost" data-act="reset">🔑 Geçici şifre ver</button>
+      <button class="btn danger" data-act="del">🗑 Hesabı sil</button></div>`}
+  </section>
+  <section class="panel"><h2>Çocuklar (${children.length})</h2>
+  ${children.length ? children.map(c=>{ const s = childStats(c.data); return `<div class="kid">
+    <div class="head"><span class="ava">${esc(c.avatar)}</span><div><h2>${esc(c.name)}</h2><span class="muted small">Profil açılışı: ${fmt(c.created_at)} · Son kayıt: ${fmt(c.updated_at)}${s.lastDay ? ` · Son çalıştığı gün: ${fmtDay(s.lastDay)}` : ""}</span></div></div>
+    <div class="tiles">
+      <div class="tile"><b>${s.score}</b><span>⭐ Yıldız</span></div>
+      <div class="tile"><b>${s.easy}/10</b><span>🐣 Kolay test</span></div>
+      <div class="tile"><b>${s.hard}/10</b><span>🦅 Zor test</span></div>
+      <div class="tile"><b>${s.writes}/10</b><span>✍️ Yazma</span></div>
+      <div class="tile"><b>${s.badges}</b><span>🏅 Rozet</span></div>
+      <div class="tile"><b>${s.days}</b><span>📅 Çalıştığı gün</span></div>
+    </div>
+    <div class="units">${s.units.map((u,i)=>`<div class="unit"><b>${i+1}. ${u.n}</b> <span class="muted">%${u.pct}</span><div class="meter"><i style="width:${u.pct}%"></i></div></div>`).join("")}</div>
+  </div>`; }).join("") : `<p class="muted">Bu velinin henüz çocuk profili yok.</p>`}
+  </section>`;
+}
+
+async function loadList(){
+  try{
+    const [s, l] = await Promise.all([api("/admin/stats"), api("/admin/parents?q=" + encodeURIComponent(view.q))]);
+    stats = s; parents = l.parents; listView();
+  }catch(e){ handle(e); }
+}
+async function openParent(id){
+  try{ detail = await api("/admin/parents/" + id); view = {...view, name:"detail", id}; msg = ""; detailView(); scrollTo(0,0); }catch(e){ handle(e); }
+}
+function handle(e){
+  if(!auth) return loginView(e.message);
+  if(e.status === 403 && /yönetici/.test(e.message)) return denied();
+  msg = `<div class="fb try">${esc(e.message)}</div>`;
+  view.name === "detail" && detail ? detailView() : listView();
+}
+async function start(){
+  if(!auth) return loginView();
+  try{ const me = await api("/me"); auth.id = me.parent.id; auth.role = me.parent.role; }catch(e){ return auth ? handle(e) : loginView(e.message); }
+  if(auth.role !== "admin") return denied();
+  $("#app").innerHTML = header() + `<p class="muted">Yükleniyor…</p>`;
+  loadList();
+}
+
+document.addEventListener("submit", async e => {
+  e.preventDefault();
+  if(e.target.id === "lf"){
+    try{ const r = await api("/login", {body:{email:$("#e").value.trim(), password:$("#p").value}});
+      auth = {token:r.token, email:r.parent.email, role:r.parent.role, children:r.children, lastChild:null};
+      try{ localStorage.setItem(AKEY, JSON.stringify(auth)); }catch(_){}
+      start();
+    }catch(err){ loginView(err.message); }
+  }
+  if(e.target.id === "sf"){ view.q = $("#q").value.trim(); msg = ""; loadList(); }
+});
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-act]"); if(!t) return;
+  const act = t.dataset.act, id = detail && detail.parent.id;
+  if(act === "logout"){ try{ await api("/logout", {method:"POST"}); }catch(_){} auth = null; try{ localStorage.removeItem(AKEY); }catch(_){} return loginView(); }
+  if(act === "open") return openParent(+t.dataset.arg);
+  if(act === "back"){ view.name = "list"; detail = null; msg = ""; return loadList(); }
+  if(act === "clear"){ view.q = ""; msg = ""; return loadList(); }
+  try{
+    if(act === "suspend"){ if(!confirm(`${detail.parent.email} askıya alınsın mı? Veli ve çocukları giriş yapamaz, ilerleme silinmez.`)) return; await api(`/admin/parents/${id}/status`, {body:{status:"suspended"}}); await openParent(id); msg = `<div class="fb good">Hesap askıya alındı.</div>`; detailView(); }
+    if(act === "activate"){ await api(`/admin/parents/${id}/status`, {body:{status:"active"}}); await openParent(id); msg = `<div class="fb good">Hesap yeniden açıldı.</div>`; detailView(); }
+    if(act === "reset"){ if(!confirm("Bu veliye geçici şifre verilsin mi? Eski şifresi çalışmaz olur.")) return; const r = await api(`/admin/parents/${id}/reset-password`, {method:"POST"}); msg = `<div class="fb good">Geçici şifre: <span class="temp">${esc(r.temp_password)}</span><br><span class="small">Bu şifreyi veliye ilet. Giriş yapınca Veli Paneli'nden kendi şifresini belirleyebilir. Bu şifre bir daha gösterilmez.</span></div>`; detailView(); }
+    if(act === "del"){
+      const ans = prompt(`Bu işlem geri alınamaz. Veli hesabı ve tüm çocuk profilleri silinir.\nOnaylamak için e-posta adresini yaz:\n${detail.parent.email}`);
+      if(ans === null) return;
+      if(ans.trim().toLowerCase() !== detail.parent.email){ msg = `<div class="fb try">E-posta tutmadı, hesap silinmedi.</div>`; return detailView(); }
+      await api(`/admin/parents/${id}`, {method:"DELETE"}); view.name = "list"; detail = null; msg = `<div class="fb good">Hesap silindi.</div>`; loadList();
+    }
+  }catch(err){ handle(err); }
+});
+start();
+</script>
+</body>
+</html>
