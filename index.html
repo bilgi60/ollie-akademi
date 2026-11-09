@@ -55,6 +55,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,.c
 .nav a .i{font-size:1.3rem;width:28px;text-align:center}
 .nav a:hover{background:var(--soft);color:var(--ink)}
 .nav a.on{background:var(--soft);color:var(--ink);box-shadow:inset 4px 0 0 var(--accent)}
+.nav .sm{display:none}
 .side .me{margin-top:10px;border-top:2px dashed var(--line);padding-top:12px;display:flex;gap:10px;align-items:center}
 .ava{width:44px;height:44px;border-radius:50%;background:var(--soft);display:grid;place-items:center;font-size:1.5rem;flex:none;border:2px solid var(--line)}
 .main{min-width:0;display:flex;flex-direction:column;gap:18px}
@@ -192,12 +193,12 @@ select.field{max-width:240px}
 .songline{font-family:var(--display);font-size:1.3rem;background:var(--soft);padding:14px 16px;border-radius:14px}
 .blank{display:inline-block;min-width:80px;border-bottom:3px dashed var(--accent);text-align:center;color:var(--accent-2)}
 .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:12px}
-.opt{background:var(--surface);border:3px solid var(--line);border-radius:18px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:var(--display);font-weight:600;font-size:1.15rem;min-height:92px;justify-content:center;transition:transform .1s,border-color .15s}
-.opt:hover{border-color:var(--accent)}
-.opt .emo{font-size:3rem;line-height:1}
-.opt .sw{width:58px;height:58px;border-radius:50%;border:3px solid var(--ink)}
-.opt.right{border-color:var(--leaf);background:var(--leaf-soft)}
-.opt.wrong{border-color:var(--berry);background:var(--berry-soft);animation:shake .35s}
+:is(.opt,.ans){background:var(--surface);border:3px solid var(--line);border-radius:18px;padding:14px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:var(--display);font-weight:600;font-size:1.15rem;min-height:92px;justify-content:center;transition:transform .1s,border-color .15s}
+:is(.opt,.ans):hover{border-color:var(--accent)}
+:is(.opt,.ans) .emo{font-size:3rem;line-height:1}
+:is(.opt,.ans) .sw{width:58px;height:58px;border-radius:50%;border:3px solid var(--ink)}
+:is(.opt,.ans).right{border-color:var(--leaf);background:var(--leaf-soft)}
+:is(.opt,.ans).wrong{border-color:var(--berry);background:var(--berry-soft);animation:shake .35s}
 @keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 .bigemo{font-size:4.5rem;line-height:1;text-align:center}
 .mask{font-family:var(--display);font-weight:700;font-size:1.6rem;letter-spacing:.2em;text-align:center}
@@ -214,6 +215,18 @@ input.write:focus{border-color:var(--accent);outline:none}
 .fb.good{background:var(--leaf-soft);border:2px solid var(--leaf)}
 .fb.try{background:var(--berry-soft);border:2px solid var(--berry)}
 .fb .en{font-family:var(--display);font-size:1.15rem}
+.ans:disabled{cursor:default}
+.story{display:flex;flex-direction:column;gap:4px;background:var(--soft);border-radius:16px;padding:14px 12px}
+.story .line{display:block;width:100%;text-align:left;font-family:var(--display);font-weight:500;font-size:1.2rem;line-height:1.45;padding:4px 8px;border-radius:10px;background:none;border:0;color:inherit;cursor:pointer}
+.story .line:hover{background:var(--surface)}
+.story .line.on{background:var(--sun);color:#22304A}
+.story .line .tr{display:block;font-family:var(--body);font-size:.95rem;font-weight:400}
+.story .line.on .tr{color:#22304A}
+.rq{padding-top:12px;border-top:2px dashed var(--line)}
+.rq:first-of-type{border-top:0;padding-top:0}
+.heard .hw{padding:0 4px;border-radius:8px}
+.heard .hw.ok{color:var(--leaf);background:var(--leaf-soft)}
+.heard .hw.no{color:var(--berry);background:var(--berry-soft);text-decoration:underline wavy}
 .hidden-text{font-style:italic;color:var(--muted)}
 
 /* Overlay, toast, confetti */
@@ -261,8 +274,9 @@ body.out .shell{grid-template-columns:minmax(0,1fr);max-width:720px}
   .shell{grid-template-columns:minmax(0,1fr)}
   .side{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:30;border-radius:20px 20px 0 0;border-width:2px 0 0;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
   .side .brand,.side .me{display:none}
-  .nav{flex-direction:row;justify-content:space-around}
-  .nav a{flex-direction:column;gap:2px;padding:6px 4px;font-size:.72rem;flex:1;text-align:center}
+  .nav{flex-direction:row;justify-content:space-around;gap:2px;overflow-x:auto;scrollbar-width:none}
+  .nav a{flex-direction:column;gap:2px;padding:6px 2px;font-size:.7rem;flex:1 1 0;min-width:44px;text-align:center;white-space:nowrap;letter-spacing:-.01em}
+  .nav a .i{font-size:1.2rem;width:auto}
   .nav a.on{box-shadow:inset 0 -3px 0 var(--accent)}
   .topbar .brand{display:flex}
   body.out{padding-bottom:40px}
@@ -270,7 +284,7 @@ body.out .shell{grid-template-columns:minmax(0,1fr);max-width:720px}
   .hero{grid-template-columns:minmax(0,1fr)}
   .ring{justify-self:center}
 }
-@media (max-width:440px){.q{font-size:1.25rem}.face .emo{font-size:4rem}.owl{width:70px;height:70px}h1{font-size:1.6rem}.pills .pill .lbl{display:none}}
+@media (max-width:440px){.nav a{font-size:.66rem;min-width:0}.nav{gap:0}.nav .lg{display:none}.nav .sm{display:inline}.q{font-size:1.25rem}.face .emo{font-size:4rem}.owl{width:70px;height:70px}h1{font-size:1.6rem}.pills .pill .lbl{display:none}}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 
@@ -278,10 +292,13 @@ body.out .shell{grid-template-columns:minmax(0,1fr);max-width:720px}
   <aside class="side">
     <a class="brand" href="#home"><img class="owl mini" src="img/ollie-mini-96.png" srcset="img/ollie-mini-96.png 1x, img/ollie-mini-160.png 2x" width="48" height="48" alt=""><span>Ollie Akademi<small>İNGİLİZCE · 7-11 YAŞ</small></span></a>
     <nav class="nav" aria-label="Ana menü">
-      <a href="#home" data-nav="home"><span class="i">🏠</span><span>Ana Sayfa</span></a>
-      <a href="#units" data-nav="units"><span class="i">📚</span><span>Derslerim</span></a>
+      <a href="#home" data-nav="home"><span class="i">🏠</span><span class="lg">Ana Sayfa</span><span class="sm">Ana</span></a>
+      <a href="#units" data-nav="units"><span class="i">📚</span><span class="lg">Derslerim</span><span class="sm">Dersler</span></a>
+      <a href="#reading" data-nav="reading"><span class="i">📕</span><span class="lg">Reading</span><span class="sm">Read</span></a>
+      <a href="#listening" data-nav="listening"><span class="i">🎧</span><span class="lg">Listening</span><span class="sm">Listen</span></a>
+      <a href="#speaking" data-nav="speaking"><span class="i">🗣️</span><span class="lg">Speaking</span><span class="sm">Speak</span></a>
       <a href="#words" data-nav="words"><span class="i">📖</span><span>Sözlük</span></a>
-      <a href="#badges" data-nav="badges"><span class="i">🏅</span><span>Rozetler</span></a>
+      <a href="#badges" data-nav="badges"><span class="i">🏅</span><span class="lg">Rozetler</span><span class="sm">Rozet</span></a>
       <a href="#profile" data-nav="profile"><span class="i">👤</span><span>Profil</span></a>
     </nav>
     <div class="me"><span class="ava" id="sideAva">🦊</span><div><b id="sideName">Öğrenci</b><div class="tr" id="sideRank"></div><button class="link" data-act="childOut">Profil değiştir</button></div></div>
@@ -562,6 +579,186 @@ const MORE_SONGS = [
 LEVELS.forEach((L,i)=>{ L.songs = [L.song].concat(MORE_SONGS[i] || []); });
 
 
+/* ---------- Reading · Listening · Speaking içerikleri (ünite sırasıyla) ---------- */
+const READING = [
+ {title:"Tom's Zoo Day", e:"🦒", lines:[
+   ["Tom goes to the zoo with his dad.","Tom babasıyla hayvanat bahçesine gider."],
+   ["He sees a big elephant. It has big ears.","Büyük bir fil görür. Onun büyük kulakları var."],
+   ["The monkeys climb the trees. They are funny!","Maymunlar ağaçlara tırmanır. Çok komikler!"],
+   ["Tom likes the giraffe. It has a long neck.","Tom zürafayı sever. Onun uzun bir boynu var."],
+   ["A parrot says, “Hello, Tom!”","Bir papağan “Merhaba Tom!” der."],
+   ["Tom is very happy.","Tom çok mutludur."]],
+  qs:[
+   {q:"Who goes to the zoo with Tom?", tr:"Tom hayvanat bahçesine kiminle gider?", options:["his mom","his dad","his sister"], answer:"his dad"},
+   {q:"Which animal has a long neck?", tr:"Hangi hayvanın uzun bir boynu var?", options:["the giraffe","the elephant","the monkey"], answer:"the giraffe"},
+   {q:"What does the parrot say?", tr:"Papağan ne der?", options:["Goodbye!","Hello, Tom!","I can fly!"], answer:"Hello, Tom!"}]},
+ {title:"Mia's Painting", e:"🎨", lines:[
+   ["Mia has a box of paints.","Mia'nın bir kutu boyası var."],
+   ["She paints the sky blue.","Gökyüzünü maviye boyar."],
+   ["She paints the sun yellow.","Güneşi sarıya boyar."],
+   ["The grass is green and the flowers are pink.","Çimen yeşil, çiçekler pembedir."],
+   ["Her favorite color is red, so she paints a red house.","En sevdiği renk kırmızıdır, bu yüzden kırmızı bir ev boyar."],
+   ["Her mom says, “What a beautiful picture!”","Annesi “Ne güzel bir resim!” der."]],
+  qs:[
+   {q:"What color is the sky?", tr:"Gökyüzü ne renk?", options:["green","blue","pink"], answer:"blue"},
+   {q:"What is Mia's favorite color?", tr:"Mia'nın en sevdiği renk hangisi?", options:["red","yellow","blue"], answer:"red"},
+   {q:"What color are the flowers?", tr:"Çiçekler ne renk?", options:["yellow","green","pink"], answer:"pink"}]},
+ {title:"Ali's School Bag", e:"🎒", lines:[
+   ["Ali has a new school bag. It is blue.","Ali'nin yeni bir okul çantası var. Mavi renkli."],
+   ["In his bag, he has two books and a ruler.","Çantasında iki kitap ve bir cetvel var."],
+   ["He has three pencils and one pen.","Üç kurşun kalemi ve bir tükenmez kalemi var."],
+   ["Oh no! Where is his eraser?","Eyvah! Silgisi nerede?"],
+   ["His friend Ece gives him an eraser.","Arkadaşı Ece ona bir silgi verir."],
+   ["“Thank you, Ece!” says Ali.","Ali “Teşekkürler Ece!” der."]],
+  qs:[
+   {q:"What color is Ali's bag?", tr:"Ali'nin çantası ne renk?", options:["red","blue","green"], answer:"blue"},
+   {q:"How many pencils does Ali have?", tr:"Ali'nin kaç kurşun kalemi var?", options:["one","two","three"], answer:"three"},
+   {q:"Who gives Ali an eraser?", tr:"Ali'ye kim silgi verir?", options:["his teacher","Ece","his mom"], answer:"Ece"}]},
+ {title:"My Big Family", e:"🏡", lines:[
+   ["Hi! My name is Zeynep. I am nine.","Merhaba! Benim adım Zeynep. Dokuz yaşındayım."],
+   ["This is my family.","Bu benim ailem."],
+   ["My father is a doctor. My mother is a teacher.","Babam doktor. Annem öğretmen."],
+   ["I have a brother. His name is Can. He is twelve.","Bir erkek kardeşim var. Adı Can. On iki yaşında."],
+   ["We have a baby sister, too. She is very small.","Bir de bebek kız kardeşimiz var. Çok küçük."],
+   ["I love my family!","Ailemi seviyorum!"]],
+  qs:[
+   {q:"How old is Zeynep?", tr:"Zeynep kaç yaşında?", options:["nine","twelve","seven"], answer:"nine"},
+   {q:"What is Zeynep's mother?", tr:"Zeynep'in annesinin mesleği ne?", options:["a doctor","a teacher","a cook"], answer:"a teacher"},
+   {q:"Who is Can?", tr:"Can kim?", options:["her father","her brother","her baby sister"], answer:"her brother"}]},
+ {title:"Emma's Morning", e:"⏰", lines:[
+   ["Emma wakes up at seven o'clock.","Emma saat yedide uyanır."],
+   ["She washes her face and brushes her teeth.","Yüzünü yıkar ve dişlerini fırçalar."],
+   ["Then she eats breakfast with her family.","Sonra ailesiyle kahvaltı yapar."],
+   ["She drinks milk and eats an egg.","Süt içer ve bir yumurta yer."],
+   ["At eight o'clock, she goes to school by bus.","Saat sekizde otobüsle okula gider."],
+   ["She sleeps at nine o'clock at night.","Gece saat dokuzda uyur."]],
+  qs:[
+   {q:"When does Emma wake up?", tr:"Emma saat kaçta uyanır?", options:["at six","at seven","at eight"], answer:"at seven"},
+   {q:"How does Emma go to school?", tr:"Emma okula nasıl gider?", options:["by bus","by car","on foot"], answer:"by bus"},
+   {q:"What does Emma drink?", tr:"Emma ne içer?", options:["juice","water","milk"], answer:"milk"}]},
+ {title:"A Picnic in the Park", e:"🧺", lines:[
+   ["It is Sunday. Leo and his mom have a picnic in the park.","Bugün pazar. Leo ve annesi parkta piknik yapıyor."],
+   ["They have bread, cheese and apples.","Ekmekleri, peynirleri ve elmaları var."],
+   ["Leo is hungry. He eats a big sandwich.","Leo aç. Büyük bir sandviç yer."],
+   ["His mom drinks tea. Leo drinks orange juice.","Annesi çay içer. Leo portakal suyu içer."],
+   ["Leo doesn't like eggs, so he gives his egg to his mom.","Leo yumurta sevmez, bu yüzden yumurtasını annesine verir."],
+   ["They are happy in the sun.","Güneşin altında mutlular."]],
+  qs:[
+   {q:"Where do they have a picnic?", tr:"Nerede piknik yapıyorlar?", options:["at the beach","in the park","at home"], answer:"in the park"},
+   {q:"What does Leo drink?", tr:"Leo ne içer?", options:["tea","milk","orange juice"], answer:"orange juice"},
+   {q:"What doesn't Leo like?", tr:"Leo neyi sevmez?", options:["eggs","apples","bread"], answer:"eggs"}]},
+ {title:"Four Days, Four Weathers", e:"🌦️", lines:[
+   ["On Monday, it is sunny. Ben plays football outside.","Pazartesi hava güneşli. Ben dışarıda futbol oynar."],
+   ["On Tuesday, it is rainy. Ben takes his umbrella.","Salı günü hava yağmurlu. Ben şemsiyesini alır."],
+   ["On Wednesday, it is windy. Ben flies his kite.","Çarşamba günü hava rüzgârlı. Ben uçurtmasını uçurur."],
+   ["On Thursday, it is snowy! Ben makes a snowman.","Perşembe günü kar yağıyor! Ben bir kardan adam yapar."],
+   ["It is very cold, so he wears a hat and a coat.","Hava çok soğuk, bu yüzden bere ve mont giyer."],
+   ["Ben loves every kind of weather!","Ben her türlü havayı sever!"]],
+  qs:[
+   {q:"What does Ben do on a windy day?", tr:"Ben rüzgârlı günde ne yapar?", options:["He flies his kite.","He makes a snowman.","He plays football."], answer:"He flies his kite."},
+   {q:"When does it rain?", tr:"Hangi gün yağmur yağar?", options:["on Monday","on Tuesday","on Thursday"], answer:"on Tuesday"},
+   {q:"What does Ben make on Thursday?", tr:"Ben perşembe günü ne yapar?", options:["a cake","a kite","a snowman"], answer:"a snowman"}]},
+ {title:"Robo the Robot", e:"🤖", lines:[
+   ["This is Robo. Robo is a funny robot.","Bu Robo. Robo komik bir robot."],
+   ["Robo has three eyes and one big nose.","Robo'nun üç gözü ve bir büyük burnu var."],
+   ["He has two long arms and four small hands.","İki uzun kolu ve dört küçük eli var."],
+   ["He has two legs, so he can run and jump.","İki bacağı var, bu yüzden koşabilir ve zıplayabilir."],
+   ["He doesn't have ears, but he can hear with his hands!","Kulakları yok ama elleriyle duyabilir!"],
+   ["Robo is my best friend.","Robo benim en iyi arkadaşım."]],
+  qs:[
+   {q:"How many eyes does Robo have?", tr:"Robo'nun kaç gözü var?", options:["two","three","four"], answer:"three"},
+   {q:"How many hands does Robo have?", tr:"Robo'nun kaç eli var?", options:["two","three","four"], answer:"four"},
+   {q:"How does Robo hear?", tr:"Robo nasıl duyar?", options:["with his ears","with his hands","with his nose"], answer:"with his hands"}]},
+ {title:"Packing for a Trip", e:"🧳", lines:[
+   ["Sara is going to the mountains with her family.","Sara ailesiyle dağlara gidiyor."],
+   ["It is cold there, so she packs her warm coat.","Orası soğuk, bu yüzden kalın montunu çantasına koyar."],
+   ["She packs two shirts and a red hat.","İki gömlek ve kırmızı bir bere koyar."],
+   ["She packs her new shoes and five pairs of socks.","Yeni ayakkabılarını ve beş çift çorabını koyar."],
+   ["“Don't forget your gloves!” says her mom.","Annesi “Eldivenlerini unutma!” der."],
+   ["Now Sara is ready to go!","Artık Sara gitmeye hazır!"]],
+  qs:[
+   {q:"Where is Sara going?", tr:"Sara nereye gidiyor?", options:["to the beach","to the mountains","to school"], answer:"to the mountains"},
+   {q:"What color is her hat?", tr:"Beresi ne renk?", options:["red","blue","yellow"], answer:"red"},
+   {q:"What does Mom say?", tr:"Annesi ne der?", options:["Don't forget your gloves!","Don't forget your book!","Go to sleep!"], answer:"Don't forget your gloves!"}]},
+ {title:"Our Club Day", e:"⚽", lines:[
+   ["On Friday, our school has club day.","Cuma günü okulumuzda kulüp günü var."],
+   ["Deniz loves sport. He can run and swim very well.","Deniz sporu sever. Çok iyi koşabilir ve yüzebilir."],
+   ["Elif likes music. She can sing and play the guitar.","Elif müziği sever. Şarkı söyleyebilir ve gitar çalabilir."],
+   ["Mert can't sing, but he can draw beautiful pictures.","Mert şarkı söyleyemez ama çok güzel resimler çizebilir."],
+   ["I like dancing. I go to the dance club.","Ben dans etmeyi severim. Dans kulübüne giderim."],
+   ["What is your hobby?","Senin hobin ne?"]],
+  qs:[
+   {q:"When is club day?", tr:"Kulüp günü ne zaman?", options:["on Monday","on Friday","on Sunday"], answer:"on Friday"},
+   {q:"What can Elif do?", tr:"Elif ne yapabilir?", options:["She can swim.","She can draw.","She can play the guitar."], answer:"She can play the guitar."},
+   {q:"What can't Mert do?", tr:"Mert ne yapamaz?", options:["sing","draw","run"], answer:"sing"}]}
+];
+
+const LISTENING = [
+ [ {say:"I am big and grey. I have a very long nose.", q:"Which animal is it?", tr:"Hangi hayvan?", options:[{e:"🐘",v:"elephant"},{e:"🐰",v:"rabbit"},{e:"🐬",v:"dolphin"}], answer:"elephant"},
+   {say:"I am green. I am very slow. I have a hard shell.", q:"Which animal is it?", tr:"Hangi hayvan?", options:[{e:"🐒",v:"monkey"},{e:"🐢",v:"turtle"},{e:"🐴",v:"horse"}], answer:"turtle"},
+   {say:"I can fly very high. I have big wings.", q:"Which animal is it?", tr:"Hangi hayvan?", options:[{e:"🦅",v:"eagle"},{e:"🐍",v:"snake"},{e:"🦒",v:"giraffe"}], answer:"eagle"},
+   {say:"I don't have legs, but I can move fast.", q:"Which animal is it?", tr:"Hangi hayvan?", options:[{e:"🐴",v:"horse"},{e:"🐍",v:"snake"},{e:"🐘",v:"elephant"}], answer:"snake"},
+   {say:"I love bananas. I can climb trees.", q:"Which animal is it?", tr:"Hangi hayvan?", options:[{e:"🐒",v:"monkey"},{e:"🦜",v:"parrot"},{e:"🐢",v:"turtle"}], answer:"monkey"} ],
+ [ {say:"Bananas are this color. The sun is this color, too.", q:"Which color is it?", tr:"Hangi renk?", options:[{c:"#F4C430",v:"yellow"},{c:"#2E7DD7",v:"blue"},{c:"#E53935",v:"red"}], answer:"yellow"},
+   {say:"The grass and the leaves are this color.", q:"Which color is it?", tr:"Hangi renk?", options:[{c:"#EC6FA8",v:"pink"},{c:"#3BA55C",v:"green"},{c:"#F4C430",v:"yellow"}], answer:"green"},
+   {say:"My ball is red and white.", q:"Which ball is it?", tr:"Hangi top?", options:[{e:"🔴",v:"red"},{e:"🔵",v:"blue"},{e:"🟢",v:"green"}], answer:"red"},
+   {say:"The sea and the sky are blue.", q:"What is blue?", tr:"Mavi olan ne?", options:[{e:"🌊",v:"sea"},{e:"🍎",v:"apple"},{e:"🌳",v:"tree"}], answer:"sea"},
+   {say:"I have a pink pig. It is very cute.", q:"What does she have?", tr:"Onun neyi var?", options:[{e:"🐷",v:"pig"},{e:"🐶",v:"dog"},{e:"🐱",v:"cat"}], answer:"pig"} ],
+ [ {say:"I use this to write. It is blue.", q:"What is it?", tr:"Bu ne?", options:[{e:"🖊️",v:"pen"},{e:"🎒",v:"bag"},{e:"📏",v:"ruler"}], answer:"pen"},
+   {say:"I put my books in it. I carry it on my back.", q:"What is it?", tr:"Bu ne?", options:[{e:"📘",v:"book"},{e:"🎒",v:"bag"},{e:"✏️",v:"pencil"}], answer:"bag"},
+   {say:"I read it in the evening. It has a lot of pages.", q:"What is it?", tr:"Bu ne?", options:[{e:"📘",v:"book"},{e:"📏",v:"ruler"},{e:"🖊️",v:"pen"}], answer:"book"},
+   {say:"I draw a straight line with this.", q:"What is it?", tr:"Bu ne?", options:[{e:"✂️",v:"scissors"},{e:"📏",v:"ruler"},{e:"🎒",v:"bag"}], answer:"ruler"},
+   {say:"I have five pencils in my pencil case.", q:"How many pencils?", tr:"Kaç kalem?", options:["three","four","five"], answer:"five"} ],
+ [ {say:"This is my grandmother. She is my mother's mother.", q:"Who is it?", tr:"Bu kim?", options:[{e:"👵",v:"grandmother"},{e:"👶",v:"baby"},{e:"👦",v:"brother"}], answer:"grandmother"},
+   {say:"My baby brother is very small. He can't walk.", q:"Who is it?", tr:"Bu kim?", options:[{e:"👨",v:"father"},{e:"👶",v:"baby"},{e:"👧",v:"sister"}], answer:"baby"},
+   {say:"My grandfather is old. He has white hair.", q:"Who is it?", tr:"Bu kim?", options:[{e:"👦",v:"brother"},{e:"👴",v:"grandfather"},{e:"👩",v:"mother"}], answer:"grandfather"},
+   {say:"I have two sisters and one brother.", q:"How many sisters?", tr:"Kaç kız kardeşi var?", options:["one","two","three"], answer:"two"},
+   {say:"My mother is a cook. She makes great cakes.", q:"What is Mother's job?", tr:"Annenin mesleği ne?", options:[{e:"👩‍🍳",v:"cook"},{e:"👩‍⚕️",v:"doctor"},{e:"👩‍🏫",v:"teacher"}], answer:"cook"} ],
+ [ {say:"I wake up at seven o'clock.", q:"What time does he wake up?", tr:"Saat kaçta uyanıyor?", options:[{e:"🕖",v:"seven"},{e:"🕗",v:"eight"},{e:"🕘",v:"nine"}], answer:"seven"},
+   {say:"After breakfast, I brush my teeth.", q:"What does she do?", tr:"Ne yapıyor?", options:[{e:"🪥",v:"brush"},{e:"🛏️",v:"sleep"},{e:"🚌",v:"bus"}], answer:"brush"},
+   {say:"I go to school by bus.", q:"How does he go to school?", tr:"Okula nasıl gidiyor?", options:[{e:"🚗",v:"car"},{e:"🚌",v:"bus"},{e:"🚲",v:"bike"}], answer:"bus"},
+   {say:"In the evening, I do my homework.", q:"What does she do in the evening?", tr:"Akşam ne yapıyor?", options:[{e:"📝",v:"homework"},{e:"⚽",v:"football"},{e:"🍳",v:"cook"}], answer:"homework"},
+   {say:"I go to bed at nine o'clock.", q:"What time does he go to bed?", tr:"Saat kaçta yatıyor?", options:[{e:"🕗",v:"eight"},{e:"🕘",v:"nine"},{e:"🕙",v:"ten"}], answer:"nine"} ],
+ [ {say:"I am hungry. I want an apple, please.", q:"What does he want?", tr:"Ne istiyor?", options:[{e:"🍎",v:"apple"},{e:"🍌",v:"banana"},{e:"🧀",v:"cheese"}], answer:"apple"},
+   {say:"I drink milk every morning.", q:"What does she drink?", tr:"Ne içiyor?", options:[{e:"🥛",v:"milk"},{e:"🧃",v:"juice"},{e:"☕",v:"tea"}], answer:"milk"},
+   {say:"I don't like cheese, but I love eggs.", q:"What does he love?", tr:"Neyi çok seviyor?", options:[{e:"🧀",v:"cheese"},{e:"🥚",v:"egg"},{e:"🍞",v:"bread"}], answer:"egg"},
+   {say:"Can I have some bread, please?", q:"What does she want?", tr:"Ne istiyor?", options:[{e:"🍞",v:"bread"},{e:"🍰",v:"cake"},{e:"🥛",v:"milk"}], answer:"bread"},
+   {say:"For dinner, we have fish and rice.", q:"What is for dinner?", tr:"Akşam yemeğinde ne var?", options:[{e:"🍕",v:"pizza"},{e:"🐟",v:"fish"},{e:"🍔",v:"burger"}], answer:"fish"} ],
+ [ {say:"Today it is rainy. Take your umbrella!", q:"What is the weather like?", tr:"Hava nasıl?", options:[{e:"☀️",v:"sunny"},{e:"🌧️",v:"rainy"},{e:"❄️",v:"snowy"}], answer:"rainy"},
+   {say:"It is sunny and hot. Let's go to the beach!", q:"What is the weather like?", tr:"Hava nasıl?", options:[{e:"☀️",v:"sunny"},{e:"☁️",v:"cloudy"},{e:"💨",v:"windy"}], answer:"sunny"},
+   {say:"It is snowy. Let's make a snowman!", q:"What is the weather like?", tr:"Hava nasıl?", options:[{e:"🌧️",v:"rainy"},{e:"❄️",v:"snowy"},{e:"☀️",v:"sunny"}], answer:"snowy"},
+   {say:"It is windy. My hat is flying!", q:"What is the weather like?", tr:"Hava nasıl?", options:[{e:"💨",v:"windy"},{e:"☁️",v:"cloudy"},{e:"🌧️",v:"rainy"}], answer:"windy"},
+   {say:"It is cloudy. I can't see the sun.", q:"What is the weather like?", tr:"Hava nasıl?", options:[{e:"☀️",v:"sunny"},{e:"❄️",v:"snowy"},{e:"☁️",v:"cloudy"}], answer:"cloudy"} ],
+ [ {say:"I see with my eyes.", q:"What do we see with?", tr:"Neyle görürüz?", options:[{e:"👀",v:"eyes"},{e:"👂",v:"ears"},{e:"👃",v:"nose"}], answer:"eyes"},
+   {say:"I hear music with my ears.", q:"What do we hear with?", tr:"Neyle duyarız?", options:[{e:"✋",v:"hand"},{e:"👂",v:"ears"},{e:"🦵",v:"leg"}], answer:"ears"},
+   {say:"Touch your nose!", q:"What does Ollie say to touch?", tr:"Ollie neye dokunmanı söylüyor?", options:[{e:"👃",v:"nose"},{e:"👀",v:"eyes"},{e:"✋",v:"hand"}], answer:"nose"},
+   {say:"Clap your hands!", q:"What do you clap?", tr:"Neyi çırparsın?", options:[{e:"🦶",v:"feet"},{e:"👂",v:"ears"},{e:"👏",v:"hands"}], answer:"hands"},
+   {say:"A spider has eight legs.", q:"How many legs does a spider have?", tr:"Örümceğin kaç bacağı var?", options:["six","eight","ten"], answer:"eight"} ],
+ [ {say:"Put on your hat. It is cold!", q:"What should he put on?", tr:"Ne giymeli?", options:[{e:"🧢",v:"hat"},{e:"🧦",v:"socks"},{e:"👟",v:"shoes"}], answer:"hat"},
+   {say:"My new shoes are white.", q:"What is new?", tr:"Yeni olan ne?", options:[{e:"👕",v:"shirt"},{e:"👟",v:"shoes"},{e:"🧥",v:"coat"}], answer:"shoes"},
+   {say:"It is snowy. Wear your coat!", q:"What should she wear?", tr:"Ne giymeli?", options:[{e:"🩳",v:"shorts"},{e:"🧥",v:"coat"},{e:"👗",v:"dress"}], answer:"coat"},
+   {say:"I am wearing a yellow T-shirt.", q:"What is he wearing?", tr:"Ne giyiyor?", options:[{e:"👕",v:"shirt"},{e:"🧢",v:"hat"},{e:"🧦",v:"socks"}], answer:"shirt"},
+   {say:"Where are my socks? They are under the bed.", q:"Where are the socks?", tr:"Çoraplar nerede?", options:["on the bed","under the bed","in the bag"], answer:"under the bed"} ],
+ [ {say:"I love swimming in the sea.", q:"What is her hobby?", tr:"Onun hobisi ne?", options:[{e:"🏊",v:"swim"},{e:"🎨",v:"draw"},{e:"💃",v:"dance"}], answer:"swim"},
+   {say:"I can play the guitar and sing.", q:"What can he play?", tr:"Ne çalabiliyor?", options:[{e:"🎸",v:"guitar"},{e:"🎹",v:"piano"},{e:"🥁",v:"drums"}], answer:"guitar"},
+   {say:"I like drawing pictures of cats.", q:"What does she like?", tr:"Neyi seviyor?", options:[{e:"🎨",v:"draw"},{e:"⚽",v:"football"},{e:"🏃",v:"run"}], answer:"draw"},
+   {say:"I play football with my friends every Saturday.", q:"What does he play?", tr:"Ne oynuyor?", options:[{e:"🏀",v:"basketball"},{e:"⚽",v:"football"},{e:"🎾",v:"tennis"}], answer:"football"},
+   {say:"I can't swim, but I can ride a bike.", q:"What can she do?", tr:"Ne yapabiliyor?", options:[{e:"🏊",v:"swim"},{e:"🚲",v:"bike"},{e:"🎤",v:"sing"}], answer:"bike"} ]
+];
+
+const SPEAKING = [
+ [ {e:"🐘",en:"The elephant is very big.",tr:"Fil çok büyük."}, {e:"🐒",en:"A monkey can climb trees.",tr:"Bir maymun ağaçlara tırmanabilir."}, {e:"🦅",en:"An eagle can fly.",tr:"Bir kartal uçabilir."}, {e:"🐢",en:"The turtle is slow.",tr:"Kaplumbağa yavaş."}, {e:"🐰",en:"I like rabbits.",tr:"Tavşanları severim."} ],
+ [ {e:"🔴",en:"My favorite color is red.",tr:"En sevdiğim renk kırmızı."}, {e:"🌊",en:"The sea is blue.",tr:"Deniz mavidir."}, {e:"🍌",en:"The banana is yellow.",tr:"Muz sarıdır."}, {e:"🌳",en:"The tree is green.",tr:"Ağaç yeşildir."}, {e:"🌸",en:"I have a pink flower.",tr:"Pembe bir çiçeğim var."} ],
+ [ {e:"🎒",en:"This is my school bag.",tr:"Bu benim okul çantam."}, {e:"📘",en:"I have a new book.",tr:"Yeni bir kitabım var."}, {e:"✏️",en:"Can I have a pencil, please?",tr:"Bir kalem alabilir miyim lütfen?"}, {e:"📏",en:"My ruler is long.",tr:"Cetvelim uzun."}, {e:"🖊️",en:"I write with a pen.",tr:"Tükenmez kalemle yazarım."} ],
+ [ {e:"👩",en:"This is my mother.",tr:"Bu benim annem."}, {e:"👨",en:"My father is tall.",tr:"Babam uzun boylu."}, {e:"👧",en:"I have a sister.",tr:"Bir kız kardeşim var."}, {e:"👶",en:"The baby is sleeping.",tr:"Bebek uyuyor."}, {e:"❤️",en:"I love my family.",tr:"Ailemi seviyorum."} ],
+ [ {e:"⏰",en:"I wake up at seven.",tr:"Saat yedide uyanırım."}, {e:"🪥",en:"I brush my teeth.",tr:"Dişlerimi fırçalarım."}, {e:"🍳",en:"I eat breakfast with my family.",tr:"Ailemle kahvaltı yaparım."}, {e:"🚌",en:"I go to school by bus.",tr:"Okula otobüsle giderim."}, {e:"🛏️",en:"I go to bed at nine.",tr:"Saat dokuzda yatarım."} ],
+ [ {e:"🍎",en:"I like apples.",tr:"Elmaları severim."}, {e:"🥛",en:"I drink milk every day.",tr:"Her gün süt içerim."}, {e:"🧀",en:"Can I have some cheese, please?",tr:"Biraz peynir alabilir miyim lütfen?"}, {e:"🍞",en:"The bread is very good.",tr:"Ekmek çok güzel."}, {e:"🥚",en:"I don't like eggs.",tr:"Yumurta sevmem."} ],
+ [ {e:"☀️",en:"It is sunny today.",tr:"Bugün hava güneşli."}, {e:"🌧️",en:"It is rainy. Take your umbrella.",tr:"Hava yağmurlu. Şemsiyeni al."}, {e:"💨",en:"It is windy outside.",tr:"Dışarıda rüzgâr var."}, {e:"❄️",en:"I love snowy days.",tr:"Karlı günleri severim."}, {e:"☁️",en:"The sky is cloudy.",tr:"Gökyüzü bulutlu."} ],
+ [ {e:"👀",en:"I have two eyes.",tr:"İki gözüm var."}, {e:"👃",en:"Touch your nose.",tr:"Burnuna dokun."}, {e:"👂",en:"I hear with my ears.",tr:"Kulaklarımla duyarım."}, {e:"✋",en:"Raise your hand.",tr:"Elini kaldır."}, {e:"🦵",en:"My legs are strong.",tr:"Bacaklarım güçlü."} ],
+ [ {e:"👕",en:"I am wearing a blue shirt.",tr:"Mavi bir gömlek giyiyorum."}, {e:"🧢",en:"Where is my hat?",tr:"Şapkam nerede?"}, {e:"👟",en:"My shoes are new.",tr:"Ayakkabılarım yeni."}, {e:"🧥",en:"Put on your coat.",tr:"Montunu giy."}, {e:"🧦",en:"I have red socks.",tr:"Kırmızı çoraplarım var."} ],
+ [ {e:"🏊",en:"I can swim.",tr:"Yüzebilirim."}, {e:"🏃",en:"I can run fast.",tr:"Hızlı koşabilirim."}, {e:"💃",en:"I like dancing.",tr:"Dans etmeyi severim."}, {e:"🎤",en:"Can you sing?",tr:"Şarkı söyleyebilir misin?"}, {e:"🎨",en:"My hobby is drawing.",tr:"Benim hobim resim yapmak."} ]
+];
+
 const KIND = {song:["🎵","Song"], pick:["👀","Look & Pick"], listen:["👂","Listen"], write:["✍️","Write"], speak:["🗣️","Speak"],
   songtype:["🎵","Song: type it"], dictation:["👂","Listen & Write"], order:["🧩","Build the Sentence"], story:["📖","Story Time"], speakTr:["🗣️","Say it in English"]};
 const INTRO = {song:["Sing and fill the gap!","Şarkıyı söyle, boşluğu doldur!"], pick:["Look carefully!","Dikkatlice bak!"],
@@ -640,7 +837,7 @@ const fresh = () => ({unlocked:0, done:LEVELS.map(()=>[]), finished:false});
 
 /* ---------- Accounts & state ---------- */
 const UKEY = "ollie-akademi-accounts";
-const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}});
+const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}, skills:{r:{},l:{},s:{}}});
 function normalize(s){
   s = s || {};
   if(!(s.p && s.p.easy && s.p.hard)){
@@ -649,6 +846,7 @@ function normalize(s){
   for(const m of ["easy","hard"]){ const p = s.p[m]; while(p.done.length < LEVELS.length) p.done.push([]); }
   s.score = s.score||0; s.lessons = s.lessons||{}; s.days = s.days||[]; s.today = s.today||{d:"",pts:0};
   s.name = s.name||""; s.avatar = s.avatar||"🦊"; s.writings = s.writings||{}; s.sung = s.sung||{};
+  s.skills = s.skills||{}; for(const k of ["r","l","s"]) s.skills[k] = s.skills[k]||{};
   if(!s.badges){ s.badges = []; s.needBadgeInit = true; }
   return s;
 }
@@ -782,6 +980,9 @@ const BADGES = [
   {id:"writer1", e:"✍️", n:"Küçük Yazar", d:"İlk yazma görevini bitir.", ok:()=>Object.values(S.writings).some(w=>w.best)},
   {id:"writer5", e:"📝", n:"Usta Yazar", d:"5 ünitenin yazma görevini bitir.", ok:()=>Object.values(S.writings).filter(w=>w.best).length>=5},
   {id:"songs25", e:"🎤", n:"Şarkı Yıldızı", d:"25 şarkı söyle.", ok:()=>Object.values(S.sung).reduce((a,x)=>a+x.length,0)>=25},
+  {id:"reader3", e:"📕", n:"Kitap Kurdu", d:"3 Reading hikâyesini bitir.", ok:()=>skCount("reading")>=3},
+  {id:"listen3", e:"🎧", n:"Dikkatli Kulak", d:"3 ünitenin Listening bölümünü bitir.", ok:()=>skCount("listening")>=3},
+  {id:"speak3", e:"🗣️", n:"Konuşkan Baykuş", d:"3 ünitenin Speaking bölümünü bitir.", ok:()=>skCount("speaking")>=3},
   {id:"legend", e:"👑", n:"Efsane", d:"10 ünitenin zor testlerini bitir.", ok:()=>hardCount()>=10}
 ];
 function checkBadges(silent){
@@ -832,7 +1033,7 @@ function stopSpeech(){ singing = false; try{ speechSynthesis.cancel(); }catch(e)
 /* ---------- Router ---------- */
 let page = "home", unitArg = 0, play = null;
 function route(){
-  stopSpeech(); play = null;
+  stopSpeech(); stopRec(); play = null; sk = null;
   const h = location.hash.slice(1) || "home";
   if(!S){
     if(auth){ page = ["profiles","parent"].includes(h) ? h : "profiles"; if(page !== h) history.replaceState(null, "", "#"+page); }
@@ -841,7 +1042,9 @@ function route(){
   }
   if(["login","register","forgot","profiles","parent"].includes(h)){ history.replaceState(null, "", "#home"); }
   const m = h.match(/^unit-(\d+)$/);
+  const sm = h.match(/^(reading|listening|speaking)(?:-(\d+))?$/);
   if(m && +m[1]>=1 && +m[1]<=LEVELS.length){ page = "unit"; unitArg = +m[1]-1; }
+  else if(sm){ page = sm[1]; if(sm[2] && +sm[2]>=1 && +sm[2]<=LEVELS.length) startSkill(sm[1], +sm[2]-1); }
   else page = ["home","units","words","badges","profile"].includes(h) ? h : "home";
   render(true);
 }
@@ -852,7 +1055,8 @@ function render(greet){
   const el = $("#screen");
   if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML, profiles:profilesHTML, parent:parentHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
   if(play) el.innerHTML = play.kind==="song" ? songHTML() : play.kind==="cards" ? cardsHTML() : play.kind==="write" ? writeHTML() : quizHTML();
-  else el.innerHTML = ({home:homeHTML, units:unitsHTML, unit:unitHTML, words:wordsHTML, badges:badgesHTML, profile:profileHTML})[page]();
+  else el.innerHTML = ({home:homeHTML, units:unitsHTML, unit:unitHTML, words:wordsHTML, badges:badgesHTML, profile:profileHTML,
+    reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
   if(play && play.order) renderOrder();
   if(!play && page==="words") renderWords();
   window.scrollTo({top:0});
@@ -871,6 +1075,9 @@ function greetPage(){
     unit:[`Unit ${unitArg+1}: ${LEVELS[unitArg]?.theme}`, "Dersleri sırayla yap. Kolay testi bitirince sonraki ünite açılır."],
     words:["My dictionary!","Bir kelimeye dokun, Ollie sana okusun."],
     badges:["Look at your badges!","Ders yaptıkça yeni rozetler kazanırsın."],
+    reading: sk ? [`Let's read: ${READING[sk.unit].title}`, "Hikâyeyi oku, sonra soruları cevapla. 🔊 ile Ollie sana okur."] : ["Reading time! 📕","Bir hikâye seç. Her ünitenin kendi hikâyesi var."],
+    listening: sk ? ["Listen carefully! 🎧","🔊 düğmesine bas, Ollie'yi dinle, doğru resmi seç."] : ["Listening time! 🎧","Bir ünite seç, Ollie'yi dinle ve doğru resmi bul."],
+    speaking: sk ? ["Your turn to talk! 🗣️","Önce 🔊 ile dinle, sonra sen söyle."] : ["Speaking time! 🗣️","Bir ünite seç, cümleleri yüksek sesle söyle."],
     profile:["This is you!","Adını ve hayvan avatarını buradan değiştirebilirsin."]
   }[page];
   say(g[0], g[1]);
@@ -1182,6 +1389,9 @@ function profileHTML(){
       <div class="stat"><b>${lessonCount("c")}/10</b><span>🃏 Kelime dersi</span></div>
       <div class="stat"><b>${easyCount()}/10</b><span>🐣 Kolay test</span></div>
       <div class="stat"><b>${hardCount()}/10</b><span>🦅 Zor test</span></div>
+      <div class="stat"><b>${skCount("reading")}/10</b><span>📕 Reading</span></div>
+      <div class="stat"><b>${skCount("listening")}/10</b><span>🎧 Listening</span></div>
+      <div class="stat"><b>${skCount("speaking")}/10</b><span>🗣️ Speaking</span></div>
     </div>
     <p class="tr">İlerlemen veli hesabına kaydedilir. Aynı hesapla giriş yapılan her cihazdan kaldığın yerden devam edebilirsin.</p>
     <div class="row" id="resetRow"><button class="btn ghost small" data-act="reset">↺ İlerlemeyi sıfırla</button></div>
@@ -1411,6 +1621,229 @@ function finishQuiz(){
   ov.querySelector(".btn").focus();
 }
 
+
+/* ---------- Reading · Listening · Speaking bölümleri ---------- */
+const SKILL = {
+  reading:{e:"📕", n:"Reading", tr:"Okuma", key:"r", unitName:"hikâye", total:i=>READING[i].qs.length},
+  listening:{e:"🎧", n:"Listening", tr:"Dinleme", key:"l", unitName:"dinleme", total:i=>LISTENING[i].length},
+  speaking:{e:"🗣️", n:"Speaking", tr:"Konuşma", key:"s", unitName:"cümle", total:i=>SPEAKING[i].length}
+};
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const skDone = (type,i) => S.skills[SKILL[type].key][i] || [];
+const skComplete = (type,i) => skDone(type,i).length >= SKILL[type].total(i);
+const skCount = type => LEVELS.filter((_,i)=>skComplete(type,i)).length;
+let sk = null, rec = null;
+function stopRec(){ if(rec){ const r = rec; rec = null; try{ r.abort(); }catch(e){} } }
+function startSkill(type, i){
+  const done = skDone(type, i), full = skComplete(type, i);
+  sk = {type, unit:i, local:new Set(full ? [] : done), tries:{}, answered:{}, solved:false, showTr:false, idx:0};
+  if(type !== "reading") sk.idx = Math.max(0, [...Array(SKILL[type].total(i)).keys()].find(n=>!sk.local.has(n)) ?? 0);
+}
+function skAward(type, i, n, pts){
+  const k = SKILL[type].key, d = S.skills[k][i] = S.skills[k][i] || [];
+  const was = skComplete(type, i);
+  if(d.includes(n)) pts = 1; else d.push(n);
+  addPts(pts);
+  let bonus = 0;
+  if(!was && skComplete(type, i)){ bonus = 5; addPts(5); confetti(); toast(`${SKILL[type].e} ${SKILL[type].n} · Ünite ${i+1} tamam! +5 ⭐`); }
+  return {pts, bonus};
+}
+function skBack(){ const K = SKILL[sk.type]; return `<div class="row between"><a class="link" href="#${sk.type}">← ${K.n} · ${K.tr}</a><span class="chip">${K.e} Ünite ${sk.unit+1}: ${LEVELS[sk.unit].theme}</span></div>`; }
+function skLocked(){ const i = sk.unit;
+  return `${skBack()}<section class="panel"><div class="uhead"><span class="ic">🔒</span><div><div class="eyebrow">Ünite ${i+1}</div><h1>${LEVELS[i].theme}</h1></div></div>
+    <p>Bu bölüm henüz kilitli. Önce <a class="link" href="#unit-${i}">Ünite ${i}: ${LEVELS[i-1].theme}</a> kolay testini bitir.</p></section>`; }
+function skProg(total){ return `<div class="progress">${[...Array(total).keys()].map(n=>`<span class="${sk.local.has(n)?"done":n===sk.idx?"now":""}"></span>`).join("")}</div>`; }
+
+function skillListHTML(type){
+  const K = SKILL[type];
+  const desc = {
+    reading:"Kısa hikâyeleri oku, istersen Ollie'ye okut, sonra soruları cevapla. İlk denemede doğru cevap ⭐+5.",
+    listening:"Ollie'yi dikkatle dinle ve doğru resmi seç. Önce metne bakmadan dene! İlk denemede doğru cevap ⭐+5.",
+    speaking:"Cümleyi dinle, sonra 🎤 düğmesine basıp sen söyle. Ollie seni dinler ve hangi kelimeleri doğru söylediğini gösterir. Her cümle ⭐+5."
+  }[type];
+  const note = type==="speaking" && !SR ? `<div class="fb try">Bu tarayıcı konuşmayı dinleyemiyor. Chrome, Edge ya da Safari'de Ollie sesini kontrol eder. Burada da çalışabilirsin: cümleyi yüksek sesle söyleyip "I said it!" düğmesine bas.</div>` : "";
+  return `<section class="panel"><div class="eyebrow">${K.n} · ${K.tr}</div><h1>${K.e} ${K.n}</h1><p class="muted">${desc}</p>${note}
+    <div class="row"><span class="chip ok">✓ ${skCount(type)}/10 ünite tamam</span></div></section>
+  <div class="grid g3">${LEVELS.map((L,i)=>{ const open = unitOpen(i), n = skDone(type,i).length, tot = K.total(i), done = n >= tot;
+    const nm = type==="reading" ? READING[i].title : L.theme;
+    const st = !open ? `<span class="chip">🔒 Kilitli</span>` : done ? `<span class="chip ok">✓ Tamam</span>` : n ? `<span class="chip">Devam ediyor</span>` : `<span class="chip">Yeni</span>`;
+    return `<a class="unit ${open?"":"locked"}" href="#${type}-${i+1}" ${open?"":'aria-disabled="true"'}>
+      <div class="top"><span class="ic">${type==="reading"?READING[i].e:L.icon}</span><div style="min-width:0"><div class="no">Ünite ${i+1}${type==="reading"?" · "+L.theme:""}</div><div class="nm">${esc(nm)}</div><div class="tr">${tot} ${K.unitName==="hikâye"?"soru":K.unitName}</div></div></div>
+      <div class="bar"><i style="width:${Math.round(n/tot*100)}%"></i></div>
+      <div class="meta"><span>${st}</span><span>${n}/${tot}</span></div></a>`; }).join("")}</div>`;
+}
+
+function readingHTML(){
+  if(!unitOpen(sk.unit)) return skLocked();
+  const i = sk.unit, R = READING[i], d = skDone("reading", i);
+  return `${skBack()}<section class="panel">
+    <div class="eyebrow">Ünite ${i+1} · ${LEVELS[i].theme} · Reading</div>
+    <h1>${R.e} ${esc(R.title)}</h1>
+    <div class="row"><button class="btn" data-act="readAll">🔊 Read to me</button><button class="btn ghost small" data-act="readSlow">🐢 Slow</button><button class="btn ghost small" data-act="toggleTr">🇹🇷 ${sk.showTr?"Türkçeyi gizle":"Türkçesini göster"}</button></div>
+    <div class="story" id="story">${R.lines.map((l,n)=>`<button type="button" class="line" data-act="readLine" data-arg="${n}">${esc(l[0])}${sk.showTr?`<span class="tr">${esc(l[1])}</span>`:""}</button>`).join("")}</div>
+    <p class="tr">Bir cümleye dokun, Ollie sana okusun. Bilmediğin kelimeler için Türkçesine bakabilirsin.</p>
+  </section>
+  <section class="panel"><h2>Questions <span class="tr">· Sorular · <span id="rcount">${d.length}</span>/${R.qs.length} doğru</span></h2>
+    ${R.qs.map((q,n)=>{ const ok = sk.answered[n];
+      return `<div class="stack rq"><div class="q" style="font-size:1.2rem">${n+1}. ${esc(q.q)} <span class="tr">${esc(q.tr)}</span></div>
+        <div class="opts">${q.options.map(o=>`<button class="ans ${ok && o===q.answer?"right":""}" data-act="skAns" data-arg="${n}" data-v="${esc(o)}" ${ok?"disabled":""}>${esc(o)}</button>`).join("")}</div>
+        <div id="rfb-${n}"></div></div>`; }).join("")}
+    <div id="rdone"></div>
+  </section>`;
+}
+function readStory(rate){
+  if(singing){ stopSpeech(); document.querySelectorAll("#story .line").forEach(p=>p.classList.remove("on")); return; }
+  const ls = [...document.querySelectorAll("#story .line")], lines = READING[sk.unit].lines;
+  singing = true; let n = 0;
+  const step = () => {
+    ls.forEach(p=>p.classList.remove("on"));
+    if(!singing || n>=lines.length || !document.body.contains(ls[0])){ singing = false; return; }
+    ls[n].classList.add("on"); speak(lines[n][0], ()=>{ n++; setTimeout(step, 300); }, rate);
+  };
+  step();
+}
+function readAnswer(b, n){
+  const i = sk.unit, R = READING[i], q = R.qs[n];
+  if(sk.answered[n]) return;
+  if(b.dataset.v === q.answer){
+    sk.answered[n] = true;
+    const r = skAward("reading", i, n, sk.tries[n] ? 2 : 5);
+    b.classList.add("right"); b.parentNode.querySelectorAll("button").forEach(x=>x.disabled = true);
+    const rc = $("#rcount"); if(rc) rc.textContent = skDone("reading", i).length;
+    const p = PRAISE[Math.floor(Math.random()*PRAISE.length)];
+    $("#rfb-"+n).innerHTML = `<div class="fb good">${p[0]} ⭐ +${r.pts}</div>`;
+    say(`${p[0]} ⭐ +${r.pts}`, `${p[1]} ${r.pts} yıldız kazandın!`);
+    if(Object.keys(sk.answered).length === R.qs.length){
+      $("#rdone").innerHTML = `<div class="fb good"><div class="en">🏆 Story complete!${r.bonus?" ⭐ +5 bonus":""}</div><div class="tr">Hikâyeyi bitirdin, bütün soruları doğru cevapladın!</div></div>
+        <div class="row center" style="margin-top:12px"><a class="btn ghost" href="#reading">📕 Hikâyeler</a>${i<LEVELS.length-1 && unitOpen(i+1)?`<a class="btn" href="#reading-${i+2}">Sonraki hikâye ▶</a>`:""}</div>`;
+      speak("Great reading! You finished the story!");
+    }
+  } else {
+    sk.tries[n] = (sk.tries[n]||0) + 1;
+    b.classList.add("wrong"); setTimeout(()=>b.classList.remove("wrong"), 600);
+    $("#rfb-"+n).innerHTML = `<div class="fb try">Not quite! Read the story again. 🔍 <span class="tr">Cevap hikâyenin içinde, bir daha oku!</span></div>`;
+    say("Good try! Look at the story again.", "Güzel deneme! Hikâyeye bir daha bak.");
+  }
+}
+
+function listeningHTML(){
+  if(!unitOpen(sk.unit)) return skLocked();
+  const i = sk.unit, items = LISTENING[i], t = items[sk.idx];
+  return `${skBack()}<section class="panel">
+    <div class="eyebrow">Ünite ${i+1} · ${LEVELS[i].theme} · Listening ${sk.idx+1}/${items.length}</div>
+    ${skProg(items.length)}
+    <span class="kind">🎧 Listen & Pick</span>
+    <div class="row center"><button class="btn" data-act="skPlay">🔊 Listen to Ollie</button><button class="btn ghost small" data-act="skSlow">🐢 Slow</button><button class="btn ghost small" data-act="showTxt">Show the text</button></div>
+    <div class="sentence hidden-text" id="txt" hidden>“${esc(t.say)}”</div>
+    <div class="q">${esc(t.q)} <span class="tr">${esc(t.tr)}</span></div>
+    <div class="opts">${t.options.map(o=> typeof o==="string"
+      ? `<button class="ans" data-act="skAns" data-v="${esc(o)}">${esc(o)}</button>`
+      : `<button class="ans" data-act="skAns" data-v="${o.v}" aria-label="${o.v}">${o.c?`<span class="sw" style="background:${o.c}"></span>`:`<span class="emo">${o.e}</span>`}</button>`).join("")}</div>
+    <div id="fb"></div>
+  </section>`;
+}
+function listenAnswer(b){
+  if(sk.solved) return;
+  const i = sk.unit, t = LISTENING[i][sk.idx];
+  if(b.dataset.v === t.answer){
+    b.classList.add("right");
+    skCorrect(sk.tries[sk.idx] ? 2 : 5, `“${esc(t.say)}”`);
+    speak(t.say);
+  } else {
+    sk.tries[sk.idx] = (sk.tries[sk.idx]||0) + 1;
+    b.classList.add("wrong"); setTimeout(()=>b.classList.remove("wrong"), 600);
+    say("Listen again!", "Bir daha dinle! 🔊 düğmesine bas.");
+    $("#fb").innerHTML = `<div class="fb try">Listen again! 👂 <span class="tr">Bir daha dinle. Zorlanırsan 🐢 Slow ile yavaş dinleyebilirsin.</span></div>`;
+  }
+}
+function skCorrect(pts, note){
+  sk.solved = true;
+  const total = SKILL[sk.type].total(sk.unit);
+  const r = skAward(sk.type, sk.unit, sk.idx, pts);
+  sk.local.add(sk.idx);
+  const p = PRAISE[Math.floor(Math.random()*PRAISE.length)];
+  say(`${p[0]} ⭐ +${r.pts}!`, `${p[1]} ${r.pts} yıldız kazandın!`);
+  const last = sk.local.size >= total;
+  $("#fb").innerHTML = `<div class="fb good"><div class="en">${p[0]} ⭐ +${r.pts}${r.bonus?" · 🏆 +5 bonus":""}</div>${note?`<div>${note}</div>`:""}</div>
+    <div class="row center" style="margin-top:12px">${last
+      ? `<a class="btn ghost" href="#${sk.type}">${SKILL[sk.type].e} Bütün üniteler</a>${sk.unit<LEVELS.length-1 && unitOpen(sk.unit+1)?`<a class="btn" href="#${sk.type}-${sk.unit+2}">Sonraki ünite ▶</a>`:""}`
+      : `<button class="btn" data-act="skNext">Next ▶</button>`}</div>`;
+  const nb = $("#fb .btn:last-child"); if(nb) nb.focus();
+}
+function skNext(){
+  const total = SKILL[sk.type].total(sk.unit);
+  let n = sk.idx; do{ n = (n+1) % total; } while(sk.local.has(n) && sk.local.size < total);
+  sk.idx = n; sk.solved = false; stopRec(); render();
+  if(sk.type==="listening"){ say("Listen carefully!", "Dikkatle dinle!"); setTimeout(()=>speak(LISTENING[sk.unit][sk.idx].say), 300); }
+  else say("Your turn to talk!", "Önce dinle, sonra sen söyle!");
+}
+
+function speakingHTML(){
+  if(!unitOpen(sk.unit)) return skLocked();
+  const i = sk.unit, items = SPEAKING[i], t = items[sk.idx], tries = sk.tries[sk.idx] || 0, mic = SR && !sk.noMic;
+  return `${skBack()}<section class="panel">
+    <div class="eyebrow">Ünite ${i+1} · ${LEVELS[i].theme} · Speaking ${sk.idx+1}/${items.length}</div>
+    ${skProg(items.length)}
+    <span class="kind">🗣️ Say it!</span>
+    <div class="bigemo">${t.e}</div>
+    <div class="say">“${esc(t.en)}”<div class="tr" style="font-family:var(--body);font-weight:400">${esc(t.tr)}</div></div>
+    <div class="row center"><button class="btn ghost" data-act="skPlay">🔊 Listen</button><button class="btn ghost small" data-act="skSlow">🐢 Slow</button>
+      ${mic ? `<button class="btn" data-act="mic" id="micBtn">🎤 Speak</button>` : `<button class="btn" data-act="skSaid">🎙️ I said it!</button>`}</div>
+    <div class="tr" style="text-align:center">${mic ? "1) Önce Ollie'yi dinle · 2) 🎤 Speak'e bas · 3) Cümleyi yüksek sesle söyle" : "1) Ollie'yi dinle · 2) Sen yüksek sesle söyle · 3) \"I said it!\" düğmesine bas"}</div>
+    <div id="heard"></div>
+    <div id="fb">${mic && tries >= 2 ? skipHTML() : ""}</div>
+  </section>`;
+}
+const skipHTML = () => `<div class="row center"><span class="tr">Ollie seni anlamakta zorlanıyor olabilir.</span><button class="btn ghost small" data-act="skSaid">Doğru söyledim, geç ▶</button></div>`;
+const NUMW = {"0":"zero","1":"one","2":"two","3":"three","4":"four","5":"five","6":"six","7":"seven","8":"eight","9":"nine","10":"ten","11":"eleven","12":"twelve"};
+const toks = s => norm(s.replace(/-/g," ")).split(" ").filter(Boolean).map(w => w==="cannot" ? "can't" : NUMW[w] || w);
+function matchWords(target, heard){
+  const pool = {}; toks(heard).forEach(w=>pool[w] = (pool[w]||0) + 1);
+  const words = target.split(/\s+/).map(w=>{ const k = toks(w)[0]; const ok = !!(k && pool[k] > 0); if(ok) pool[k]--; return {w, ok}; });
+  return {words, score: words.filter(x=>x.ok).length / words.length};
+}
+function startMic(){
+  if(sk.solved || rec) return;
+  stopSpeech();
+  const t = SPEAKING[sk.unit][sk.idx], btn = $("#micBtn");
+  let r;
+  try{ r = new SR(); }catch(e){ sk.noMic = true; render(); return; }
+  rec = r; r.lang = "en-US"; r.interimResults = false; r.maxAlternatives = 5;
+  let handled = false;
+  btn.textContent = "👂 Listening…"; btn.disabled = true;
+  say("I'm listening… 👂", "Dinliyorum, şimdi cümleyi söyle!");
+  r.onresult = e => {
+    handled = true;
+    const alts = [...e.results[0]].map(a=>a.transcript);
+    const best = alts.map(a=>Object.assign({a}, matchWords(t.en, a))).sort((x,y)=>y.score-x.score)[0];
+    $("#heard").innerHTML = `<div class="say heard">${best.words.map(w=>`<span class="hw ${w.ok?"ok":"no"}">${esc(w.w)}</span>`).join(" ")}</div>
+      <div class="tr" style="text-align:center">Ollie şunu duydu: “${esc(best.a)}”</div>`;
+    if(best.score >= .8) skCorrect(sk.tries[sk.idx] ? 3 : 5, `“${esc(t.en)}” <span class="tr">Telaffuzun çok güzel!</span>`);
+    else {
+      sk.tries[sk.idx] = (sk.tries[sk.idx]||0) + 1;
+      const almost = best.score >= .5;
+      say(almost ? "Almost! Try again." : "Let's try again!", almost ? "Neredeyse! Kırmızı kelimelere dikkat edip tekrar söyle." : "Önce Ollie'yi dinle, sonra yavaşça tekrar söyle.");
+      $("#fb").innerHTML = `<div class="fb try">${almost ? "Almost! 💪" : "Try again! 🙂"} <span class="tr">Yeşil kelimeleri doğru söyledin. Kırmızı olanları dinleyip tekrar dene.</span></div>${sk.tries[sk.idx] >= 2 ? skipHTML() : ""}`;
+    }
+  };
+  r.onerror = e => {
+    handled = true;
+    if(e.error === "not-allowed" || e.error === "service-not-allowed"){
+      sk.noMic = true; render();
+      $("#fb").innerHTML = `<div class="fb try">Mikrofon izni verilmedi. Tarayıcının adres çubuğundan mikrofona izin verebilirsin. Şimdilik cümleyi yüksek sesle söyleyip "I said it!" düğmesine bas.</div>`;
+    } else if(e.error !== "aborted"){
+      say("I can't hear you!", "Seni duyamadım. Mikrofona yakın konuş ve tekrar dene.");
+      $("#fb").innerHTML = `<div class="fb try">Seni duyamadım. 🎤 düğmesine bastıktan sonra hemen konuş.</div>`;
+    }
+  };
+  r.onend = () => {
+    if(rec === r) rec = null;
+    const b = $("#micBtn"); if(b){ b.disabled = false; b.textContent = "🎤 Speak"; }
+    if(!handled){ say("I can't hear you!", "Seni duyamadım. Tekrar dene."); }
+  };
+  try{ r.start(); }catch(e){ rec = null; btn.disabled = false; btn.textContent = "🎤 Speak"; }
+}
+
 /* ---------- Events ---------- */
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-act],.opt,.tile,#card"); if(!b) return;
@@ -1467,6 +1900,16 @@ document.addEventListener("click", e => {
     case "resetYes": S = Object.assign(blankData(), {name:S.name, avatar:S.avatar}); save(); go("home"); toast("İlerleme sıfırlandı."); return;
     case "resetNo": render(); return;
     case "nextTask": return nextTask();
+    case "readAll": return readStory();
+    case "readSlow": return readStory(.55);
+    case "readLine": { stopSpeech(); document.querySelectorAll("#story .line").forEach((p,n)=>p.classList.toggle("on", n === +arg)); return speak(READING[sk.unit].lines[+arg][0], ()=>{ const l = document.querySelectorAll("#story .line")[+arg]; if(l) l.classList.remove("on"); }); }
+    case "toggleTr": sk.showTr = !sk.showTr; { const y = window.scrollY; stopSpeech(); render(); window.scrollTo({top:y}); } return;
+    case "skAns": return sk.type==="reading" ? readAnswer(b, +arg) : listenAnswer(b);
+    case "skPlay": return speak(sk.type==="listening" ? LISTENING[sk.unit][sk.idx].say : SPEAKING[sk.unit][sk.idx].en);
+    case "skSlow": return speak(sk.type==="listening" ? LISTENING[sk.unit][sk.idx].say : SPEAKING[sk.unit][sk.idx].en, null, .5);
+    case "skNext": return skNext();
+    case "mic": return startMic();
+    case "skSaid": if(!sk.solved) skCorrect(SR && !sk.noMic ? 2 : 3, `“${esc(SPEAKING[sk.unit][sk.idx].en)}” <span class="tr">Konuşman harikaydı!</span>`); return;
     case "play": return speak(t.say || t.word || t.sentence);
     case "slow": return speak(t.say || t.word, null, .5);
     case "showTxt": { const x=$("#txt"); x.hidden=!x.hidden; return; }
