@@ -1,5 +1,12 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **Son durum (2026-11-10, 6. oturum): API'yi api.ollieakademi.com'a taşıma BAŞLADI, kullanıcıyı bekliyor.**
+> - Alan adının DNS'i hâlâ GoDaddy'de; Worker'a özel alan adı bağlamak için DNS'in Cloudflare'e geçmesi gerekiyor. Kullanıcı onay verdi.
+> - Cloudflare API anahtarının alan adı (zone) ekleme yetkisi YOK. Bu yüzden kullanıcı şunları kendisi yapacak: Cloudflare paneli → Add a domain → ollieakademi.com → Free → kayıtları tara (quick scan) → verilen 2 ad sunucusunu GoDaddy'de "Nameservers → Change → kendi ad sunucularımı kullan" ile girecek.
+> - Geçmeden önce kontrol: Cloudflare'in kopyaladığı kayıtlarda GitHub Pages A kayıtları (185.199.108-111.153), www CNAME (bilgi60.github.io) ve Resend kayıtları (resend._domainkey TXT, send MX + TXT) olmalı; GitHub Pages kayıtları "DNS only" (gri bulut) olmalı.
+> - Alan adı Cloudflare'de "Active" olunca: Workers → ollie-akademi-api → Settings → Domains & Routes → Add → Custom Domain → api.ollieakademi.com (kullanıcı ya da yetkisi genişletilmiş anahtarla Claude).
+> - **Sıradaki adım (Claude):** api.ollieakademi.com yanıt verince `index.html:859` ve `admin.html:85` içindeki API adresini `https://api.ollieakademi.com/api` yap, test et, main'e al. workers.dev adresi bir süre açık kalsın (eski sekmeler için).
+
 > **Son durum (2026-11-09, 5. oturum): Reading/Listening/Speaking + e-postayla şifre sıfırlama/doğrulama YAYINDA (göç yapıldı, sunucu güncellendi, main'e alındı). Resend kuruldu (2026-11-10): ollieakademi.com Resend'de Verified, RESEND_API_KEY Worker'a gizli değişken olarak eklendi, /api/forgot artık çalışıyor. Kullanıcı gerçek e-postayla şifre sıfırlamayı uçtan uca denedi: e-posta geldi, yeni şifre kaydedildi. BU İŞ BİTTİ. Sıradaki fikirler: KVKK aydınlatma metni sayfası, API'yi api.ollieakademi.com'a taşımak.**
 > **Bitenler (dal: `claude/blissful-cori-ulhk0b`):**
 > - Menüye 3 yeni bölüm: 📕 Reading (her ünite için kısa hikâye + 3 soru, sesli okuma, Türkçe çeviri), 🎧 Listening (ünite başına 5 resimli dinleme), 🗣️ Speaking (ünite başına 5 cümle; Chrome/Edge/Safari'de mikrofonla kelime kelime kontrol, diğerlerinde "I said it!"). İçerikler `READING`, `LISTENING`, `SPEAKING` dizilerinde. İlerleme `S.skills.{r,l,s}[ünite]` içinde. 3 yeni rozet, profilde istatistik. Telefonda menü kısa etiketlerle (Read/Listen/Speak) sığıyor.
