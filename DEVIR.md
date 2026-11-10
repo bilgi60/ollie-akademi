@@ -1,6 +1,6 @@
 # DEVİR NOTU — Ollie Akademi
 
-> **Son durum (2026-11-10, 6. oturum): API'yi api.ollieakademi.com'a taşıma BAŞLADI, kullanıcıyı bekliyor.**
+> **Son durum (2026-11-10, 6. oturum): API'yi api.ollieakademi.com'a taşıma ERTELENDİ (zorunlu değil, site workers.dev adresiyle sorunsuz çalışıyor). Kullanıcı isterse aşağıdaki adımlardan devam edilir.**
 > - Alan adının DNS'i hâlâ GoDaddy'de; Worker'a özel alan adı bağlamak için DNS'in Cloudflare'e geçmesi gerekiyor. Kullanıcı onay verdi.
 > - Cloudflare API anahtarının alan adı (zone) ekleme yetkisi YOK. Bu yüzden kullanıcı şunları kendisi yapacak: Cloudflare paneli → Add a domain → ollieakademi.com → Free → kayıtları tara (quick scan) → verilen 2 ad sunucusunu GoDaddy'de "Nameservers → Change → kendi ad sunucularımı kullan" ile girecek.
 > - Geçmeden önce kontrol: Cloudflare'in kopyaladığı kayıtlarda GitHub Pages A kayıtları (185.199.108-111.153), www CNAME (bilgi60.github.io) ve Resend kayıtları (resend._domainkey TXT, send MX + TXT) olmalı; GitHub Pages kayıtları "DNS only" (gri bulut) olmalı.
