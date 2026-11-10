@@ -1,5 +1,7 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **SIRADAKİ İŞ (kullanıcı onayladı, 2026-11-10): KVKK aydınlatma metni sayfası.** Kayıt ekranından ve sitenin altından bağlantı verilecek; kayıtta "okudum" onayı düşünülebilir. Toplanan veriler: veli e-postası, şifre özeti, çocuk adı/takma adı, avatar, ders ilerlemesi, giriş/aktivite kayıtları; sunucu Cloudflare (yurt dışı aktarım), e-posta Resend. Kullanıcıdan istenecek: veri sorumlusunun adı (kişi/firma) ve iletişim e-postası/adresi.
+
 > **Son durum (2026-11-10, 6. oturum): API'yi api.ollieakademi.com'a taşıma ERTELENDİ (zorunlu değil, site workers.dev adresiyle sorunsuz çalışıyor). Kullanıcı isterse aşağıdaki adımlardan devam edilir.**
 > - Alan adının DNS'i hâlâ GoDaddy'de; Worker'a özel alan adı bağlamak için DNS'in Cloudflare'e geçmesi gerekiyor. Kullanıcı onay verdi.
 > - Cloudflare API anahtarının alan adı (zone) ekleme yetkisi YOK. Bu yüzden kullanıcı şunları kendisi yapacak: Cloudflare paneli → Add a domain → ollieakademi.com → Free → kayıtları tara (quick scan) → verilen 2 ad sunucusunu GoDaddy'de "Nameservers → Change → kendi ad sunucularımı kullan" ile girecek.
