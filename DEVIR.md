@@ -5,7 +5,7 @@
 > - Her madde (ya da birkaç küçük madde) ayrı sohbette. Her biri bitince: tarayıcıda dene, main'e almadan önce kullanıcıya sor, bu nota "biten/sıradaki" yaz.
 > - **Madde 1 BİTTİ (dal `claude/bold-planck-a54j4l`, main'e alındı 2026-11-11, YAYINDA).** 
 > - **Madde 2 BİTTİ (dal `claude/cool-thompson-cddezq`, 2026-11-11). main'e alındı 2026-11-11, YAYINDA.**
-> - **Madde 3 YAZILDI (dal `claude/eloquent-davinci-bm11d7`, 2026-11-11) — HENÜZ YAYINDA DEĞİL.** Yayına almak için kullanıcı onayıyla sırayla: (1) canlı veritabanına göç (BİR KEZ!): `cd api && CLOUDFLARE_API_TOKEN=proxy-injected CLOUDFLARE_ACCOUNT_ID=9a69de8230786ced37e7236b8221b494 npx wrangler d1 execute ollie-akademi-db --remote --yes --file=migrations-0003-report.sql` (2) aynı değişkenlerle `npx wrangler deploy` (3) dalı main'e al. Sonra yönetici hesabıyla Veli paneli → "✉️ Bana şimdi gönder" ile gerçek e-postayı dene. Bitince sıradaki: **Madde 4 — Yazdırılabilir çalışma kâğıdı.**
+> - **Madde 3 BİTTİ (dal `claude/eloquent-davinci-bm11d7`), 2026-11-11 YAYINDA:** canlı veritabanına göç yapıldı, Worker güncellendi (zamanlayıcı: `0,20,40 15-17 * * SUN`), main'e alındı. Kullanıcı Veli paneli → "✉️ Bana şimdi gönder" ile gerçek e-postayı deneyebilir. Sıradaki: **Madde 4 — Yazdırılabilir çalışma kâğıdı.**
 
 > **Son durum (2026-11-11, 11. oturum): Veliye haftalık e-posta raporu.**
 > - Her pazar 18:00–20:40 (Türkiye) arası Worker zamanlayıcısı (`wrangler.toml` → `[triggers] crons`) her 20 dakikada bir en fazla 40 veliye rapor gönderir (Workers'ın 50 alt istek sınırı yüzünden parti parti). Koşullar: hesap aktif, e-posta doğrulanmış, rapor açık, son 28 günde çalışan en az bir çocuk var, o haftaya daha önce gönderilmemiş (`parents.report_week`). Gönderilemezse sonraki çalıştırmada yeniden denenir.
