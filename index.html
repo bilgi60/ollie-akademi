@@ -413,6 +413,7 @@ body.sheeton #sheet{display:block;max-width:232mm;margin:0 auto;padding:16px}
 
 <script src="units-a1.js"></script>
 <script src="units-a2.js"></script>
+<script src="books-mf.js"></script>
 <script>
 const LEVELS = [
  { rank:"Novice Explorer", theme:"Animals", tr:"Hayvanlar ve yetenekleri", icon:"🐾",
@@ -875,6 +876,9 @@ const BOOKS = [
 {"id":"b20","u":9,"lv":3,"t":"The Talent Show","e":"🎤","pages":[["🏫🎤","Today is the school talent show. Ece wants to sing, but she is shy.","Bugün okulun yetenek gösterisi. Ece şarkı söylemek istiyor ama utangaç."],["👧😰👧","“I can’t sing alone,” she tells her friend Lily. “Everyone looks at me!”","“Yalnız şarkı söyleyemem,” der arkadaşı Lily’ye. “Herkes bana bakıyor!”"],["👧💃","Lily smiles. “Then I can dance with you. We can be a team!”","Lily gülümser. “O zaman seninle dans edebilirim. Takım olabiliriz!”"],["👦🖍️🎵","Mert hears them. “I can draw pictures for your song,” he says.","Mert onları duyar. “Şarkın için resimler çizebilirim,” der."],["🎭💡😬","On the stage, the lights are bright. Ece’s legs shake a little.","Sahnede ışıklar parlak. Ece’nin bacakları biraz titrer."],["👧🎤💃","Then Ece looks at her friends. She sings, and Lily dances.","Sonra Ece arkadaşlarına bakar. Şarkı söyler ve Lily dans eder."],["🖼️😂","Mert shows his pictures on a big screen. They are so funny!","Mert resimlerini büyük bir ekranda gösterir. Çok komikler!"],["👏🎉","Everyone claps and cheers. Ece is not shy now, and she loves her team!","Herkes alkışlar ve tezahürat yapar. Ece artık utangaç değil ve takımını seviyor!"]],"g":{"friends":"arkadaşlar","big":"büyük","today":"bugün","talent":"yetenek","show":"gösteri","ece":"Ece (isim)","wants":"ister","but":"ama","shy":"utangaç","alone":"yalnız","tells":"söyler","lily":"Lily (isim)","everyone":"herkes","looks":"bakar","ece’s":"Ece’nin","smiles":"gülümser","then":"sonra","be":"olmak","mert":"Mert (isim)","hears":"duyar","pictures":"resimler","for":"için","song":"şarkı","says":"der","stage":"sahne","lights":"ışıklar","bright":"parlak","legs":"bacaklar","shake":"titrer","little":"biraz, küçük","sings":"söyler","dances":"dans eder","shows":"gösterir","screen":"ekran","funny":"komik","claps":"alkışlar","cheers":"tezahürat yapar","loves":"sever"},"qs":[{"q":"What does Ece want to do?","tr":"Ece ne yapmak ister?","options":["dance","sing","draw"],"answer":"sing"},{"q":"Why can’t Ece sing alone?","tr":"Ece neden yalnız şarkı söyleyemez?","options":["She is shy.","She is hungry.","She is sick."],"answer":"She is shy."},{"q":"Who dances with Ece?","tr":"Ece ile kim dans eder?","options":["Mert","Lily","the teacher"],"answer":"Lily"},{"q":"What does Mert do?","tr":"Mert ne yapar?","options":["He draws pictures.","He plays football.","He swims."],"answer":"He draws pictures."}]}
 ];
 
+
+/* Movers/Flyers kitapları (Seviye 4–5, Ünite 11–30) books-mf.js'te (BOOKS_MF). */
+if(typeof BOOKS_MF !== "undefined") BOOKS.push(...BOOKS_MF);
 
 /* Cümle Kulesi: her katta cümleye tek bir parça eklenir. Renk = cümledeki görev. */
 const ROLE = {who:{e:"🔵",q:"Kim?"}, does:{e:"🟠",q:"Ne yapıyor?"}, where:{e:"🟢",q:"Nerede?"}, when:{e:"🟣",q:"Ne zaman?"}};
@@ -2665,7 +2669,7 @@ function skillListHTML(type){
   const note = type==="speaking" && !SR ? `<div class="fb try">Bu tarayıcı konuşmayı dinleyemiyor. Chrome, Edge ya da Safari'de Ollie sesini kontrol eder. Burada da çalışabilirsin: cümleyi yüksek sesle söyleyip "I said it!" düğmesine bas.</div>` : "";
   return `<section class="panel"><div class="eyebrow">${K.n} · ${K.tr}</div><h1>${K.e} ${K.n}</h1><p class="muted">${desc}</p>${note}
     <div class="row"><span class="chip ok">✓ ${skCount(type)}/${N()} ünite tamam</span></div>
-    ${type==="reading" ? `<div class="continue" style="margin-top:12px"><span class="ic">📚</span><div class="txt"><div class="eyebrow">Yeni · Okuma Kütüphanesi</div><h3>${BOOKS.length} resimli kitap, 3 seviye</h3><span class="tr">${bookCount()} kitap okudun. Ünite hikâyelerinden sonra seviyene uygun kitaplarla devam et.</span></div><a class="btn" href="#library">Kütüphane ▶</a></div>` : ""}</section>
+    ${type==="reading" ? `<div class="continue" style="margin-top:12px"><span class="ic">📚</span><div class="txt"><div class="eyebrow">Yeni · Okuma Kütüphanesi</div><h3>${BOOKS.length} resimli kitap, ${bookLevels().length} seviye</h3><span class="tr">${bookCount()} kitap okudun. Ünite hikâyelerinden sonra seviyene uygun kitaplarla devam et.</span></div><a class="btn" href="#library">Kütüphane ▶</a></div>` : ""}</section>
   <div class="grid g3">${LEVELS.map((L,i)=>{ const open = unitOpen(i), n = skDone(type,i).length, tot = K.total(i), done = n >= tot;
     const nm = type==="reading" ? READING[i].title : L.theme;
     const st = !open ? `<span class="chip">🔒 Kilitli</span>` : done ? `<span class="chip ok">✓ Tamam</span>` : n ? `<span class="chip">Devam ediyor</span>` : `<span class="chip">Yeni</span>`;
@@ -2729,13 +2733,16 @@ function readAnswer(b, n){
 }
 
 /* ---------- Seviyeli okuma kütüphanesi ----------
-   BOOKS: 3 seviyede kısa resimli kitaplar. Her kitap bir üniteye bağlı (o ünite açılınca okunur).
+   BOOKS: 5 seviyede kısa resimli kitaplar (1–3 Starters, 4 Movers, 5 Flyers; 4–5 books-mf.js’te). Her kitap bir üniteye bağlı (o ünite açılınca okunur).
    Okuyucu sayfa sayfa gider; her kelimeye dokununca Ollie okur ve Türkçesini söyler. Sonunda kısa test.
    İlerleme: S.books[id] = {n: kaç kez bitirdi, q: ilk denemede doğru (en iyi), d: son okuma günü}. */
 const BOOK_LV = [null,
   {e:"🌱", n:"Seviye 1", tr:"Başlangıç", d:"Kısa kitaplar: her sayfada tek bir kısa cümle."},
   {e:"🌿", n:"Seviye 2", tr:"Gelişen okur", d:"Her sayfada bir iki cümle, yeni kelimeler."},
-  {e:"🌳", n:"Seviye 3", tr:"Usta okur", d:"Daha uzun hikâyeler ve konuşmalar."}];
+  {e:"🌳", n:"Seviye 3", tr:"Usta okur", d:"Daha uzun hikâyeler ve konuşmalar."},
+  {e:"🍎", n:"Seviye 4", tr:"Meraklı okur", d:"Movers kitapları: 8 sayfa, karşılaştırmalar ve geçmiş zaman."},
+  {e:"🌟", n:"Seviye 5", tr:"Kitap kurdu", d:"Flyers kitapları: 10 sayfa, planlar, masallar, “neden” soruları."}];
+const bookLevels = () => BOOK_LV.map((_,lv)=>lv).filter(lv => lv && BOOKS.some(b=>b.lv===lv));
 const BOOK_GOAL = 4;   // bir seviyede bu kadar kitap okuyan o seviyenin okuru olur
 const BASIC_TR = {a:"bir", an:"bir", the:"(belirli tanımlık)", i:"ben", you:"sen / siz", he:"o (erkek)", she:"o (kız)", it:"o (eşya, hayvan)",
   we:"biz", they:"onlar", is:"-dir (he/she/it)", are:"-dir (we/you/they)", am:"-im (I)", and:"ve", but:"ama", in:"içinde", on:"üstünde",
@@ -2753,7 +2760,7 @@ const bookById = id => BOOKS.find(b=>b.id===id);
 const bookRead = b => !!(S.books[b.id] && S.books[b.id].n);
 const bookCount = () => BOOKS.filter(bookRead).length;
 const bookLvCount = lv => BOOKS.filter(b=>b.lv===lv && bookRead(b)).length;
-const readerLevel = () => [3,2,1].find(lv => bookLvCount(lv) >= Math.min(BOOK_GOAL, BOOKS.filter(b=>b.lv===lv).length)) || 0;
+const readerLevel = () => bookLevels().reverse().find(lv => bookLvCount(lv) >= Math.min(BOOK_GOAL, BOOKS.filter(b=>b.lv===lv).length)) || 0;
 function nextBook(){
   const open = BOOKS.filter(b=>unitOpen(b.u) && !bookRead(b));
   return open.sort((a,b)=>a.lv-b.lv || a.u-b.u)[0] || null;
@@ -2777,7 +2784,7 @@ function libraryHTML(){
     <div class="row"><span class="chip ok">📖 Okuma seviyem: ${rl ? `${BOOK_LV[rl].e} ${BOOK_LV[rl].n}` : "henüz yok"}</span></div>
     ${nb ? `<div class="continue" style="margin-top:12px"><span class="ic">${nb.e}</span><div class="txt"><div class="eyebrow">Sıradaki kitabın · ${BOOK_LV[nb.lv].e} ${BOOK_LV[nb.lv].n}</div><h3>${esc(nb.t)}</h3><span class="tr">${nb.pages.length} sayfa · Ünite ${nb.u+1}: ${LEVELS[nb.u].theme}</span></div><a class="btn" href="#book-${nb.id}">Oku ▶</a></div>` : ""}
   </section>
-  ${[1,2,3].map(lv=>{ const L = BOOK_LV[lv], list = BOOKS.filter(b=>b.lv===lv), n = bookLvCount(lv), goal = Math.min(BOOK_GOAL, list.length);
+  ${bookLevels().map(lv=>{ const L = BOOK_LV[lv], list = BOOKS.filter(b=>b.lv===lv), n = bookLvCount(lv), goal = Math.min(BOOK_GOAL, list.length);
     return `<section class="panel"><h2>${L.e} ${L.n} <span class="tr">· ${L.tr} · ${n}/${list.length} okundu</span></h2>
       <p class="muted">${L.d} ${n >= goal ? `<b>${L.e} Bu seviyenin okurusun!</b>` : `${goal} kitap oku, ${L.n} okuru ol.`}</p>
       <div class="grid g3">${list.map(b=>{ const open = unitOpen(b.u), r = S.books[b.id];
