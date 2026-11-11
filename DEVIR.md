@@ -18,7 +18,7 @@
 
 > - **Madde 8, 4. kısım BİTTİ: A2 Key (KET) 10 ünite (dal `claude/tender-maxwell-3t7i17`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA; Worker da yeniden yayınlandı.** Sıradaki: **Madde 8, 5. kısım — B1 Preliminary (PET) 10 ünite (Ünite 41–50, `units-pet.js`, aynı yöntem)**, sonra **deneme sınavları + sertifika benzeri seviye rozeti**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
 
-> - **Madde 8, 5. kısım BİTTİ: B1 Preliminary (PET) 10 ünite (dal `claude/new-session-ymk9cm`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Main'e alınınca Worker'ı yeniden yayınla (rapordaki ünite/rozet adları için). Sıradaki: **Madde 8, 6. kısım — deneme sınavları + sertifika benzeri seviye rozeti**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
+> - **Madde 8, 5. kısım BİTTİ: B1 Preliminary (PET) 10 ünite (dal `claude/new-session-ymk9cm`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA; Worker da yeniden yayınlandı.** Sıradaki: **Madde 8, 6. kısım — deneme sınavları + sertifika benzeri seviye rozeti**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
 
 > **Son durum (2026-11-11, 19. oturum): B1 Preliminary for Schools üniteleri (Ünite 41–50).**
 > - Yeni dosya `units-pet.js` (`const UNITS_PET`), biçim `units-key.js` ile aynı; `index.html` yükler. 🏆 "B1 Preliminary" bölümü artık "Yakında" değil.
