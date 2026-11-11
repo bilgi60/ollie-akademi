@@ -108,6 +108,25 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,.c
 .ring .fill{fill:none;stroke:var(--sun);stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .6s}
 .ring .lbl{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:800;line-height:1.1}
 .ring .lbl b{font-family:var(--display);font-size:1.6rem;display:block}
+.chatbox{display:flex;flex-direction:column;gap:12px}
+.clog{display:flex;flex-direction:column;gap:12px;max-height:60vh;overflow-y:auto;padding:4px 2px}
+.cmsg{display:flex;flex-direction:column;max-width:85%}
+.cmsg.ollie{flex-direction:row;gap:8px;align-self:flex-start;align-items:flex-start}
+.cmsg.me{align-self:flex-end;align-items:flex-end}
+.cava{font-size:1.8rem;line-height:1}
+.cb{background:var(--soft);border-radius:18px;padding:10px 14px;font-size:1.1rem;overflow-wrap:anywhere}
+.cmsg.me .cb{background:var(--accent);color:var(--on-accent)}
+.cb .tr{margin-top:6px}
+.cb.typing{letter-spacing:3px;font-weight:700}
+.cact{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.cfix{margin-top:6px;background:var(--leaf-soft);border:2px solid var(--leaf);border-radius:14px;padding:6px 12px;max-width:100%}
+.cfix .tr{display:block}
+.crow{display:flex;gap:8px;align-items:center}
+.crow .field{max-width:none;flex:1;min-width:0}
+#chatMic.on{background:var(--berry-soft)}
+.pchat{border:2px solid var(--line);border-radius:14px;padding:8px 12px;margin-top:8px}
+.pchat summary{cursor:pointer}
+.pline{padding:4px 0;overflow-wrap:anywhere}
 .continue{display:flex;gap:14px;align-items:center;background:var(--soft);border-radius:18px;padding:14px 16px;flex-wrap:wrap}
 .continue .ic{font-size:2.2rem}
 .continue .txt{flex:1;min-width:160px}
@@ -1198,6 +1217,7 @@ function normalize(s){
   s.place = s.place || null;
   s.books = s.books || {};
   s.exams = s.exams || {};
+  s.chat = Object.assign({n:0}, s.chat);
   s.grade = MEB.some(x=>x.g === s.grade) ? s.grade : null;
   if(!s.rev){ s.rev = {}; LEVELS.forEach((L,i)=>{ if(s.lessons["c"+i]) L.cards.forEach(c=>{ s.rev[c.w] = {b:1, d:todayKey(), x:0}; }); }); }
   if(!s.badges){ s.badges = []; s.needBadgeInit = true; }
@@ -1357,6 +1377,8 @@ const BADGES = [
   {id:"certFlyers", e:"🥇", n:"Flyers Sertifikası", d:"Flyers deneme sınavından %60 ve üstü al.", ok:()=>exPassed("flyers")},
   {id:"certKey", e:"🎗️", n:"A2 Key Sertifikası", d:"A2 Key deneme sınavından %60 ve üstü al.", ok:()=>exPassed("key")},
   {id:"certPet", e:"🏵️", n:"B1 Preliminary Sertifikası", d:"B1 Preliminary deneme sınavından %60 ve üstü al.", ok:()=>exPassed("pet")},
+  {id:"chat1", e:"🦉", n:"Ollie'yle Sohbet", d:"Ollie ile ilk sohbetini yap.", ok:()=>S.chat.n>=1},
+  {id:"chat50", e:"💬", n:"Sohbet Kuşu", d:"Ollie'ye 50 mesaj gönder.", ok:()=>S.chat.n>=50},
   {id:"certAll", e:"🌈", n:"Sertifika Koleksiyoncusu", d:"Beş seviyenin hepsinin sertifikasını al.", ok:()=>STAGES.every(g=>exPassed(g.id))}
 ];
 function checkBadges(silent){
@@ -1407,7 +1429,7 @@ function stopSpeech(){ singing = false; try{ speechSynthesis.cancel(); }catch(e)
 /* ---------- Router ---------- */
 let page = "home", unitArg = 0, play = null;
 function route(){
-  stopSpeech(); stopRec(); play = null; sk = null; rv = null; bk = null; ex = null;
+  stopSpeech(); stopRec(); chatStopRec(); play = null; sk = null; rv = null; bk = null; ex = null; ct = null;
   const h = location.hash.slice(1) || "home";
   const tk = h.match(/^(reset|verify)-([0-9a-f]{64})$/);
   const un = h.match(/^unsub-(\d+)-([0-9a-f]{32})$/);
@@ -1440,6 +1462,7 @@ function route(){
   else if(h === "review"){ page = "review"; startReview(); }
   else if(h === "placement"){ page = "placement"; pt = null; }
   else if(h === "exams") page = "exam";
+  else if(/^chat(-\d+)?$/.test(h)){ page = "chat"; const n = +h.slice(5); if(n>=1 && n<=LEVELS.length) startChat(n-1); }
   else if(/^meb(-\d)?$/.test(h)){ page = "meb"; mebView = h.length > 3 ? +h.slice(4) : S.grade; if(!MEB.some(x=>x.g === mebView)) mebView = null; }
   else if(em && exStage(em[1]) && exOpen(exStage(em[1]))){ page = "exam"; startExam(em[1]); }
   else page = ["home","units","words","badges","profile"].includes(h) ? h : "home";
@@ -1447,17 +1470,18 @@ function route(){
 }
 function render(greet){
   updateTop();
-  const nav = play || page==="unit" || page==="placement" || page==="exam" || page==="meb" ? "units" : page==="review" ? "home" : page==="library" || page==="book" ? "reading" : page;
+  const nav = play || page==="unit" || page==="placement" || page==="exam" || page==="meb" ? "units" : page==="review" ? "home" : page==="chat" ? "speaking" : page==="library" || page==="book" ? "reading" : page;
   document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("on", a.dataset.nav===nav));
   const el = $("#screen");
   if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML, reset:resetHTML, profiles:profilesHTML, parent:parentHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
   if(play) el.innerHTML = play.kind==="song" ? songHTML() : play.kind==="cards" ? cardsHTML() : play.kind==="write" ? writeHTML() : play.kind==="tower" ? towerHTML() : quizHTML();
   else el.innerHTML = ({home:homeHTML, units:unitsHTML, unit:unitHTML, words:wordsHTML, badges:badgesHTML, profile:profileHTML,
-    review:reviewHTML, placement:placementHTML, exam:examHTML, meb:mebHTML, library:libraryHTML, book:bookHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
+    review:reviewHTML, chat:chatHTML, placement:placementHTML, exam:examHTML, meb:mebHTML, library:libraryHTML, book:bookHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
   if(play && play.order) renderOrder();
   if(!play && page==="words") renderWords();
   if(!play && page==="review" && rv && !rv.done && rv.queue[rv.pos].type==="ear") setTimeout(()=>speak(rv.queue[rv.pos].w), 300);
   window.scrollTo({top:0});
+  if(!play && page==="chat") chatScroll();
   if(greet && !play) greetPage();
 }
 function greetPage(){
@@ -1478,6 +1502,7 @@ function greetPage(){
     words:["My dictionary!","Bir kelimeye dokun, Ollie sana okusun."],
     badges:["Look at your badges!","Ders yaptıkça yeni rozetler kazanırsın."],
     reading: sk ? [`Let's read: ${READING[sk.unit].title}`, "Hikâyeyi oku, sonra soruları cevapla. 🔊 ile Ollie sana okur."] : ["Reading time! 📕","Bir hikâye seç. Her ünitenin kendi hikâyesi var."],
+    chat: ct ? ["Let's chat! 🦉","İngilizce yaz ya da 🎤 ile konuş. Kişisel bilgilerini paylaşma."] : ["Talk with Ollie! 🦉","Bir konu seç, Ollie ile İngilizce sohbet et."],
     library:["Library time! 📚","Seviyene uygun bir kitap seç. Ollie sana okur."],
     book: bk ? [`Let's read: ${bk.b.t}`, "Sayfaları oku, bilmediğin kelimeye dokun. Sonunda kısa sorular var."] : ["",""],
     listening: sk ? ["Listen carefully! 🎧","🔊 düğmesine bas, Ollie'yi dinle, doğru resmi seç."] : ["Listening time! 🎧","Bir ünite seç, Ollie'yi dinle ve doğru resmi bul."],
@@ -1577,7 +1602,7 @@ function parentHTML(){
   const kids = auth.children || [];
   return `<section class="panel"><a class="link" href="#profiles">← Profillere dön</a>
     <div class="eyebrow">Veli Paneli · Parent</div>
-    <h1>${esc(auth.email)}</h1>
+    <h1 style="overflow-wrap:anywhere">${esc(auth.email)}</h1>
     ${verifyNote()}
     <h2>Çocuklar</h2>
     ${kids.length ? `<div class="stack">${kids.map(c=>`<div class="row between kidrow"><span class="row"><span class="ava">${c.avatar}</span><span><b>${esc(c.name)}</b><br><span class="tr">⭐ ${c.score} yıldız · son çalışma: ${fmtDate(c.updated_at)}</span></span></span>
@@ -1585,6 +1610,7 @@ function parentHTML(){
     <p class="tr">İlerleme hesabına kaydedilir. Bu hesapla giriş yaptığın her cihazdan (telefon, tablet, bilgisayar) kaldığın yerden devam edebilirsin.</p>
   </section>
   ${reportHTML()}
+  ${parentChatHTML()}
   <section class="panel"><h2>🖨️ Çalışma kâğıtları</h2><p class="tr">Her ünite için yazdırılabilir alıştırma kâğıdı (eşleştirme, yazma, kelime avı, cümle sıralama, okuma) ve cevap anahtarı. Yazdırabilir ya da PDF olarak kaydedebilirsin.</p>${sheetLinksHTML()}</section>
   <section class="panel"><h2>Şifre değiştir</h2>
     <form id="pwForm" class="stack" novalidate>
@@ -1783,6 +1809,7 @@ function homeHTML(){
     ${cont}
     ${examCardHTML()}
     ${reviewCardHTML()}
+    ${chatCardHTML()}
     ${libCardHTML()}
   </section>
   <div class="stats">
@@ -1860,8 +1887,160 @@ function unitHTML(){
     ${mebTags(i).length ? `<div class="row">${mebTags(i).map(t=>`<a class="chip mebchip" href="#meb">🏫 ${S.grade}. sınıf · Tema ${t.k+1}: ${t.t.n}</a>`).join("")}</div>` : ""}
   </section>
   <section class="panel"><h2>Dersler</h2><div class="lessons">${["song","cards"].concat(towersOf(i).length?["tower"]:[],["easy","write","hard"]).map(k=>lessonRow(i,k)).join("")}</div>
-    <div class="row" style="margin-top:12px"><a class="btn ghost small" href="#sheet-${i+1}">🖨️ Çalışma kâğıdı</a><span class="tr">Bu ünitenin kâğıt alıştırmasını yazdır.</span></div></section>
+    <div class="row" style="margin-top:12px"><a class="btn ghost small" href="#sheet-${i+1}">🖨️ Çalışma kâğıdı</a><span class="tr">Bu ünitenin kâğıt alıştırmasını yazdır.</span></div>
+    <div class="row" style="margin-top:8px"><a class="btn ghost small" href="#chat-${i+1}">🦉 Ollie ile konuş</a><span class="tr">Bu ünitenin konusunda İngilizce sohbet et.</span></div></section>
   <div class="row between">${i>0?`<a class="link" href="#unit-${i}">← Ünite ${i}</a>`:"<span></span>"}${i<LEVELS.length-1?`<a class="link" href="#unit-${i+2}">Ünite ${i+2} →</a>`:""}</div>`;
+}
+/* ---------- Ollie ile sohbet (#chat, #chat-N) ----------
+   Sunucu: POST/GET/DELETE /api/children/:id/chat (api/src/chat.js, Claude Haiku). Günde 20 mesaj, filtreler sunucuda.
+   S.chat = {n: toplam mesaj}. Geçmiş sunucudan gelir (bugün, aynı ünite). */
+let ct = null, chatRec = null;
+const CHAT_PTS = 2;
+const chatUnitDefault = () => { const o = LEVELS.map((_,i)=>i).filter(unitOpen); const st = nextStep(); return st && unitOpen(st.i) ? st.i : o[o.length-1] || 0; };
+function chatStarters(i){
+  const L = LEVELS[i], w = L.cards.map(c=>c.w);
+  const pick = n => w[(n + (S.chat.n||0)) % w.length];
+  return i < 10 ? [`Hello Ollie!`, `I like ${pick(0)}.`, `Do you like ${pick(1)}?`]
+       : i < 30 ? [`Hello Ollie! How are you?`, `Let's talk about ${L.theme.toLowerCase()}.`, `What is your favourite ${pick(2).split(" ")[0]}?`]
+       : [`Hi Ollie! Can we talk about ${L.theme.toLowerCase()}?`, `Yesterday I ...`, `What do you think about ${pick(3)}?`];
+}
+// Sunucu düzeltmeyi Ollie'nin cevabıyla saklar; ekranda çocuğun mesajının altında gösterilir.
+const chatFixUp = list => list.map((m,k)=>{ const n = list[k+1]; return m.role==="user" ? {...m, fix: n && n.role==="ollie" ? n.fix : undefined} : {...m, fix: undefined}; });
+async function startChat(i){
+  ct = {unit:i, msgs:[], left:null, ready:true, busy:false, loading:true, err:""};
+  try{
+    const r = await api(`/children/${childId}/chat`);
+    if(!ct || ct.unit !== i) return;
+    const today = new Date(Date.now() + 3*3600_000).toISOString().slice(0,10);
+    ct.left = r.left; ct.limit = r.limit; ct.ready = r.ready;
+    ct.msgs = chatFixUp(r.messages.filter(m=>m.unit === i && m.day === today)).map(m=>({role:m.role, text:m.text, tr:m.tr, fix:m.fix, flag:m.flag}));
+  }catch(e){ if(ct) ct.err = e.message; }
+  if(!ct || page !== "chat") return;
+  ct.loading = false; render();
+}
+function chatBubble(m, k){
+  if(m.role === "user"){
+    const f = m.fix && m.fix.better;
+    return `<div class="cmsg me"><div class="cb">${esc(m.text)}</div>${f ? `<div class="cfix">💡 <b>${esc(m.fix.better)}</b>${m.fix.note ? `<span class="tr">${esc(m.fix.note)}</span>` : ""}</div>` : ""}</div>`;
+  }
+  return `<div class="cmsg ollie"><span class="cava">🦉</span><div class="cb">${esc(m.text)}${m.tr && ct.showTr === k ? `<div class="tr">🇹🇷 ${esc(m.tr)}</div>` : ""}
+    <div class="cact"><button class="btn ghost small" data-act="chatSay" data-arg="${k}" aria-label="Sesli dinle">🔊</button>${m.tr ? `<button class="btn ghost small" data-act="chatTr" data-arg="${k}">${ct.showTr === k ? "Gizle" : "🇹🇷 Türkçesi"}</button>` : ""}</div></div></div>`;
+}
+function chatPickHTML(){
+  const cur = chatUnitDefault();
+  return `<section class="panel"><div class="eyebrow">Yeni · Yapay zekâ ile konuşma</div><h1>🦉 Talk with Ollie</h1>
+    <p class="muted">Ollie ile İngilizce sohbet et! Yaz ya da 🎤 ile konuş. Ollie sana cevap verir, hatalarını nazikçe düzeltir.</p>
+    <ul class="tr" style="margin:6px 0 0 18px"><li>Günde ${20} mesaj hakkın var.</li><li>Adresini, telefonunu, okulunun adını ya da şifreni asla yazma.</li><li>Sohbetlerini annen, baban ya da velin görebilir.</li></ul>
+    <div class="row" style="margin-top:12px"><a class="btn" href="#chat-${cur+1}">${LEVELS[cur].icon} Ünite ${cur+1}: ${LEVELS[cur].theme} hakkında konuş ▶</a></div></section>
+  <section class="panel"><h2>Başka bir konu seç</h2><div class="grid g3">${LEVELS.map((L,i)=>unitOpen(i) ? `<a class="unit" href="#chat-${i+1}"><div class="top"><span class="ic">${L.icon}</span><div style="min-width:0"><div class="no">Ünite ${i+1}</div><div class="nm">${L.theme} <span class="tr">${L.tr}</span></div></div></div></a>` : "").join("")}</div></section>`;
+}
+function chatHTML(){
+  if(!ct) return chatPickHTML();
+  const i = ct.unit, L = LEVELS[i];
+  if(!unitOpen(i)) return `<section class="panel"><h1>🔒 ${L.theme}</h1><p>Bu ünite henüz kilitli. <a class="link" href="#chat">Başka bir konu seç</a></p></section>`;
+  const head = `<div class="row between"><a class="link" href="#chat">← Konular</a><span class="chip">${L.icon} Ünite ${i+1}: ${L.theme}</span></div>`;
+  if(ct.loading) return `${head}<section class="panel"><p class="tr">Ollie geliyor… 🦉</p></section>`;
+  if(ct.err) return `${head}<section class="panel"><div class="fb try">${esc(ct.err)}</div><button class="btn ghost" data-act="chatRetry">Tekrar dene</button></section>`;
+  if(!ct.ready) return `${head}<section class="panel"><h1>🦉 Çok yakında!</h1><p class="muted">Ollie ile sohbet birkaç gün içinde açılacak. O zamana kadar 🗣️ Speaking bölümünde konuşma pratiği yapabilirsin.</p><a class="btn" href="#speaking-${i+1}">🗣️ Speaking ▶</a></section>`;
+  const out = ct.left === 0;
+  const first = `<div class="cmsg ollie"><span class="cava">🦉</span><div class="cb">Hi! Let's talk about ${esc(L.theme.toLowerCase())}! You can write or speak. 😊<div class="tr">Merhaba! ${esc(L.tr)} hakkında konuşalım. Yazabilir ya da 🎤 ile konuşabilirsin.</div></div></div>`;
+  return `${head}<section class="panel chatbox">
+    <div class="clog" id="clog">${first}${ct.msgs.map(chatBubble).join("")}${ct.busy ? `<div class="cmsg ollie"><span class="cava">🦉</span><div class="cb typing">…</div></div>` : ""}</div>
+    ${!ct.msgs.length && !out ? `<div class="row">${chatStarters(i).map(s=>`<button class="chip" data-act="chatStarter" data-arg="${esc(s)}">${esc(s)}</button>`).join("")}</div>` : ""}
+    ${out ? `<div class="fb good">Bugünlük sohbet hakkın bitti. Yarın yine konuşalım! 🦉 <span class="tr">Bu arada derslere devam edebilirsin.</span></div>`
+    : `<form id="chatForm" class="crow" novalidate><input class="field" id="chatIn" maxlength="300" autocomplete="off" placeholder="Write in English…" aria-label="Mesajın" ${ct.busy?"disabled":""}>
+      ${SR ? `<button type="button" class="btn ghost" data-act="chatMic" id="chatMic" aria-label="Konuş" ${ct.busy?"disabled":""}>🎤</button>` : ""}
+      <button class="btn" type="submit" ${ct.busy?"disabled":""}>Gönder ▶</button></form>`}
+    <div class="row between"><span class="tr">💬 Bugün kalan: <b>${ct.left ?? "—"}</b>/${ct.limit || 20}</span><span class="tr">🔒 Kişisel bilgilerini paylaşma.</span></div>
+  </section>`;
+}
+function chatScroll(){ const l = $("#clog"); if(l) l.scrollTop = l.scrollHeight; }
+async function chatSend(text){
+  text = String(text||"").replace(/\s+/g," ").trim();
+  if(!ct || ct.busy || !text) return;
+  if(text.length > 300){ toast("Mesaj en fazla 300 karakter olabilir."); return; }
+  stopSpeech(); chatStopRec();
+  const u = ct.unit;
+  ct.msgs.push({role:"user", text}); ct.busy = true; render(); chatScroll();
+  try{
+    const r = await api(`/children/${childId}/chat`, {body:{unit:u, text}});
+    if(!ct || ct.unit !== u) return;
+    const me = ct.msgs[ct.msgs.length-1];
+    if(r.flag === "personal") me.text = "[kişisel bilgi gizlendi]";
+    if(r.flag === "bad") me.text = "[uygunsuz kelime engellendi]";
+    if(r.flag !== "limit"){ me.fix = r.fix; ct.msgs.push({role:"ollie", text:r.reply, tr:r.tr}); }
+    else ct.msgs.pop();
+    ct.left = r.left;
+    if(r.flag === "ok" || r.flag === "offtopic"){ S.chat.n = (S.chat.n||0) + 1; addPts(CHAT_PTS); checkBadges(); save(); }
+    ct.busy = false;
+    if(page === "chat"){ render(); chatScroll(); const inp = $("#chatIn"); if(inp && !SR) inp.focus(); }
+    speak(r.reply);
+  }catch(e){
+    if(!ct) return;
+    ct.busy = false; ct.msgs.pop(); render(); chatScroll();
+    const inp = $("#chatIn"); if(inp) inp.value = text;
+    toast(e.message);
+  }
+}
+function chatStopRec(){ if(chatRec){ const r = chatRec; chatRec = null; try{ r.abort(); }catch(e){} } }
+function chatMic(){
+  if(!SR || !ct || ct.busy) return;
+  if(chatRec){ chatStopRec(); render(); return; }
+  stopSpeech();
+  let r; try{ r = new SR(); }catch(e){ toast("Mikrofon açılamadı."); return; }
+  chatRec = r; r.lang = "en-US"; r.interimResults = true; r.maxAlternatives = 1;
+  const btn = $("#chatMic"), inp = $("#chatIn");
+  if(btn){ btn.textContent = "⏹️"; btn.classList.add("on"); }
+  let final = "";
+  r.onresult = e => {
+    let interim = ""; final = "";
+    for(const res of e.results){ if(res.isFinal) final += res[0].transcript; else interim += res[0].transcript; }
+    if(inp) inp.value = (final + interim).trim();
+  };
+  r.onerror = e => {
+    if(e.error === "not-allowed" || e.error === "service-not-allowed") toast("Mikrofon izni verilmedi. Yazarak da konuşabilirsin.");
+    else if(e.error === "no-speech") toast("Seni duyamadım. Tekrar dene ya da yaz.");
+  };
+  r.onend = () => {
+    if(chatRec !== r) return;
+    chatRec = null;
+    const b = $("#chatMic"); if(b){ b.textContent = "🎤"; b.classList.remove("on"); }
+    const v = (inp && inp.value || "").trim();
+    if(final.trim() && v) chatSend(v);
+  };
+  try{ r.start(); }catch(e){ chatRec = null; }
+}
+function chatCardHTML(){
+  return `<div class="continue review"><span class="ic">🦉</span><div class="txt"><div class="eyebrow">Yeni · Talk with Ollie</div><h3>Ollie ile İngilizce sohbet et!</h3>
+    <span class="tr">Yaz ya da konuş, Ollie cevap versin ve hatalarını nazikçe düzeltsin.</span></div><a class="btn ghost" href="#chat">Sohbet ▶</a></div>`;
+}
+/* Veli paneli: çocukların Ollie sohbetleri (son 7 gün) */
+const FLAG_TR = {personal:"🔒 kişisel bilgi engellendi", bad:"🚫 uygunsuz kelime engellendi", unsafe:"⚠️ uygunsuz konu", offtopic:"↩️ konu dışı"};
+async function parentChats(id){
+  const box = $("#pchat-" + id); if(!box) return;
+  box.innerHTML = `<p class="tr">Yükleniyor…</p>`;
+  try{
+    const r = await api(`/children/${id}/chat`);
+    if(!r.messages.length){ box.innerHTML = `<p class="tr">Son 7 günde Ollie ile sohbet yok.</p>`; return; }
+    const groups = [];
+    chatFixUp(r.messages).forEach(m=>{ const k = m.day + "|" + m.unit; let g = groups.find(x=>x.k===k); if(!g) groups.push(g = {k, day:m.day, unit:m.unit, msgs:[]}); g.msgs.push(m); });
+    const flagged = r.messages.filter(m=>m.role==="user" && FLAG_TR[m.flag] && m.flag !== "offtopic").length;
+    box.innerHTML = `${flagged ? `<div class="fb try">Son 7 günde ${flagged} mesaj filtreye takıldı. Aşağıda işaretli.</div>` : ""}
+      ${groups.reverse().map(g=>`<details class="pchat"><summary><b>${new Date(g.day+"T12:00").toLocaleDateString("tr-TR",{weekday:"long", day:"numeric", month:"long"})}</b> · ${LEVELS[g.unit] ? LEVELS[g.unit].icon+" "+LEVELS[g.unit].theme : ""} · ${g.msgs.filter(m=>m.role==="user").length} mesaj${g.msgs.some(m=>m.role==="user"&&FLAG_TR[m.flag]&&m.flag!=="offtopic")?" ⚠️":""}</summary>
+        ${g.msgs.map(m=>`<div class="pline"><b>${m.role==="user"?"Çocuk":"🦉 Ollie"}:</b> ${esc(m.text)}${m.role==="user"&&FLAG_TR[m.flag] ? ` <span class="chip">${FLAG_TR[m.flag]}</span>` : ""}${m.fix && m.fix.better ? `<div class="tr">💡 Düzeltme: ${esc(m.fix.better)}</div>` : ""}</div>`).join("")}</details>`).join("")}
+      <div class="row" style="margin-top:8px"><button class="btn ghost small" data-act="clearChats" data-arg="${id}">Sohbet geçmişini sil</button></div>`;
+  }catch(e){ box.innerHTML = `<div class="fb try">${esc(e.message)}</div>`; }
+}
+async function clearChats(id){
+  if(!confirm("Bu çocuğun bütün Ollie sohbetleri silinsin mi?")) return;
+  try{ await api(`/children/${id}/chat`, {method:"DELETE"}); toast("Sohbet geçmişi silindi."); parentChats(id); }catch(e){ toast(e.message); }
+}
+function parentChatHTML(){
+  const kids = auth.children || []; if(!kids.length) return "";
+  return `<section class="panel"><h2>🦉 Ollie sohbetleri</h2>
+    <p class="tr">Çocuğun yapay zekâ destekli Ollie ile İngilizce sohbet edebilir (günde en fazla 20 mesaj). Ollie yalnızca ders konuları ve basit günlük konular hakkında konuşur. Telefon, adres, e-posta gibi kişisel bilgiler ve uygunsuz kelimeler gönderilmeden engellenir. Son 7 günün sohbetlerini buradan okuyabilirsin. Kayıtlar 30 gün sonra kendiliğinden silinir.</p>
+    ${kids.map(c=>`<div class="kidrow"><div class="row between"><span class="row"><span class="ava">${c.avatar}</span><b>${esc(c.name)}</b></span><button class="btn ghost small" data-act="parentChats" data-arg="${c.id}">💬 Sohbetleri gör</button></div><div id="pchat-${c.id}"></div></div>`).join("")}
+  </section>`;
 }
 /* ---------- MEB müfredatı eşleştirme (#meb, #meb-N) ----------
    Veri meb.js'te (MEB). S.grade: çocuğun okuldaki sınıfı (2–8) ya da null. Seçilince ünite kartlarında "🏫 Tema N" görünür. */
@@ -2973,6 +3152,7 @@ function skillListHTML(type){
   const note = type==="speaking" && !SR ? `<div class="fb try">Bu tarayıcı konuşmayı dinleyemiyor. Chrome, Edge ya da Safari'de Ollie sesini kontrol eder. Burada da çalışabilirsin: cümleyi yüksek sesle söyleyip "I said it!" düğmesine bas.</div>` : "";
   return `<section class="panel"><div class="eyebrow">${K.n} · ${K.tr}</div><h1>${K.e} ${K.n}</h1><p class="muted">${desc}</p>${note}
     <div class="row"><span class="chip ok">✓ ${skCount(type)}/${N()} ünite tamam</span></div>
+    ${type==="speaking" ? `<div class="continue" style="margin-top:12px"><span class="ic">🦉</span><div class="txt"><div class="eyebrow">Yeni · Talk with Ollie</div><h3>Ollie ile serbest sohbet</h3><span class="tr">Cümleleri tekrar etmenin ötesine geç: Ollie'ye bir şey söyle, o da sana cevap versin.</span></div><a class="btn" href="#chat">Sohbet ▶</a></div>` : ""}
     ${type==="reading" ? `<div class="continue" style="margin-top:12px"><span class="ic">📚</span><div class="txt"><div class="eyebrow">Yeni · Okuma Kütüphanesi</div><h3>${BOOKS.length} resimli kitap, ${bookLevels().length} seviye</h3><span class="tr">${bookCount()} kitap okudun. Ünite hikâyelerinden sonra seviyene uygun kitaplarla devam et.</span></div><a class="btn" href="#library">Kütüphane ▶</a></div>` : ""}</section>
   <div class="grid g3">${LEVELS.map((L,i)=>{ const open = unitOpen(i), n = skDone(type,i).length, tot = K.total(i), done = n >= tot;
     const nm = type==="reading" ? READING[i].title : L.theme;
@@ -3418,6 +3598,13 @@ document.addEventListener("click", e => {
     case "skSlow": return speak(sk.type==="listening" ? LISTENING[sk.unit][sk.idx].say : SPEAKING[sk.unit][sk.idx].en, null, .5);
     case "skNext": return skNext();
     case "mic": return startMic();
+    case "chatMic": return chatMic();
+    case "chatSay": { const m = ct && ct.msgs[+arg]; if(m) speak(m.text); return; }
+    case "chatTr": ct.showTr = ct.showTr === +arg ? null : +arg; render(); return;
+    case "chatStarter": return chatSend(arg);
+    case "chatRetry": return startChat(ct.unit);
+    case "parentChats": return parentChats(+arg);
+    case "clearChats": return clearChats(+arg);
     case "skSaid": if(!sk.solved) skCorrect(SR && !sk.noMic ? 2 : 3, `“${esc(SPEAKING[sk.unit][sk.idx].en)}” <span class="tr">Konuşman harikaydı!</span>`); return;
     case "play": return speak(t.say || t.word || t.sentence);
     case "slow": return speak(t.say || t.word, null, .5);
@@ -3470,6 +3657,7 @@ document.addEventListener("submit", e => {
   const f = {loginForm:onLogin, regForm:onRegister, forgotForm:onForgot, resetForm:onReset, childForm:onAddChild, pwForm:onChangePw, delForm:onDeleteAccount}[e.target.id];
   if(f){ const btn = e.target.querySelector('[type="submit"]'); btn.disabled = true; f().finally(()=>{ btn.disabled = false; }); return; }
   if(e.target.id==="exForm"){ const v = $("#exIn").value; if(!norm(v)){ say("Type your answer first!","Önce cevabını yaz! Bilmiyorsan 🤷 düğmesine bas."); return; } return exAnswer(v.trim()); }
+  if(e.target.id==="chatForm"){ const v = $("#chatIn").value; if(!v.trim()){ say("Write something first!","Önce bir şey yaz ya da 🎤 ile konuş!"); return; } return chatSend(v); }
   if(e.target.id==="rvForm"){ const v = $("#rvIn").value; if(!norm(v)){ say("Type the word first!","Önce kelimeyi yaz!"); return; } return revAnswer(v); }
   if(!play || play.solved) return;
   const L = LEVELS[play.unit], t = tasksOf()[play.task], inp = $("input.write");
