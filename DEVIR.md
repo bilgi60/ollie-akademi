@@ -22,7 +22,7 @@
 
 > - **Madde 8, 6. kısım BİTTİ: deneme sınavları + seviye sertifikası (dal `claude/admiring-babbage-w6c5pw`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA; Worker da yeniden yayınlandı.** Sıradaki: **Madde 9 — MEB müfredatı eşleştirme.**
 
-> - **Madde 9 BİTTİ: MEB müfredatı eşleştirme (dal `claude/nifty-sagan-pd8qg3`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Worker değişmedi (yayın gerekmez). Sıradaki: **Madde 10 — Ollie ile yapay zekâ sohbeti** (maliyet + çocuk güvenliği önce konuşulmalı).
+> - **Madde 9 BİTTİ: MEB müfredatı eşleştirme (dal `claude/nifty-sagan-pd8qg3`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA.** Worker değişmedi (yayın gerekmez). Sıradaki: **Madde 10 — Ollie ile yapay zekâ sohbeti** (maliyet + çocuk güvenliği önce konuşulmalı).
 
 > **Son durum (2026-11-11, 21. oturum): MEB müfredatı eşleştirme.**
 > - Yeni dosya `meb.js` (`const MEB`): 2–8. sınıfın İngilizce temaları/üniteleri, alt konuları ve her biri için uygun Ollie üniteleri (en uygun önce). 2., 3., 5., 6. sınıf Maarif Modeli temaları; 4., 7., 8. sınıf 2026-2027'de hâlâ 2018 programı (7. sınıf için kaynaklar çelişkili, sayfada not var).
