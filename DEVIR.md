@@ -3,7 +3,7 @@
 > **YENİ İŞ (2026-11-11): `ARASTIRMA.md`'deki 12 öneri SIRAYLA yapılacak (kullanıcı onayladı).**
 > - Sıra: 1) Akıllı tekrar ("Bugünün tekrarı") → 2) Yanlış cevabı Türkçe açıklama → 3) Veliye haftalık e-posta raporu (Resend kurulu) → 4) Yazdırılabilir çalışma kâğıdı → 5) Seviye tespit testi → 6) Uyarlanabilir zorluk → 7) Seviyeli okuma kütüphanesi → 8) Movers (A1) + Flyers (A2) üniteleri, sonra KET/PET hazırlık → 9) MEB müfredatı eşleştirme → 10) Ollie ile yapay zekâ sohbeti → 11) Hece düzeyinde telaffuz puanı → 12) Öğretmen/sınıf hesabı.
 > - Her madde (ya da birkaç küçük madde) ayrı sohbette. Her biri bitince: tarayıcıda dene, main'e almadan önce kullanıcıya sor, bu nota "biten/sıradaki" yaz.
-> - **Madde 1 BİTTİ (dal `claude/bold-planck-a54j4l`, main'e ALINMADI — kullanıcı onayı bekleniyor).** Sıradaki: **Madde 2 — Yanlış cevabı Türkçe açıklama.**
+> - **Madde 1 BİTTİ (dal `claude/bold-planck-a54j4l`, main'e alındı 2026-11-11, YAYINDA).** Sıradaki: **Madde 2 — Yanlış cevabı Türkçe açıklama.**
 
 > **Son durum (2026-11-11, 9. oturum): Akıllı tekrar ("Bugünün tekrarı") yapıldı.**
 > - Ana sayfada "Kaldığın yerden devam et"in altında 🔁 kart: "N kelime seni bekliyor" → `#review` sayfası. Tekrar yoksa "Bugünlük tekrar bitti, yarın X kelime" + "Serbest tekrar".
