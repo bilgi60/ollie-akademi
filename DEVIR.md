@@ -4,7 +4,7 @@
 > - Sıra: 1) Akıllı tekrar ("Bugünün tekrarı") → 2) Yanlış cevabı Türkçe açıklama → 3) Veliye haftalık e-posta raporu (Resend kurulu) → 4) Yazdırılabilir çalışma kâğıdı → 5) Seviye tespit testi → 6) Uyarlanabilir zorluk → 7) Seviyeli okuma kütüphanesi → 8) Movers (A1) + Flyers (A2) üniteleri, sonra KET/PET hazırlık → 9) MEB müfredatı eşleştirme → 10) Ollie ile yapay zekâ sohbeti → 11) Hece düzeyinde telaffuz puanı → 12) Öğretmen/sınıf hesabı.
 > - Her madde (ya da birkaç küçük madde) ayrı sohbette. Her biri bitince: tarayıcıda dene, main'e almadan önce kullanıcıya sor, bu nota "biten/sıradaki" yaz.
 > - **Madde 1 BİTTİ (dal `claude/bold-planck-a54j4l`, main'e alındı 2026-11-11, YAYINDA).** 
-> - **Madde 2 BİTTİ (dal `claude/cool-thompson-cddezq`, 2026-11-11). main'e almak için kullanıcı onayı bekleniyor.** Sıradaki: **Madde 3 — Veliye haftalık e-posta raporu.**
+> - **Madde 2 BİTTİ (dal `claude/cool-thompson-cddezq`, 2026-11-11). main'e alındı 2026-11-11, YAYINDA.** Sıradaki: **Madde 3 — Veliye haftalık e-posta raporu.**
 
 > **Son durum (2026-11-11, 10. oturum): Yanlış cevaba Türkçe açıklama ("🦉 Neden olmadı?").**
 > - Kolay/Zor testte yanlış cevapta geri bildirim kutusunun altına kısa Türkçe not çıkar; doğru cevabı ele vermez. Zor testte ilk yanlışta da gösterilir.
