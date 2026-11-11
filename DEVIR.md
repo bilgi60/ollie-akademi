@@ -14,7 +14,7 @@
 
 > - **Madde 8, 2. kısım BİTTİ: Flyers (A2) 10 ünite (dal `claude/laughing-allen-n2i5qa`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA; Worker da yeniden yayınlandı.** Sıradaki: **Madde 8, 3. kısım — KET/PET hazırlık** (ya da önce Movers/Flyers kütüphane kitapları), sonra **Madde 9 — MEB müfredatı eşleştirme.**
 
-> - **Madde 8, 3. kısım BİTTİ: Movers/Flyers kütüphane kitapları (dal `claude/charming-goldberg-k7icw1`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Worker değişmedi (yayın gerekmez). **Ama Flyers main'e alındıktan sonra Worker henüz yeniden yayınlanmadı** (bu oturumda izin reddedildi; kullanıcı kendisi yayınlayacak ya da izin verecek). Sıradaki: **Madde 8, 4. kısım — KET/PET hazırlık**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
+> - **Madde 8, 3. kısım BİTTİ: Movers/Flyers kütüphane kitapları (dal `claude/charming-goldberg-k7icw1`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA.** Worker değişmedi (yayın gerekmez; Flyers için Worker başka oturumda yayınlandı). Sıradaki: **Madde 8, 4. kısım — KET/PET hazırlık**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
 
 > **Son durum (2026-11-11, 17. oturum): Movers/Flyers kütüphane kitapları.**
 > - Yeni dosya `books-mf.js` (`const BOOKS_MF`, b21–b60): Ünite 11–30'un her birine 2 kitap. 🍎 Seviye 4 "Meraklı okur" (Movers, 8 sayfa, 4 soru), 🌟 Seviye 5 "Kitap kurdu" (Flyers, 10 sayfa, 5 soru, "Why" sorusu). Kitaplar ünitenin kelimelerini ve dilbilgisini kullanır.
