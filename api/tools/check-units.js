@@ -1,4 +1,4 @@
-// Kullanım: node api/tools/check-units.js units-a1.js  — ek ünite dosyalarını (UNITS_A1) denetler.
+// Kullanım: node api/tools/check-units.js units-a1.js units-a2.js  — ek ünite dosyalarını (UNITS_A1, UNITS_A2 …) denetler; kelime tekrarı dosyalar arası da aranır.
 const fs = require("fs"), path = require("path");
 const STARTERS = "elephant,turtle,monkey,eagle,giraffe,dolphin,parrot,rabbit,horse,snake,red,blue,yellow,green,pink,pen,book,bag,ruler,pencil,mother,father,sister,brother,baby,wake up,brush teeth,eat breakfast,go to school,sleep,apple,bread,cheese,milk,egg,sunny,rainy,windy,snowy,cloudy,eye,nose,ear,hand,leg,shirt,hat,shoes,coat,socks,swim,run,dance,sing,draw".split(",");
 const plain = s => s.replace(/<[^>]+>/g, "");
@@ -7,9 +7,10 @@ let errs = 0, seen = {};
 const bad = (f, m) => { errs++; console.log(`✗ ${f}: ${m}`); };
 const pair = (f, h, w) => { if (!Array.isArray(h) || h.length !== 2 || !h.every(x => typeof x === "string" && x.length)) bad(f, `${w}: hint [en, tr] olmalı`); };
 for (const file of process.argv.slice(2)) {
-  const UNITS_A1 = [];
-  try { new Function("UNITS_A1", fs.readFileSync(file, "utf8").replace(/^const UNITS_A1 = \[\];$/m, ""))(UNITS_A1); } catch (e) { bad(file, "JS hatası: " + e.message); continue; }
-  for (const u of UNITS_A1) {
+  const UNITS = [], src = fs.readFileSync(file, "utf8"), m = src.match(/^const (UNITS_\w+) = \[\];$/m);
+  if (!m) { bad(file, "const UNITS_xx = []; satırı yok"); continue; }
+  try { new Function(m[1], src.replace(m[0], ""))(UNITS); } catch (e) { bad(file, "JS hatası: " + e.message); continue; }
+  for (const u of UNITS) {
     const f = path.basename(file) + (u.L ? " " + u.L.theme : "");
     const L = u.L || {};
     for (const k of ["rank", "theme", "tr", "icon", "song", "cards", "tasks", "hard"]) if (!L[k]) bad(f, "L." + k + " eksik");

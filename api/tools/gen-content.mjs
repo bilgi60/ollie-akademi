@@ -15,9 +15,10 @@ function grab(name) {
 }
 const LEVELS = grab("LEVELS"), BADGES = grab("BADGES");
 const READING = grab("READING"), LISTENING = grab("LISTENING"), SPEAKING = grab("SPEAKING");
-// Movers (A1) üniteleri units-a1.js'te: aynı sırayla ekle (index.html'deki birleştirme gibi).
+// Movers (A1) üniteleri units-a1.js'te, Flyers (A2) units-a2.js'te: aynı sırayla ekle (index.html'deki birleştirme gibi).
 const UNITS_A1 = new Function(readFileSync(join(here, "../../units-a1.js"), "utf8") + "\nreturn UNITS_A1;")();
-UNITS_A1.forEach(u => { LEVELS.push(u.L); READING.push(u.reading); LISTENING.push(u.listening); SPEAKING.push(u.speaking); });
+const UNITS_A2 = new Function(readFileSync(join(here, "../../units-a2.js"), "utf8") + "\nreturn UNITS_A2;")();
+UNITS_A1.concat(UNITS_A2).forEach(u => { LEVELS.push(u.L); READING.push(u.reading); LISTENING.push(u.listening); SPEAKING.push(u.speaking); });
 
 const units = LEVELS.map((L, i) => ({
   theme: L.theme, tr: L.tr, icon: L.icon,
