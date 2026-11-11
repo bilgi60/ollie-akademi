@@ -1301,7 +1301,7 @@ const BADGES = [
   {id:"movers1", e:"🚀", n:"Movers'a Merhaba", d:"İlk Movers (A1) ünitesinin kolay testini bitir.", ok:()=>LEVELS.some((_,i)=>i>=10 && i<20 && easyDone(i))},
   {id:"movers", e:"🎓", n:"Movers Mezunu", d:"Movers (A1) ünitelerinin hepsinin kolay testini bitir.", ok:()=>LEVELS.length>=20 && LEVELS.every((_,i)=>i<10 || i>=20 || easyDone(i))},
   {id:"flyers1", e:"🪁", n:"Flyers'a Merhaba", d:"İlk Flyers (A2) ünitesinin kolay testini bitir.", ok:()=>LEVELS.some((_,i)=>i>=20 && i<30 && easyDone(i))},
-  {id:"flyers", e:"🏆", n:"Flyers Mezunu", d:"Flyers (A2) ünitelerinin hepsinin kolay testini bitir.", ok:()=>LEVELS.length>=30 && LEVELS.every((_,i)=>i<20 || i>=30 || easyDone(i))}
+  {id:"flyers", e:"🎖️", n:"Flyers Mezunu", d:"Flyers (A2) ünitelerinin hepsinin kolay testini bitir.", ok:()=>LEVELS.length>=30 && LEVELS.every((_,i)=>i<20 || i>=30 || easyDone(i))}
 ];
 function checkBadges(silent){
   const fresh = BADGES.filter(b=>!S.badges.includes(b.id) && b.ok());

@@ -12,6 +12,16 @@
 > - **Madde 7 BİTTİ (dal `claude/friendly-dijkstra-r4vmx7`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Sıradaki: **Madde 8 — Movers (A1) + Flyers (A2) üniteleri.**
 > - **Madde 8, 1. kısım BİTTİ: Movers (A1) 10 ünite (dal `claude/charming-bohr-98r69d`, 2026-11-11; Madde 7'nin dalı da bu dala birleştirildi). Madde 7 + Madde 8/1 + Reading üst üste binme düzeltmesi main'e alındı 2026-11-11, YAYINDA.** Worker da yeniden yayınlandı (2026-11-11). Sıradaki: **Madde 8, 2. kısım — Flyers (A2) 10 ünite** (aynı yöntemle `units-a2.js`), sonra KET/PET hazırlık.
 
+> - **Madde 8, 2. kısım BİTTİ: Flyers (A2) 10 ünite (dal `claude/eager-heisenberg-q7b6nf`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Yayına alırken Worker'ı da yeniden yayınla (rapordaki ünite/rozet adları için). Sıradaki: **Madde 8, 3. kısım — KET/PET hazırlık**, ya da önce Movers/Flyers için kütüphane kitapları.
+
+> **Son durum (2026-11-11, 16. oturum): Flyers (A2) üniteleri (Ünite 21–30).**
+> - Yeni dosya `units-a2.js` (`const UNITS_A2 = [...]`), `index.html` units-a1.js'ten sonra yükler; iki dosyanın üniteleri sırayla `LEVELS/READING/...`'e eklenir. Yapı Movers'la aynı.
+> - Üniteler ve dilbilgisi: 21 Seasons (going to) · 22 Space (will/won't) · 23 Shopping (How much, cheaper/too expensive) · 24 Music (present perfect, ever/never) · 25 Our Planet (should/must) · 26 Technology (could/can) · 27 Long Ago (used to) · 28 Holidays (already/just/yet) · 29 Minibeasts (which/who/that) · 30 Fairy Tales (past continuous + when).
+> - Flyers bölümü artık "Yakında" değil. Yeni rozetler: 🪁 Flyers'a Merhaba, 🎖️ Flyers Mezunu. `admin.html` ünite adları 30'a çıktı.
+> - Denetleyici artık birden çok dosyayı alır: `node api/tools/check-units.js units-a1.js units-a2.js` (A2'de örnek yazı en az 45 kelime). `gen-content.mjs` A2'yi de okur; `content.js` yeniden üretildi (30 ünite, 215 kelime, 27 rozet).
+> - İçerik alt ajanlarla yazıldı, okuma/şarkı/cümle örnekleri gözden geçirildi; bir Türkçe çeviri düzeltildi. Hepsini bir insan gözü henüz okumadı.
+> - Tarayıcıda (sahte API, telefon genişliği) 10 ünitenin hepsi otomatik oynandı: kolay + zor test, yazma (örnek metin), ünite/okuma/dinleme/konuşma/çalışma kâğıdı sayfaları, şarkı/kart/kule açılışı; hata yok, yatay kayma yok, ilerleme sunucuya kaydediliyor. Kuleler tek tek oynanmadı (yapıları denetleyiciden geçti).
+
 > **Son durum (2026-11-11, 15. oturum): Movers (A1) üniteleri (Ünite 11–20).**
 > - Yeni dosya `units-a1.js` (`const UNITS_A1 = [...]`), `index.html` bunu ana betikten önce yükler ve "Seviyeler" bölümünde üniteleri `LEVELS/READING/LISTENING/SPEAKING/WRITE/TOWERS`'a ekler. Her ünite: 8 kart, 5 şarkı, kolay + zor test, yazma görevi, okuma, 5 dinleme, 5 konuşma, 3 Cümle Kulesi. Kütüphane kitabı YOK (ileride).
 > - Üniteler: 11 Jobs · 12 My Town · 13 Feelings · 14 Health · 15 Wild Animals (karşılaştırma) · 16 Nature (en üstünlük) · 17 My Home · 18 Food and Drinks (some/any) · 19 Sports (like + -ing) · 20 Last Weekend (geçmiş zaman).
