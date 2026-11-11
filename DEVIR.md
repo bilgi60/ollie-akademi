@@ -7,6 +7,16 @@
 > - **Madde 2 BİTTİ (dal `claude/cool-thompson-cddezq`, 2026-11-11). main'e alındı 2026-11-11, YAYINDA.**
 > - **Madde 3 BİTTİ (dal `claude/eloquent-davinci-bm11d7`), 2026-11-11 YAYINDA:** canlı veritabanına göç yapıldı, Worker güncellendi (zamanlayıcı: `0,20,40 15-17 * * SUN`), main'e alındı. Kullanıcı Veli paneli → "✉️ Bana şimdi gönder" ile gerçek e-postayı deneyebilir. Sıradaki: **Madde 4 — Yazdırılabilir çalışma kâğıdı.**
 > - **Madde 4 BİTTİ (dal `claude/quirky-cori-yc21ft`, 2026-11-11), main'e alındı 2026-11-11, YAYINDA.** Sıradaki: **Madde 5 — Seviye tespit testi.**
+> - **Madde 6 BİTTİ (dal `claude/blissful-curie-oeo7li`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Kullanıcı 5'i atlayıp 6'ya geçmek istedi. **Madde 5 (Seviye tespit testi) hâlâ yapılmadı.** Sıradaki: Madde 5, sonra Madde 7.
+
+> **Son durum (2026-11-11, 13. oturum): Uyarlanabilir zorluk.**
+> - Veri: `S.ad = {s: üst üste ilk denemede doğru sayısı, r: son 10 sonuç (1/0), m: en uzun seri}`. Kolay/Zor test ve Bugünün tekrarı sonuçları yazar (`adRec`). "I said it!" soruları (speak, speakTr) sayılmaz.
+> - **Üst üste 3 doğru → ⚡ Challenge:** seçmeli soru (şarkı, Look & Pick, Listen, Story) seçeneksiz gelir, cevap yazılır; ilk denemede ⭐ +5 ek. "Which one is a BOOK?" gibi sorularda resim gösterilip kelime sorulur. Uygun olmayan sorular (cevabı çok kelimeli, "Which one is GREEN?" gibi) atlanır (`chAns`). "Seçeneklerle çöz" düğmesi var; iki yanlışta seçenekler kendiliğinden geri gelir. Soru üstünde "⚡ N üst üste" etiketi. Bugünün tekrarı'nda seri yapana yazma sorusu kutu 1'de de gelir.
+> - **Zorlanan çocuk (son 6 sorunun ≥3'ü ilk denemede yanlış):** soruda baştan "💡 Ollie'den ipucu" düğmesi (basınca ilk deneme hakkı gider), zor testte ipucu ilk yanlışta gelir.
+> - **Adım adım yardım (`helpHTML`), aynı soruda yanlış arttıkça:** seçmelide yanlış seçenekler kaldırılır (2 seçenek kalır), yazmalıda harfler sırayla açılır (g _ _ _), cümle kurmada ilk kelimeler kilitli olarak yerleştirilir. Kolayda 2. yanlıştan, zorda 3. yanlıştan itibaren.
+> - Test sonu: hepsi ilk denemede doğruysa "🌟 Zor teste hazırsın" ve Zor test düğmesi öne çıkar; 3+ soruda zorlandıysa "🃏 Kelimelere bir daha bak" önerilir.
+> - Yeni rozet: ⚡ Durdurulamaz (10 üst üste doğru). Profilde "En uzun doğru serisi". `api/src/content.js` yeniden üretildi (rozet adı için) — Worker'ı yeniden yayınlamak gerekmez ama istenirse `npx wrangler deploy`.
+> - Tarayıcıda (sahte API ile) denendi: challenge, bonus, seçeneklere dönüş, eleme, harf açma, kilitli kelimeler, ipucu düğmesi, test sonu, tekrar, profil; hata yok, telefonda yatay kayma yok.
 
 > **Son durum (2026-11-11, 12. oturum): Yazdırılabilir çalışma kâğıdı.**
 > - Adres: `#sheet-1` … `#sheet-10`. Hesap gerekmez (öğretmenler için). Giriş: giriş sayfasında "Öğretmen misin? Ücretsiz çalışma kâğıtları", ünite sayfasında "🖨️ Çalışma kâğıdı" düğmesi, Veli panelinde "🖨️ Çalışma kâğıtları" bölümü.

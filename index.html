@@ -231,6 +231,12 @@ span.chunk{display:inline-block;box-shadow:none}
 .fb.try{background:var(--berry-soft);border:2px solid var(--berry)}
 .fb .en{font-family:var(--display);font-size:1.15rem}
 .fb .why{margin-top:8px;padding-top:8px;border-top:1px dashed var(--berry);font-weight:500}
+.fb .help{margin-top:8px;padding-top:8px;border-top:1px dashed var(--berry);font-weight:500}
+.helpmask{font-family:var(--display);font-weight:700;font-size:1.4rem;letter-spacing:.25em;white-space:nowrap}
+:is(.opt,.ans).gone{opacity:.25;pointer-events:none;filter:grayscale(1)}
+.build .tile.lock{background:var(--leaf-soft);color:var(--ink);border-color:var(--leaf);box-shadow:none;cursor:default}
+.chal{background:var(--sky-soft);border:2px solid var(--sky);border-radius:16px;padding:10px 14px;font-weight:600}
+:is(.kind,.chip).hot{background:var(--sun);color:#22304A}
 .ans:disabled{cursor:default}
 .story{display:flex;flex-direction:column;gap:4px;background:var(--soft);border-radius:16px;padding:14px 12px}
 .story .line{display:block;width:100%;text-align:left;font-family:var(--display);font-weight:500;font-size:1.2rem;line-height:1.45;padding:4px 8px;border-radius:10px;background:none;border:0;color:inherit;cursor:pointer}
@@ -1077,7 +1083,7 @@ const fresh = () => ({unlocked:0, done:LEVELS.map(()=>[]), finished:false});
 
 /* ---------- Accounts & state ---------- */
 const UKEY = "ollie-akademi-accounts";
-const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}, skills:{r:{},l:{},s:{}}, towers:{}, rev:{}, revN:0});
+const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}, skills:{r:{},l:{},s:{}}, towers:{}, rev:{}, revN:0, ad:{s:0, r:[], m:0}});
 function normalize(s){
   s = s || {};
   if(!(s.p && s.p.easy && s.p.hard)){
@@ -1088,6 +1094,7 @@ function normalize(s){
   s.name = s.name||""; s.avatar = s.avatar||"🦊"; s.writings = s.writings||{}; s.sung = s.sung||{};
   s.towers = s.towers||{}; s.skills = s.skills||{}; for(const k of ["r","l","s"]) s.skills[k] = s.skills[k]||{};
   s.revN = s.revN||0;
+  s.ad = Object.assign({s:0, r:[], m:0}, s.ad);
   if(!s.rev){ s.rev = {}; LEVELS.forEach((L,i)=>{ if(s.lessons["c"+i]) L.cards.forEach(c=>{ s.rev[c.w] = {b:1, d:todayKey(), x:0}; }); }); }
   if(!s.badges){ s.badges = []; s.needBadgeInit = true; }
   return s;
@@ -1227,6 +1234,7 @@ const BADGES = [
   {id:"speak3", e:"🗣️", n:"Konuşkan Baykuş", d:"3 ünitenin Speaking bölümünü bitir.", ok:()=>skCount("speaking")>=3},
   {id:"review5", e:"🔁", n:"Unutmayan Baykuş", d:"5 kez Bugünün Tekrarı'nı bitir.", ok:()=>S.revN>=5},
   {id:"tower1", e:"🧱", n:"Kule Ustası", d:"İlk Cümle Kulesini bitir.", ok:()=>towerCount()>=1},
+  {id:"combo10", e:"⚡", n:"Durdurulamaz", d:"10 soruyu üst üste ilk denemede bil.", ok:()=>S.ad.m>=10},
   {id:"legend", e:"👑", n:"Efsane", d:"10 ünitenin zor testlerini bitir.", ok:()=>hardCount()>=10}
 ];
 function checkBadges(silent){
@@ -1850,6 +1858,7 @@ function profileHTML(){
       <div class="stat"><b>${skCount("listening")}/10</b><span>🎧 Listening</span></div>
       <div class="stat"><b>${skCount("speaking")}/10</b><span>🗣️ Speaking</span></div>
       <div class="stat"><b>${towerCount()}/${towerTotal()}</b><span>🧱 Cümle Kulesi</span></div>
+      <div class="stat"><b>${S.ad.m}</b><span>⚡ En uzun doğru serisi</span></div>
     </div>
     <p class="tr">İlerlemen veli hesabına kaydedilir. Aynı hesapla giriş yapılan her cihazdan kaldığın yerden devam edebilirsin.</p>
     <div class="row" id="resetRow"><button class="btn ghost small" data-act="reset">↺ İlerlemeyi sıfırla</button></div>
@@ -2012,6 +2021,53 @@ function finishTower(){
 const tasksOf = () => LEVELS[play.unit][play.mode==="hard"?"hard":"tasks"];
 const blankLine = (L,t) => L.song.lines[t.line].replace(new RegExp(`(<b>)?\\b${t.blank}\\b(</b>)?`,"i"), '<span class="blank">?</span>');
 const formHTML = () => `<form class="row center" id="wform"><input class="write" id="w-${play.mode}-${play.unit}-${play.task}" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type here…" aria-label="Cevabın"><button class="btn" type="submit">Check ✓</button></form>`;
+
+/* ---------- Uyarlanabilir zorluk ----------
+   S.ad = {s: üst üste ilk denemede doğru sayısı, r: son 10 sonuç (1 = ilk denemede doğru), m: en uzun seri}.
+   Üst üste AD_HOT doğru yapan çocuğa seçmeli soru "⚡ Meydan okuma" olarak gelir: seçenek yok, cevabı yazar, ilk denemede ⭐ ek.
+   Son 6 sorunun en az 3'ünde zorlanan çocuğa baştan 💡 ipucu düğmesi çıkar (zor testte ipucu da ilk yanlışta gelir).
+   Aynı soruda yanlış arttıkça Ollie adım adım yardım eder: yanlış seçenekleri kaldırır, harfleri açar, cümlenin ilk kelimelerini yerleştirir. */
+const AD_HOT = 3, CH_BONUS = 5, OPT_TYPES = ["pick","listen","song","story"];
+function adRec(ok){ const a = S.ad; a.s = ok ? a.s + 1 : 0; a.m = Math.max(a.m, a.s); a.r = a.r.concat(ok ? 1 : 0).slice(-10); }
+const adHot = () => S.ad.s >= AD_HOT;
+const adWeak = () => { const r = S.ad.r.slice(-6); return r.length >= 4 && r.filter(x=>!x).length >= 3; };
+const adCounts = t => !["speak","speakTr"].includes(t.type);   // "I said it!" soruları seriyi etkilemez
+const chEmo = t => t.type==="pick" && !/riddle/i.test(t.q) ? (t.options||[]).find(o=>typeof o!=="string" && o.v===t.answer && o.e) : null;
+function chAns(t){ // meydan okumada yazılacak tek kelime; uygun değilse null
+  if(!OPT_TYPES.includes(t.type)) return null;
+  const a = t.type==="song" ? t.blank : t.answer;
+  if(typeof a !== "string") return null;
+  const w = a.toLowerCase().replace(/^(the|a|an|my) /,"");
+  if(!/^[a-z]{2,12}$/.test(w)) return null;
+  if(t.type==="pick" && !/riddle/i.test(t.q) && !(chEmo(t) && new RegExp(`\\b${w}\\b`,"i").test(t.q))) return null;
+  return w;
+}
+function helpHTML(t){
+  const lv = play.tries - (play.mode==="hard" && !play.weak ? 2 : 1);
+  if(lv < 1 || play.ch) return "";
+  if(OPT_TYPES.includes(t.type)){
+    const ans = t.type==="song" ? t.blank : t.answer;
+    const rest = [...document.querySelectorAll("#screen .opt")].filter(b=>b.dataset.v!==ans && !b.classList.contains("gone"));
+    if(rest.length <= 1) return "";
+    rest.sort(()=>Math.random()-.5).slice(0, rest.length-1).forEach(b=>{ b.classList.add("gone"); b.disabled = true; play.elim.add(b.dataset.v); });
+    return `<div class="help">🦉 Ollie yardım etti: yanlış seçeneklerin bazılarını kaldırdım. Kalan ikisinden biri doğru!</div>`;
+  }
+  if(["write","songtype","dictation"].includes(t.type)){
+    const a = t.type==="songtype" ? t.blank : t.type==="dictation" ? t.word : t.answer;
+    const n = Math.min(lv + (t.type==="write" ? 1 : 0), a.length - 1);
+    const m = [...a].map((ch,k)=> ch===" " ? " " : k < n ? ch : "_").join(" ");
+    return `<div class="help">🦉 Ollie yardım ediyor: <span class="helpmask">${esc(m)}</span> <span class="tr">(${a.replace(/ /g,"").length} harf)</span></div>`;
+  }
+  if(t.type==="order"){
+    const words = t.answer.split(" "), n = Math.min(lv, words.length - 1), o = play.order;
+    if(n <= (o.lock||0)) return "";
+    const picked = [];
+    for(let k = 0; k < n; k++) picked.push(o.tiles.findIndex((w,j)=>w===words[k] && !picked.includes(j)));
+    o.picked = picked; o.lock = n; renderOrder();
+    return `<div class="help">🦉 Ollie ilk ${n} kelimeyi yerine koydu. Gerisini sen tamamla!</div>`;
+  }
+  return "";
+}
 function revealHTML(open, t){
   return open
     ? `<div style="width:100%" class="say">“${esc(t.answer)}”</div>
@@ -2022,20 +2078,28 @@ function quizHTML(){
   const L = LEVELS[play.unit], t = tasksOf()[play.task], k = KIND[t.type];
   const prog = [0,1,2,3,4].map(i=>`<span class="${play.local.has(i)?"done":i===play.task?"now":""}"></span>`).join("");
   let body = "";
-  if(t.type==="song"){
+  const optCls = v => play.elim.has(String(v)) ? `class="opt gone" disabled` : `class="opt"`;
+  const audio = `<div class="row center"><button class="btn" data-act="play">🔊 Listen to Ollie</button><button class="btn ghost small" data-act="slow">🐢 Slow</button><button class="btn ghost small" data-act="showTxt">Show the text</button></div>
+      <div class="sentence hidden-text" id="txt" hidden>“${esc(t.say||"")}”</div>`;
+  if(play.ch){
+    const o = chEmo(t);
+    const top = t.type==="song" ? `<div class="q">Write the missing word! <span class="tr">Şarkıdaki eksik kelimeyi yaz!</span></div><div class="songline" id="sline">${blankLine(L,t)}</div>`
+      : o ? `<div class="q">What is it in English? <span class="tr">Bu ne? İngilizcesini yaz!</span></div><div class="bigemo">${o.e}</div>`
+      : (t.type==="pick" ? "" : audio) + `<div class="q">${esc(t.q)} <span class="tr">${esc(t.tr)}</span></div>`;
+    body = `<div class="chal">⚡ ${play.chN} soruyu üst üste bildin! Bu sefer seçenek yok: cevabı sen yaz. İlk denemede bilirsen ⭐ +${CH_BONUS} ek. <span class="tr">(Tek kelime yeter.)</span></div>
+      ${top}${formHTML()}<div class="row center"><button class="btn ghost small" data-act="chOff">Seçeneklerle çöz</button></div>`;
+  } else if(t.type==="song"){
     body = `<div class="q">Fill in the song! <span class="tr">Şarkıdaki boşluğu doldur!</span></div>
       <div class="songline" id="sline">${blankLine(L,t)}</div>
-      <div class="opts">${t.options.map(o=>`<button class="opt" data-v="${o}">${o}</button>`).join("")}</div>`;
+      <div class="opts">${t.options.map(o=>`<button ${optCls(o)} data-v="${o}">${o}</button>`).join("")}</div>`;
   } else if(t.type==="songtype"){
     body = `<div class="q">Write the missing word! <span class="tr">Şarkıdaki eksik kelimeyi yaz!</span></div>
       <div class="songline" id="sline">${blankLine(L,t)}</div>${formHTML()}`;
   } else if(t.type==="pick" || t.type==="listen" || t.type==="story"){
-    const audio = t.type==="pick" ? "" : `<div class="row center"><button class="btn" data-act="play">🔊 Listen to Ollie</button><button class="btn ghost small" data-act="slow">🐢 Slow</button><button class="btn ghost small" data-act="showTxt">Show the text</button></div>
-      <div class="sentence hidden-text" id="txt" hidden>“${esc(t.say)}”</div>`;
-    body = audio + `<div class="q">${esc(t.q)} <span class="tr">${esc(t.tr)}</span></div>
+    body = (t.type==="pick" ? "" : audio) + `<div class="q">${esc(t.q)} <span class="tr">${esc(t.tr)}</span></div>
       <div class="opts">${t.options.map(o=> typeof o==="string"
-        ? `<button class="opt" data-v="${esc(o)}">${esc(o)}</button>`
-        : `<button class="opt" data-v="${o.v}" aria-label="${o.v}">${o.c?`<span class="sw" style="background:${o.c}"></span>`:`<span class="emo">${o.e}</span>`}</button>`).join("")}</div>`;
+        ? `<button ${optCls(o)} data-v="${esc(o)}">${esc(o)}</button>`
+        : `<button ${optCls(o.v)} data-v="${o.v}" aria-label="${o.v}">${o.c?`<span class="sw" style="background:${o.c}"></span>`:`<span class="emo">${o.e}</span>`}</button>`).join("")}</div>`;
   } else if(t.type==="dictation"){
     body = `<div class="q">Listen and write the word! <span class="tr">Dinle ve kelimeyi yaz!</span></div>
       <div class="row center"><button class="btn" data-act="play">🔊 Listen</button><button class="btn ghost" data-act="slow">🐢 Slow</button></div>
@@ -2064,8 +2128,9 @@ function quizHTML(){
   return `${backBar()}<section class="panel">
     <div class="eyebrow">Ünite ${play.unit+1} · ${L.theme} · Görev ${play.task+1}/5${play.replay?" · Tekrar (⭐+2)":""}</div>
     <div class="progress">${prog}</div>
-    <span class="kind">${k[0]} ${k[1]}</span>
+    <div class="row between"><span class="kind${play.ch?" hot":""}">${play.ch ? "⚡ Challenge" : `${k[0]} ${k[1]}`}</span>${S.ad.s >= 2 ? `<span class="chip hot" title="Üst üste ilk denemede doğru">⚡ ${S.ad.s} üst üste</span>` : ""}</div>
     ${body}
+    ${play.weak && t.hint && !play.solved && play.tries===0 ? `<div class="row center" id="hintRow"><button class="btn ghost small" data-act="hintAsk">💡 Ollie'den ipucu</button></div>` : ""}
     <div id="fb"></div>
   </section>`;
 }
@@ -2076,7 +2141,7 @@ function startOrder(t){
 }
 function renderOrder(){
   const b=$("#build"), k=$("#bank"); if(!b||!k) return; const o = play.order;
-  b.innerHTML = o.picked.map(i=>`<button class="tile" data-i="${i}">${esc(o.tiles[i])}</button>`).join("");
+  b.innerHTML = o.picked.map((i,n)=>`<button class="tile${n < (o.lock||0) ? " lock" : ""}" data-i="${i}">${esc(o.tiles[i])}</button>`).join("");
   k.innerHTML = o.tiles.map((w,i)=> o.picked.includes(i) ? "" : `<button class="tile" data-i="${i}">${esc(w)}</button>`).join("");
 }
 
@@ -2094,20 +2159,28 @@ function startStep(i, kind){
   startTask();
 }
 function startTask(){
-  play.tries = 0; play.solved = false; play.order = null;
+  play.tries = 0; play.solved = false; play.order = null; play.elim = new Set();
   const t = tasksOf()[play.task];
+  play.weak = adWeak(); play.ch = !!(adHot() && chAns(t)); play.chN = S.ad.s;
   if(t.type==="order") startOrder(t);
   render();
-  const m = INTRO[t.type]; say(m[0], m[1]);
+  const m = INTRO[t.type];
+  if(play.ch) say("Challenge time! ⚡", "Üst üste doğru yaptın, bu soru biraz daha zor: cevabı kendin yaz!");
+  else if(play.weak && t.hint) say(m[0], m[1] + " Takılırsan 💡 ipucu düğmesi burada.");
+  else say(m[0], m[1]);
   const inp = document.querySelector("input.write"); if(inp) setTimeout(()=>inp.focus(), 50);
 }
 function correct(note){
   if(play.solved) return; play.solved = true;
   const hard = play.mode==="hard", fresh = !S.p[play.mode].done[play.unit].includes(play.task);
-  const pts = !fresh ? 2 : hard ? (play.tries===0 ? 20 : 10) : (play.tries===0 ? 10 : 5);
+  const bonus = play.ch && fresh && play.tries===0 ? CH_BONUS : 0;
+  const pts = (!fresh ? 2 : hard ? (play.tries===0 ? 20 : 10) : (play.tries===0 ? 10 : 5)) + bonus;
   if(fresh) S.p[play.mode].done[play.unit].push(play.task);
   play.local.add(play.task);
+  if(play.tries===0 && adCounts(tasksOf()[play.task])) adRec(1);
   addPts(pts);
+  if(bonus) note = `⚡ Challenge bonus ⭐ +${bonus}! ` + (note||"");
+  $("#hintRow")?.remove();
   const p = PRAISE[Math.floor(Math.random()*PRAISE.length)];
   say(`${p[0]} ⭐ +${pts}!`, `${p[1]} ${pts} yıldız kazandın!`);
   const last = play.local.size >= 5;
@@ -2117,17 +2190,24 @@ function correct(note){
 }
 function wrong(t, given){
   play.tries++;
-  const raw = whyWrong(t, given), hintShown = !(play.mode==="hard" && play.tries===1);
+  $("#hintRow")?.remove();
+  const raw = play.ch ? whyTyped(given, chAns(t)) : whyWrong(t, given), hintShown = !(play.mode==="hard" && play.tries===1 && !play.weak);
   const dup = hintShown && t.hint && Object.values(GRAM).includes(raw) && /\b(HAS|HAVE|IS|ARE|AM|DOES|DO|AN)\b/.test(t.hint.join(" "));
   const why = whyHTML(dup ? "" : raw);
-  if(play.tries===1) revMiss(play.unit, t);
-  if(play.mode==="hard" && play.tries===1){
+  if(play.tries===1){ revMiss(play.unit, t); play.missN = (play.missN||0) + 1; if(adCounts(t)) adRec(0); }
+  if(play.ch && play.tries >= 2){ // meydan okumada iki yanlış: seçeneklere dön
+    play.ch = false; $("#screen").innerHTML = quizHTML();
+    say("Let's use the choices!", "Sorun değil! Şimdi seçeneklerden seç.");
+    $("#fb").innerHTML = `<div class="fb try"><div class="en">Great try! ${esc(t.hint[0])}</div><div class="tr">${esc(t.hint[1])}</div>${why}<div class="help">🦉 Seçenekleri geri getirdim, şimdi seçerek dene.</div></div>`;
+    return;
+  }
+  if(play.mode==="hard" && !hintShown){
     say("Almost! Try once more.", "Neredeyse! Bir kez daha dene.");
     $("#fb").innerHTML = `<div class="fb try"><div class="en">Almost! Think again. 🤔</div><div class="tr">Bir daha dene. Bir kez daha yanılırsan Ollie ipucu verecek.</div>${why}</div>`;
     return;
   }
   say("Great try! But remember…", "Güzel deneme! Ama hatırla…");
-  $("#fb").innerHTML = `<div class="fb try"><div class="en">Great try! But remember… ${esc(t.hint[0])}</div><div class="tr">${esc(t.hint[1])}</div>${why}</div>`;
+  $("#fb").innerHTML = `<div class="fb try"><div class="en">Great try! But remember… ${esc(t.hint[0])}</div><div class="tr">${esc(t.hint[1])}</div>${why}${helpHTML(t)}</div>`;
 }
 function nextTask(){
   if(play.local.size >= 5) return finishQuiz();
@@ -2136,10 +2216,13 @@ function nextTask(){
 }
 function finishQuiz(){
   const i = play.unit, mode = play.mode, nx = LEVELS[i+1];
+  const perfect = !play.replay && !play.missN, tough = (play.missN||0) >= 3;
   confetti(); speak(mode==="hard" ? "Amazing! You are a brave eagle!" : "Unit complete! Great job!");
   say("Test complete! 🎉", "Testi bitirdin, süpersin!");
   const btns = [];
-  if(mode==="easy") btns.push(`<button class="btn" data-act="startStep" data-arg="${i}:write">✍️ Yaz, ek puan kazan!</button>`, `<button class="btn ghost" data-act="startStep" data-arg="${i}:hard">🦅 Zor teste geç</button>`);
+  if(mode==="easy" && perfect) btns.push(`<button class="btn" data-act="startStep" data-arg="${i}:hard">🦅 Zor teste geç</button>`, `<button class="btn ghost" data-act="startStep" data-arg="${i}:write">✍️ Yaz, ek puan kazan!</button>`);
+  else if(mode==="easy") btns.push(`<button class="btn" data-act="startStep" data-arg="${i}:write">✍️ Yaz, ek puan kazan!</button>`, `<button class="btn ghost" data-act="startStep" data-arg="${i}:hard">🦅 Zor teste geç</button>`);
+  if(tough) btns.push(`<button class="btn ghost" data-act="startStep" data-arg="${i}:cards">🃏 Kelimelere bir daha bak</button>`);
   if(nx) btns.push(`<a class="btn ${mode==="easy"?"ghost":""}" href="#unit-${i+2}" data-act="close">Ünite ${i+2}: ${nx.theme} ▶</a>`);
   btns.push(`<a class="btn ghost" href="#unit-${i+1}" data-act="close">Ünite sayfası</a>`);
   const ov = document.createElement("div"); ov.className = "overlay";
@@ -2149,6 +2232,8 @@ function finishQuiz(){
     <div>Ünite ${i+1}: <b>${LEVELS[i].theme}</b> · ${LESSON[mode].n} tamam!</div>
     ${mode==="easy" && nx && !play.replay ? `<div class="chip ok">🔓 Ünite ${i+2}: ${nx.theme} açıldı!</div>` : ""}
     ${mode==="easy" && !nx ? `<div class="chip ok">👑 Bütün üniteleri bitirdin!</div>` : ""}
+    ${perfect ? `<div class="chip hot">🌟 Hepsini ilk denemede bildin!${mode==="easy" ? " Zor teste hazırsın." : ""}</div>` : ""}
+    ${tough ? `<div class="tr">Bu test biraz zorladı, sorun değil! Kelimeleri bir daha gözden geçirmek ve 🔁 Bugünün tekrarı çok işe yarar.</div>` : ""}
     ${mode==="easy" ? `<div class="bonus">✍️ Şimdi “${WRITE[i].title}” hakkında kısa bir metin yaz, <b>50 ⭐'a kadar ek puan</b> kazan!</div>` : ""}
     <div class="pill star">⭐ ${S.score} yıldız</div>
     <div class="row center">${btns.join("")}</div></div>`;
@@ -2261,9 +2346,9 @@ function startReview(){
 }
 function revQuestion(){
   const q = rv.queue[rv.pos], {i, c} = WORDS[q.w], r = S.rev[q.w];
-  const types = r.b >= 2 ? ["pic","ear","tr"] : ["pic","ear"];
+  const tr = r.b >= 2 || (r.b >= 1 && adHot()), types = tr ? ["pic","ear","tr"] : ["pic","ear"];   // seri yapan çocuğa yazma sorusu daha erken gelir
   q.type = q.again ? "tr" : types[(rv.pos + r.b) % types.length];
-  if(q.type === "tr" && r.b < 2 && !q.again) q.type = "pic";
+  if(q.type === "tr" && !tr && !q.again) q.type = "pic";
   if(q.type !== "tr"){
     let pool = LEVELS[i].cards.filter(x=>x.w!==c.w);
     if(pool.length < 3) pool = pool.concat(Object.values(WORDS).map(x=>x.c).filter(x=>x.w!==c.w && !pool.includes(x)));
@@ -2315,7 +2400,7 @@ function revAnswer(v, btn){
     if(btn) btn.classList.add("right");
     let pts = 0, note;
     if(q.again){ pts = 1; note = "Bu sefer bildin! Yarın yine soracağım."; }
-    else if(q.tries===0){ pts = 2; rv.first++;
+    else if(q.tries===0){ pts = 2; rv.first++; adRec(1);
       if(!rv.free){ r.b = Math.min(r.b+1, 5); r.d = addDays(REV_GAP[r.b]); note = `${REV_GAP[r.b]} gün sonra yeniden soracağım.`; }
       else note = "Harika, bu kelimeyi hatırlıyorsun!"; }
     else { pts = 1; note = "Yarın bir kez daha soracağım."; }
@@ -2331,7 +2416,7 @@ function revAnswer(v, btn){
   if(btn){ btn.classList.add("wrong"); setTimeout(()=>btn.classList.remove("wrong"), 600); }
   q.tries++;
   if(q.tries===1 && !q.again){
-    r.b = 0; r.d = addDays(1); r.x++; rv.again.add(q.w); save();
+    r.b = 0; r.d = addDays(1); r.x++; rv.again.add(q.w); adRec(0); save();
     rv.queue.push({w:q.w, again:true});
   }
   if(q.tries===1){ say("Almost! Try again.", `İpucu: “${c.w[0]}” harfiyle başlıyor, ${c.w.replace(/ /g,"").length} harf.`);
@@ -2583,6 +2668,7 @@ document.addEventListener("click", e => {
   const act = b.dataset.act, arg = b.dataset.arg;
   if(b.id==="card"){ b.classList.toggle("flip"); return; }
   if(b.classList.contains("tile")){ if(play.solved) return; const i=+b.dataset.i, o=play.order;
+    if(o.lock && o.picked.indexOf(i) > -1 && o.picked.indexOf(i) < o.lock) return;
     o.picked = o.picked.includes(i) ? o.picked.filter(x=>x!==i) : o.picked.concat(i); renderOrder(); return; }
   if(b.classList.contains("opt")) return answerOpt(b);
   const t = play && play.kind==="quiz" ? tasksOf()[play.task] : null;
@@ -2670,7 +2756,13 @@ document.addEventListener("click", e => {
     case "reveal": $("#reveal").innerHTML = revealHTML(true,t); speak(t.answer); say("Did you say it like this?","Sen de böyle mi söyledin?"); return;
     case "gotIt": return correct(`“${esc(t.answer)}” <span class="tr">Türkçeden İngilizceye çevirdin, bu çok zor bir iş!</span>`);
     case "notYet": play.tries++; $("#reveal").innerHTML = revealHTML(false,t); say("That's OK! Try again.","Sorun değil! Cevabı aklında tut ve bir daha söyle."); return;
-    case "clearOrder": if(!play.solved){ play.order.picked=[]; renderOrder(); } return;
+    case "clearOrder": if(!play.solved){ play.order.picked = play.order.picked.slice(0, play.order.lock||0); renderOrder(); } return;
+    case "chOff": if(play && !play.solved){ play.ch = false; $("#screen").innerHTML = quizHTML(); say("OK! Pick one.", "Tamam, seçeneklerden seç."); } return;
+    case "hintAsk": { if(!play || play.solved || !t || !t.hint) return;
+      if(play.tries===0){ play.tries = 1; play.missN = (play.missN||0) + 1; if(adCounts(t)) adRec(0); revMiss(play.unit, t); save(); }
+      $("#hintRow")?.remove();
+      $("#fb").innerHTML = `<div class="fb try"><div class="en">💡 ${esc(t.hint[0])}</div><div class="tr">${esc(t.hint[1])}</div></div>`;
+      say("Here's a clue!", "İşte ipucun. Şimdi sen dene!"); return; }
     case "checkOrder": {
       if(play.solved) return;
       const s = play.order.picked.map(i=>play.order.tiles[i]).join(" ");
@@ -2711,6 +2803,14 @@ document.addEventListener("submit", e => {
   const L = LEVELS[play.unit], t = tasksOf()[play.task], inp = $("input.write");
   const v = norm(inp.value);
   if(!v){ say("Type the word first!","Önce kelimeyi yaz!"); return; }
+  if(play.ch){
+    if(v === chAns(t) || v === norm(t.type==="song" ? t.blank : t.answer)){
+      inp.style.borderColor="var(--leaf)";
+      if(t.type==="song"){ $("#sline").innerHTML = L.song.lines[t.line]; correct(`“${plain(L.song.lines[t.line])}”`); speak(plain(L.song.lines[t.line])); }
+      else { correct(`<b>${esc(t.answer)}</b>`); speak(t.answer); }
+    } else wrong(t, inp.value);
+    return;
+  }
   const ans = t.type==="songtype" ? t.blank : t.type==="dictation" ? t.word : t.answer;
   if(v === ans || (t.alts||[]).includes(v)){
     inp.style.borderColor="var(--leaf)";
