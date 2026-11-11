@@ -74,7 +74,7 @@ async function auth(req, env) {
     await env.DB.prepare("UPDATE parents SET last_seen = ? WHERE id = ?").bind(now(), p.id).run();
   return p;
 }
-const publicParent = p => ({ id: p.id, email: p.email, role: p.role, status: p.status, email_verified: !!p.email_verified, created_at: p.created_at });
+const publicParent = p => ({ id: p.id, email: p.email, role: p.role, status: p.status, email_verified: !!p.email_verified, weekly_report: p.weekly_report !== 0, created_at: p.created_at });
 const childSummary = c => ({ id: c.id, name: c.name, avatar: c.avatar, score: c.score, created_at: c.created_at, updated_at: c.updated_at });
 
 async function getChild(env, parent, id) {
@@ -316,13 +316,14 @@ function mailHTML(env, title, intro, button, link, foot) {
 <p style="font-size:13px;color:#5B6779;line-height:1.5">${foot}</p>
 </div><p style="font-size:12px;color:#5B6779;text-align:center">Ollie Akademi · 7–11 yaş için İngilizce · ollieakademi.com</p></div></body></html>`;
 }
-async function sendMail(env, to, subject, html, text) {
+async function sendMail(env, to, subject, html, text, headers) {
   if (!mailReady(env)) { console.log("E-posta gönderilmedi (RESEND_API_KEY yok):", subject, to); return false; }
+  if (env.MAIL_LOG === "1") { console.log("[MAIL_LOG] Gönderilmiş sayıldı:", to, subject); return true; } // sadece yerel deneme için
   try {
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: env.MAIL_FROM || "Ollie Akademi <bilgi@ollieakademi.com>", to: [to], subject, html, text }),
+      body: JSON.stringify({ from: env.MAIL_FROM || "Ollie Akademi <bilgi@ollieakademi.com>", to: [to], subject, html, text, ...(headers ? { headers } : {}) }),
     });
     if (!r.ok) { console.error("Resend hatası", r.status, await r.text()); return false; }
     return true;
@@ -414,6 +415,184 @@ async function resendVerify(req, env, p) {
   return json({ ok: true });
 }
 
+
+/* ---------------- Haftalık veli raporu ---------------- */
+const REPORT_GAP = 6.5 * 86400_000;   // iki rapor arasında en az bu kadar süre
+const REPORT_IDLE_DAYS = 21;          // bu kadar gündür hiç çalışmayan aileye rapor gönderilmez
+const UNITS = [["Animals","Hayvanlar","🐾"],["Colors","Renkler","🎨"],["School Things","Okul Eşyaları","🎒"],["Family","Aile","🏡"],["Daily Routines","Günlük Rutinler","⏰"],["Food","Yiyecekler","🍎"],["Weather","Hava Durumu","🌦️"],["My Body","Vücudumuz","🖐️"],["Clothes","Kıyafetler","👕"],["Hobbies","Hobiler","⚽"]];
+const BADGE_NAMES = { first:"🌱 İlk Adım", singer:"🎵 Küçük Şarkıcı", cards:"🃏 Kelime Avcısı", unit1:"🏅 İlk Ünite", hard1:"🦅 Cesur Kartal", streak3:"🔥 3 Gün Seri", streak7:"📅 Bir Hafta", s100:"⭐ 100 Yıldız", s500:"💎 500 Yıldız", half:"🚀 Yarı Yol", champ:"🏆 Şampiyon", writer1:"✍️ Küçük Yazar", writer5:"📝 Usta Yazar", songs25:"🎤 Şarkı Yıldızı", reader3:"📕 Kitap Kurdu", listen3:"🎧 Dikkatli Kulak", speak3:"🗣️ Konuşkan Baykuş", review5:"🔁 Unutmayan Baykuş", tower1:"🧱 Kule Ustası", legend:"👑 Efsane" };
+const apiBase = env => (env.API_URL || "https://ollie-akademi-api.ollieakademi.workers.dev").replace(/\/+$/, "");
+const len = a => Array.isArray(a) ? a.length : 0;
+const sumLens = o => Object.values(o && typeof o === "object" ? o : {}).reduce((n, a) => n + len(a), 0);
+
+// Bir çocuğun ilerleme verisinden rapor için gereken sayılar
+export function childStats(d, score) {
+  d = d && typeof d === "object" ? d : {};
+  const p = d.p || {}, easy = p.easy || {}, hard = p.hard || {};
+  const lessons = Object.keys(d.lessons || {}).filter(k => d.lessons[k]).length;
+  const writes = Object.values(d.writings || {}).filter(w => w && w.best).length;
+  const sk = d.skills || {};
+  const steps = lessons + writes + sumLens({ a: (easy.done || []).flat(), b: (hard.done || []).flat() })
+    + sumLens(sk.r) + sumLens(sk.l) + sumLens(sk.s) + sumLens(d.towers);
+  const rev = d.rev && typeof d.rev === "object" ? d.rev : {};
+  const words = Object.keys(rev);
+  const unit = Math.min(Math.max(0, +easy.unlocked || 0), UNITS.length - 1);
+  return {
+    score: Math.max(0, +score || 0), steps, words: words.length,
+    mastered: words.filter(w => (rev[w] && +rev[w].b) >= 4).length,
+    badges: Array.isArray(d.badges) ? d.badges.filter(b => typeof b === "string") : [],
+    unit, finished: !!easy.finished,
+    tough: words.filter(w => rev[w] && +rev[w].x >= 1 && +rev[w].b <= 2).sort((a, b) => rev[b].x - rev[a].x).slice(0, 5),
+    reviews: +d.revN || 0,
+  };
+}
+
+// Bir çocuk için rapor satırları (şimdiki durum + geçen raporun durumu + bu haftaki çalışma günleri)
+export function childReport(name, now_, snap, days) {
+  const first = !snap || typeof snap.score !== "number";
+  const diff = k => first ? now_[k] : Math.max(0, now_[k] - (snap[k] || 0));
+  const newBadges = first ? [] : now_.badges.filter(b => !(snap.badges || []).includes(b));
+  const u = UNITS[now_.unit];
+  let note;
+  if (days === 0) note = `${name} bu hafta Ollie Akademi'ye uğramadı. Günde 10 dakikalık kısa bir çalışma bile kelimelerin unutulmamasına çok yardımcı olur. Bugünün tekrarı ile başlamak iyi bir fikir!`;
+  else if (days <= 2) note = `Güzel bir başlangıç! Haftada 3–4 gün kısa kısa çalışmak, uzun ama seyrek çalışmaktan daha kalıcı öğrenmeyi sağlar.`;
+  else if (days <= 4) note = `Harika bir hafta! Bu düzenle devam ederse kelimeler kalıcı olarak yerleşecek.`;
+  else note = `Muhteşem! Neredeyse her gün çalıştı. Bu istikrarı kutlamayı unutmayın. 🎉`;
+  return { name, first, days, stars: diff("score"), steps: diff("steps"), words: diff("words"), mastered: now_.mastered,
+    totalWords: now_.words, totalStars: now_.score, newBadges: newBadges.map(b => BADGE_NAMES[b] || b),
+    unit: now_.finished ? "Tüm üniteler bitti 🏆" : `Ünite ${now_.unit + 1}: ${u[2]} ${u[0]} (${u[1]})`, tough: now_.tough, note };
+}
+
+export function reportMail(env, rows, offLink, test) {
+  const total = rows.reduce((n, r) => n + r.stars, 0);
+  const subject = (test ? "[Örnek] " : "") + (rows.length === 1
+    ? (rows[0].days ? `Ollie Akademi haftalık rapor: ${rows[0].name} bu hafta ${rows[0].stars} ⭐ kazandı` : `Ollie Akademi haftalık rapor: ${rows[0].name} seni bekliyor`)
+    : `Ollie Akademi haftalık rapor: bu hafta toplam ${total} ⭐`);
+  const cell = (big, small) => `<td style="width:25%;text-align:center;padding:8px 4px;background:#F6F9F3;border-radius:12px"><div style="font-size:20px;font-weight:bold">${big}</div><div style="font-size:12px;color:#5B6779">${small}</div></td>`;
+  const kid = r => { const pl = n => (r.first ? "" : "+") + n; return `<div style="border:2px solid #DCE6D5;border-radius:16px;padding:16px;margin:16px 0">
+<h2 style="font-size:19px;margin:0 0 4px">${escH(r.name)}</h2>
+<p style="font-size:14px;color:#5B6779;margin:0 0 12px">${escH(r.unit)}</p>
+<table role="presentation" style="width:100%;border-collapse:separate;border-spacing:6px 0"><tr>
+${cell(`${r.days}/7`, "çalıştığı gün")}${cell(pl(r.stars), r.first ? "toplam yıldız" : "yıldız ⭐")}${cell(pl(r.steps), "biten adım")}${cell(pl(r.words), r.first ? "kelime" : "yeni kelime")}
+</tr></table>
+${r.totalWords ? `<p style="font-size:14px;line-height:1.5;margin:12px 0 0">📚 Tekrar listesinde <b>${r.totalWords}</b> kelime var, <b>${r.mastered}</b> tanesi iyice öğrenildi.</p>` : ""}
+${r.first ? `<p style="font-size:13px;color:#5B6779;margin:8px 0 0">Bu ilk rapor olduğu için sayılar şimdiye kadarki toplamı gösteriyor.</p>` : ""}
+${r.newBadges.length ? `<p style="font-size:14px;line-height:1.5;margin:8px 0 0">🏅 Yeni rozet: <b>${r.newBadges.map(escH).join(", ")}</b></p>` : ""}
+${r.tough.length ? `<p style="font-size:14px;line-height:1.5;margin:8px 0 0">🦉 Zorlandığı kelimeler: <b>${r.tough.map(escH).join(", ")}</b> — birlikte sesli söyleyerek tekrar edebilirsiniz.</p>` : ""}
+<p style="font-size:14px;line-height:1.5;margin:8px 0 0;background:#FFF6EC;border-radius:10px;padding:10px">${escH(r.note)}</p>
+</div>`; };
+  const link = site(env);
+  const html = `<!doctype html><html lang="tr"><body style="margin:0;background:#EEF4EA;font-family:Arial,Helvetica,sans-serif;color:#22304A">
+<div style="max-width:560px;margin:0 auto;padding:24px 16px">
+<div style="background:#fff;border-radius:20px;padding:24px 20px;border:2px solid #DCE6D5">
+<div style="text-align:center"><img src="${link}/img/ollie-256.png" width="80" height="80" alt="Ollie" style="display:inline-block"></div>
+<h1 style="font-size:22px;margin:8px 0 4px;text-align:center">Haftalık İlerleme Raporu</h1>
+<p style="font-size:14px;color:#5B6779;text-align:center;margin:0">Son 7 gün · ${trDay(now() - 6 * 86400_000).split("-").reverse().join(".")} – ${trDay().split("-").reverse().join(".")}</p>
+${test ? `<p style="font-size:13px;background:#FFF6EC;border-radius:10px;padding:8px;text-align:center">Bu bir örnek rapordur. Gerçek rapor haftada bir kez gelir.</p>` : ""}
+${rows.map(kid).join("")}
+<p style="text-align:center;margin:20px 0 8px"><a href="${link}" style="background:#E8742A;color:#fff;text-decoration:none;font-weight:bold;padding:14px 24px;border-radius:14px;display:inline-block">Ollie Akademi'yi aç</a></p>
+</div><p style="font-size:12px;color:#5B6779;text-align:center;line-height:1.5">Bu raporu Ollie Akademi veli hesabın için gönderiyoruz.<br>
+Raporları veli panelinden kapatabilir ya da <a href="${offLink}" style="color:#C2571A">tek tıkla aboneliği bırakabilirsin</a>.<br>Ollie Akademi · 7–11 yaş için İngilizce · ollieakademi.com</p></div></body></html>`;
+  const text = `Ollie Akademi haftalık ilerleme raporu\n\n` + rows.map(r =>
+    `${r.name} — ${r.unit}\nÇalıştığı gün: ${r.days}/7 · Yıldız: +${r.stars} · Biten adım: +${r.steps} · Yeni kelime: +${r.words}\nÖğrenilen kelime: ${r.mastered}/${r.totalWords}` +
+    (r.newBadges.length ? `\nYeni rozet: ${r.newBadges.join(", ")}` : "") + (r.tough.length ? `\nZorlandığı kelimeler: ${r.tough.join(", ")}` : "") + `\n${r.note}\n`).join("\n") +
+    `\nOllie Akademi: ${link}\nAboneliği bırak: ${offLink}`;
+  return { subject, html, text };
+}
+
+async function buildParentReport(env, p) {
+  const { results: kids } = await env.DB.prepare("SELECT id, name, score, data, report_snap FROM children WHERE parent_id = ? ORDER BY id").bind(p.id).all();
+  if (!kids.length) return null;
+  const since = trDay(now() - 6 * 86400_000), idle = trDay(now() - REPORT_IDLE_DAYS * 86400_000);
+  const { results: act } = await env.DB.prepare(`SELECT child_id, SUM(day >= ?) AS week, MAX(day) AS last FROM activity WHERE child_id IN (SELECT id FROM children WHERE parent_id = ?) GROUP BY child_id`).bind(since, p.id).all();
+  const A = Object.fromEntries(act.map(a => [a.child_id, a]));
+  const items = kids.map(c => {
+    let data = {}, snap = null;
+    try { data = JSON.parse(c.data); } catch {}
+    try { snap = c.report_snap ? JSON.parse(c.report_snap) : null; } catch {}
+    const st = childStats(data, c.score);
+    return { id: c.id, stats: st, active: !!(A[c.id] && A[c.id].last >= idle), row: childReport(c.name, st, snap, A[c.id] ? +A[c.id].week || 0 : 0) };
+  });
+  return items;
+}
+
+async function reportOffLink(env, p) {
+  let key = p.report_key;
+  if (!key) { key = randHex(16); await env.DB.prepare("UPDATE parents SET report_key = ? WHERE id = ?").bind(key, p.id).run(); }
+  return `${apiBase(env)}/api/report/off?p=${p.id}&k=${key}`;
+}
+
+async function sendParentReport(env, p, test) {
+  const items = await buildParentReport(env, p);
+  if (!items) return "nokids";
+  if (!test && !items.some(i => i.active)) return "idle";
+  const off = await reportOffLink(env, p);
+  const m = reportMail(env, items.map(i => i.row), off, test);
+  const ok = await sendMail(env, p.email, m.subject, m.html, m.text, { "List-Unsubscribe": `<${off}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" });
+  if (!ok) return "fail";
+  if (!test) {
+    const snap = st => JSON.stringify({ t: now(), score: st.score, steps: st.steps, words: st.words, badges: st.badges });
+    await env.DB.batch(items.map(i => env.DB.prepare("UPDATE children SET report_snap = ? WHERE id = ?").bind(snap(i.stats), i.id)));
+  }
+  return "sent";
+}
+
+// Zamanlayıcı: sırası gelen velilere rapor gönderir. İlk rapor pazar günü gider, sonra ~haftada bir.
+export async function runReports(env) {
+  if (!mailReady(env)) { console.log("Haftalık rapor atlandı: RESEND_API_KEY yok"); return { sent: 0 }; }
+  const batch = Math.max(1, Math.min(200, +env.REPORT_BATCH || 80));
+  const sunday = new Date(now() + 3 * 3600_000).getUTCDay() === 0;
+  const { results } = await env.DB.prepare(
+    `SELECT * FROM parents WHERE status = 'active' AND email_verified = 1 AND weekly_report = 1
+       AND ((report_sent_at IS NULL AND ? = 1 AND created_at < ?) OR report_sent_at < ?)
+     ORDER BY COALESCE(report_sent_at, 0) LIMIT ?`).bind(sunday ? 1 : 0, now() - 2 * 86400_000, now() - REPORT_GAP, batch).all();
+  const out = { sent: 0, idle: 0, nokids: 0, fail: 0 };
+  for (const p of results) {
+    const r = await sendParentReport(env, p, false);
+    out[r] = (out[r] || 0) + 1;
+    if (r !== "fail") await env.DB.prepare("UPDATE parents SET report_sent_at = ? WHERE id = ?").bind(now(), p.id).run();
+  }
+  console.log("Haftalık rapor:", JSON.stringify(out));
+  return out;
+}
+
+async function setReport(req, env, p) {
+  const b = await body(req);
+  const on = b.on ? 1 : 0;
+  await env.DB.prepare("UPDATE parents SET weekly_report = ? WHERE id = ?").bind(on, p.id).run();
+  return json({ ok: true, weekly_report: !!on });
+}
+
+async function testReport(req, env, p) {
+  if (!mailReady(env)) bad("E-posta gönderimi henüz açık değil. Biraz sonra tekrar dene.", 503);
+  if (!p.email_verified) bad("Rapor gönderebilmemiz için önce e-posta adresini doğrula.");
+  if (p.report_test_at && now() - p.report_test_at < 10 * 60_000) bad("Örnek raporu az önce gönderdik. 10 dakika sonra tekrar deneyebilirsin.", 429);
+  await env.DB.prepare("UPDATE parents SET report_test_at = ? WHERE id = ?").bind(now(), p.id).run();
+  const r = await sendParentReport(env, p, true);
+  if (r === "nokids") bad("Rapor için önce bir çocuk profili ekle.");
+  if (r === "fail") bad("E-posta gönderilemedi. Biraz sonra tekrar dene.", 502);
+  return json({ ok: true });
+}
+
+function pageHTML(title, msg, extra = "") {
+  return new Response(`<!doctype html><html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escH(title)}</title></head>
+<body style="margin:0;background:#EEF4EA;font-family:Arial,Helvetica,sans-serif;color:#22304A"><div style="max-width:480px;margin:40px auto;padding:0 16px">
+<div style="background:#fff;border-radius:20px;padding:28px 24px;border:2px solid #DCE6D5;text-align:center"><div style="font-size:48px">🦉</div><h1 style="font-size:22px">${escH(title)}</h1><p style="font-size:16px;line-height:1.5">${msg}</p>${extra}
+<p><a href="https://ollieakademi.com" style="color:#C2571A">ollieakademi.com</a></p></div></div></body></html>`, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+}
+
+async function reportOff(req, env) {
+  const url = new URL(req.url);
+  const id = +url.searchParams.get("p"), k = String(url.searchParams.get("k") || "");
+  const p = /^[0-9a-f]{32}$/.test(k) && id ? await env.DB.prepare("SELECT id, report_key FROM parents WHERE id = ?").bind(id).first() : null;
+  if (!p || !p.report_key || !safeEq(p.report_key, k)) return pageHTML("Bağlantı geçersiz", "Bu bağlantı geçerli değil. Raporları veli panelinden de kapatabilirsin.");
+  // GET sadece onay sorar (e-posta programları bağlantıları önceden açabildiği için); kapatma POST ile olur.
+  if (req.method === "GET") return pageHTML("Haftalık raporu kapat", "Haftalık ilerleme raporu e-postalarını artık almak istemiyor musun?",
+    `<form method="post"><button type="submit" style="background:#E8742A;color:#fff;border:0;font-weight:bold;font-size:16px;padding:14px 24px;border-radius:14px;cursor:pointer">Evet, raporları kapat</button></form>`);
+  await env.DB.prepare("UPDATE parents SET weekly_report = 0 WHERE id = ?").bind(id).run();
+  return pageHTML("Haftalık rapor kapatıldı", "Artık haftalık ilerleme raporu göndermeyeceğiz. İstersen veli panelinden yeniden açabilirsin.");
+}
+
 /* ---------------- Yönlendirme ---------------- */
 
 async function handle(req, env, ctx) {
@@ -427,6 +606,7 @@ async function handle(req, env, ctx) {
   if (path === "/api/reset" && M === "POST") return resetPassword(req, env);
   if (path === "/api/verify" && M === "POST") return verifyEmail(req, env);
   if (path === "/api/login" && M === "POST") return login(req, env);
+  if (path === "/api/report/off" && (M === "GET" || M === "POST")) return reportOff(req, env);
 
   const p = await auth(req, env);
   if (path === "/api/logout" && M === "POST") return logout(req, env, p);
@@ -434,6 +614,8 @@ async function handle(req, env, ctx) {
   if (path === "/api/me/password" && M === "POST") return changePassword(req, env, p);
   if (path === "/api/me/delete" && M === "POST") return deleteAccount(req, env, p);
   if (path === "/api/me/verify-email" && M === "POST") return resendVerify(req, env, p);
+  if (path === "/api/me/report" && M === "POST") return setReport(req, env, p);
+  if (path === "/api/me/report/test" && M === "POST") return testReport(req, env, p);
   if (path === "/api/children" && M === "POST") return createChild(req, env, p);
   if ((m = path.match(/^\/api\/children\/(\d+)$/))) {
     if (M === "GET") return readChild(req, env, p, +m[1]);
@@ -455,6 +637,9 @@ async function handle(req, env, ctx) {
 }
 
 export default {
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(runReports(env).catch(e => console.error("Haftalık rapor hatası", e)));
+  },
   async fetch(req, env, ctx) {
     const ch = cors(req, env);
     if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: ch });

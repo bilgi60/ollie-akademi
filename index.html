@@ -1379,6 +1379,12 @@ function parentHTML(){
       <span class="row" id="del-${c.id}"><button class="btn ghost small" data-act="delChild" data-arg="${c.id}">Sil</button></span></div>`).join("")}</div>` : `<p class="muted">Henüz çocuk profili yok.</p>`}
     <p class="tr">İlerleme hesabına kaydedilir. Bu hesapla giriş yaptığın her cihazdan (telefon, tablet, bilgisayar) kaldığın yerden devam edebilirsin.</p>
   </section>
+  ${auth.mail ? `<section class="panel" id="reportBox"><h2>📬 Haftalık rapor</h2>
+    <p>Her hafta çocuklarının kaç gün çalıştığını, kazandığı yıldızları, yeni kelimelerini ve zorlandığı kelimeleri <b>${esc(auth.email)}</b> adresine e-postayla gönderiyoruz.</p>
+    ${auth.verified ? "" : `<p class="tr">Rapor yalnızca doğrulanmış e-posta adresine gider. Önce yukarıdaki bağlantıyla adresini doğrula.</p>`}
+    <div class="row"><button class="btn ${auth.report ? "ghost" : ""}" data-act="toggleReport">${auth.report ? "🔕 Raporu kapat" : "🔔 Raporu aç"}</button>${auth.verified && auth.report ? `<button class="btn ghost" data-act="testReport">✉️ Örnek raporu şimdi gönder</button>` : ""}</div>
+    <p class="tr">Durum: <b>${auth.report ? "Açık" : "Kapalı"}</b></p>
+  </section>` : ""}
   <section class="panel"><h2>Şifre değiştir</h2>
     <form id="pwForm" class="stack" novalidate>
       <label for="cp0">Şu anki şifre</label><input class="field" id="cp0" type="password" autocomplete="current-password" maxlength="200">
@@ -1400,7 +1406,7 @@ function checkPw(p1, p2, id){
   return true;
 }
 function setAuth(r){
-  auth = {token: r.token || auth.token, email: r.parent.email, role: r.parent.role, verified: !!r.parent.email_verified, mail: !!r.mail, children: r.children, lastChild: auth && auth.lastChild || null};
+  auth = {token: r.token || auth.token, email: r.parent.email, role: r.parent.role, verified: !!r.parent.email_verified, report: r.parent.weekly_report !== false, mail: !!r.mail, children: r.children, lastChild: auth && auth.lastChild || null};
   store.lastEmail = r.parent.email; saveStore(); saveAuth();
 }
 async function refreshMe(){
@@ -1485,6 +1491,16 @@ async function resendVerify(){
   const box = $("#verifyBox"), btn = box && box.querySelector("button"); if(btn) btn.disabled = true;
   try{ const r = await api("/me/verify-email", {method:"POST"}); if(r.already){ auth.verified = true; saveAuth(); render(); toast("E-posta adresin zaten doğrulanmış ✓"); return; }
     toast("Doğrulama bağlantısı gönderildi ✉️"); }
+  catch(err){ toast(err.message); if(btn) btn.disabled = false; }
+}
+async function toggleReport(){
+  const on = !auth.report;
+  try{ await api("/me/report", {body:{on}}); auth.report = on; saveAuth(); render(); toast(on ? "Haftalık rapor açıldı 🔔" : "Haftalık rapor kapatıldı"); }
+  catch(err){ toast(err.message); }
+}
+async function testReport(){
+  const btn = document.querySelector('[data-act="testReport"]'); if(btn) btn.disabled = true;
+  try{ await api("/me/report/test", {method:"POST"}); toast("Örnek rapor gönderildi ✉️ Gelen kutunu kontrol et."); }
   catch(err){ toast(err.message); if(btn) btn.disabled = false; }
 }
 async function onChangePw(){
@@ -2391,6 +2407,8 @@ document.addEventListener("click", e => {
     case "leave": stopSpeech(); return;
     case "logout": return parentLogout();
     case "resendVerify": return resendVerify();
+    case "toggleReport": return toggleReport();
+    case "testReport": return testReport();
     case "childOut": return childOut();
     case "pickChild": return enterChild(+arg);
     case "addOpen": addOpen = true; render(); setTimeout(()=>$("#cn") && $("#cn").focus(), 50); return;

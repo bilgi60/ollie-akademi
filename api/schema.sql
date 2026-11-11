@@ -7,6 +7,10 @@ CREATE TABLE IF NOT EXISTS parents (
   role TEXT NOT NULL DEFAULT 'parent',      -- 'parent' | 'admin'
   status TEXT NOT NULL DEFAULT 'active',    -- 'active' | 'suspended'
   email_verified INTEGER NOT NULL DEFAULT 0,
+  weekly_report INTEGER NOT NULL DEFAULT 1,  -- haftalık e-posta raporu açık mı
+  report_key TEXT,                          -- rapordaki "aboneliği bırak" bağlantısının anahtarı
+  report_sent_at INTEGER,
+  report_test_at INTEGER,
   created_at INTEGER NOT NULL,
   last_seen INTEGER
 );
@@ -17,6 +21,7 @@ CREATE TABLE IF NOT EXISTS children (
   avatar TEXT NOT NULL DEFAULT '🦊',
   score INTEGER NOT NULL DEFAULT 0,
   data TEXT NOT NULL DEFAULT '{}',
+  report_snap TEXT,                         -- son haftalık rapordaki durum (farkı hesaplamak için)
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
