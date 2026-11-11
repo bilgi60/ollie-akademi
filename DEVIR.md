@@ -3,7 +3,16 @@
 > **YENİ İŞ (2026-11-11): `ARASTIRMA.md`'deki 12 öneri SIRAYLA yapılacak (kullanıcı onayladı).**
 > - Sıra: 1) Akıllı tekrar ("Bugünün tekrarı") → 2) Yanlış cevabı Türkçe açıklama → 3) Veliye haftalık e-posta raporu (Resend kurulu) → 4) Yazdırılabilir çalışma kâğıdı → 5) Seviye tespit testi → 6) Uyarlanabilir zorluk → 7) Seviyeli okuma kütüphanesi → 8) Movers (A1) + Flyers (A2) üniteleri, sonra KET/PET hazırlık → 9) MEB müfredatı eşleştirme → 10) Ollie ile yapay zekâ sohbeti → 11) Hece düzeyinde telaffuz puanı → 12) Öğretmen/sınıf hesabı.
 > - Her madde (ya da birkaç küçük madde) ayrı sohbette. Her biri bitince: tarayıcıda dene, main'e almadan önce kullanıcıya sor, bu nota "biten/sıradaki" yaz.
-> - **Madde 1 BİTTİ (dal `claude/bold-planck-a54j4l`, main'e alındı 2026-11-11, YAYINDA).** Sıradaki: **Madde 2 — Yanlış cevabı Türkçe açıklama.**
+> - **Madde 1 BİTTİ (dal `claude/bold-planck-a54j4l`, main'e alındı 2026-11-11, YAYINDA).** 
+> - **Madde 2 BİTTİ (dal `claude/cool-thompson-cddezq`, 2026-11-11). main'e almak için kullanıcı onayı bekleniyor.** Sıradaki: **Madde 3 — Veliye haftalık e-posta raporu.**
+
+> **Son durum (2026-11-11, 10. oturum): Yanlış cevaba Türkçe açıklama ("🦉 Neden olmadı?").**
+> - Kolay/Zor testte yanlış cevapta geri bildirim kutusunun altına kısa Türkçe not çıkar; doğru cevabı ele vermez. Zor testte ilk yanlışta da gösterilir.
+> - Seçmeli sorular (resim/dinleme/şarkı/hikâye): "Seçtiğin 🦅 eagle = kartal" + soru türüne göre kısa cümle. Türkçe karşılık kelime kartlarından (`WORDS`) ya da `EXTRA_TR` listesinden gelir.
+> - Yazmalı sorular (`whyTyped`): bir harf eksik/fazla/yanlış (kaçıncı harf), iki harf yer değiştirmiş, çift harf unutulmuş, -s eksik/fazla, has/have-is/are-a/an gibi dilbilgisi (`GRAM`; ipucu aynı kuralı zaten söylüyorsa tekrarlanmaz), başka bir kelime yazılmış ("monkey = maymun demek"), Türkçesi yazılmış, Türkçe harf kullanılmış.
+> - Cümle kurma: fazla kelime kullanılmış, kaç kelime eksik, ilk kaç kelime doğru.
+> - Bugünün tekrarı'nda da ilk yanlışta aynı not gösteriliyor.
+> - Tarayıcıda (sahte API ile) denendi: hata yok.
 
 > **Son durum (2026-11-11, 9. oturum): Akıllı tekrar ("Bugünün tekrarı") yapıldı.**
 > - Ana sayfada "Kaldığın yerden devam et"in altında 🔁 kart: "N kelime seni bekliyor" → `#review` sayfası. Tekrar yoksa "Bugünlük tekrar bitti, yarın X kelime" + "Serbest tekrar".

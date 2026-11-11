@@ -230,6 +230,7 @@ span.chunk{display:inline-block;box-shadow:none}
 .fb.good{background:var(--leaf-soft);border:2px solid var(--leaf)}
 .fb.try{background:var(--berry-soft);border:2px solid var(--berry)}
 .fb .en{font-family:var(--display);font-size:1.15rem}
+.fb .why{margin-top:8px;padding-top:8px;border-top:1px dashed var(--berry);font-weight:500}
 .ans:disabled{cursor:default}
 .story{display:flex;flex-direction:column;gap:4px;background:var(--soft);border-radius:16px;padding:14px 12px}
 .story .line{display:block;width:100%;text-align:left;font-family:var(--display);font-weight:500;font-size:1.2rem;line-height:1.45;padding:4px 8px;border-radius:10px;background:none;border:0;color:inherit;cursor:pointer}
@@ -1914,16 +1915,19 @@ function correct(note){
     <div class="row center" style="margin-top:12px"><button class="btn" data-act="nextTask">${last?"🏆 Testi bitir":"Next task ▶"}</button></div>`;
   $('[data-act="nextTask"]').focus();
 }
-function wrong(t){
+function wrong(t, given){
   play.tries++;
+  const raw = whyWrong(t, given), hintShown = !(play.mode==="hard" && play.tries===1);
+  const dup = hintShown && t.hint && Object.values(GRAM).includes(raw) && /\b(HAS|HAVE|IS|ARE|AM|DOES|DO|AN)\b/.test(t.hint.join(" "));
+  const why = whyHTML(dup ? "" : raw);
   if(play.tries===1) revMiss(play.unit, t);
   if(play.mode==="hard" && play.tries===1){
     say("Almost! Try once more.", "Neredeyse! Bir kez daha dene.");
-    $("#fb").innerHTML = `<div class="fb try"><div class="en">Almost! Think again. 🤔</div><div class="tr">Bir daha dene. Bir kez daha yanılırsan Ollie ipucu verecek.</div></div>`;
+    $("#fb").innerHTML = `<div class="fb try"><div class="en">Almost! Think again. 🤔</div><div class="tr">Bir daha dene. Bir kez daha yanılırsan Ollie ipucu verecek.</div>${why}</div>`;
     return;
   }
   say("Great try! But remember…", "Güzel deneme! Ama hatırla…");
-  $("#fb").innerHTML = `<div class="fb try"><div class="en">Great try! But remember… ${esc(t.hint[0])}</div><div class="tr">${esc(t.hint[1])}</div></div>`;
+  $("#fb").innerHTML = `<div class="fb try"><div class="en">Great try! But remember… ${esc(t.hint[0])}</div><div class="tr">${esc(t.hint[1])}</div>${why}</div>`;
 }
 function nextTask(){
   if(play.local.size >= 5) return finishQuiz();
@@ -1971,6 +1975,73 @@ function revMiss(i, t){
   ws.forEach(w=>{ const r = S.rev[w] || {b:0, d:"", x:0}; S.rev[w] = {b:0, d:todayKey(), x:r.x+1}; });
   if(ws.size) save();
 }
+/* Yanlış cevabı açıklama: çocuğun verdiği cevaba bakıp NEDEN olmadığını kısa bir Türkçe notla söyler.
+   Doğru cevabı ele vermez; seçilen kelimenin anlamını, yazımdaki hatanın türünü ya da cümledeki sıra hatasını anlatır. */
+const EXTRA_TR = {walk:"yürümek", talk:"konuşmak", bed:"yatak", sun:"güneş", grass:"çimen", frog:"kurbağa", flower:"çiçek", cat:"kedi",
+  goodbye:"hoşça kal", hello:"merhaba", meow:"miyav", eat:"yemek yemek", brush:"fırçalamak", school:"okul", breakfast:"kahvaltı",
+  eggs:"yumurtalar", kite:"uçurtma", eyes:"gözler", legs:"bacaklar", two:"iki", three:"üç", four:"dört", me:"ben", jump:"zıplamak",
+  white:"beyaz", fingers:"parmaklar", has:"sahip olmak (he/she/it)", have:"sahip olmak (I/you/we/they)", is:"-dir (he/she/it)", are:"-dir (we/you/they)", am:"-im (I)",
+  "both of them":"ikisi de", "red and yellow":"kırmızı ve sarı", "on the desk":"sıranın üstünde", "in my bag":"çantamın içinde",
+  "under the book":"kitabın altında", "at seven":"saat yedide", "at seven thirty":"saat yedi buçukta", "at eight":"saat sekizde",
+  "my brother":"erkek kardeşim", "my sister":"kız kardeşim"};
+const trOf = v => { const w = norm(v), b = w.replace(/^(a|an|the|my) /, "");
+  if(EXTRA_TR[w]) return EXTRA_TR[w];
+  const c = (WORDS[w] || WORDS[b] || WORDS[b.replace(/e?s$/,"")] || {}).c;
+  return c ? c.tr.toLocaleLowerCase("tr-TR") : EXTRA_TR[b] || ""; };
+const GRAM = {"have>has":"He / She / It (o) ile HAS kullanılır, HAVE değil.", "has>have":"I / You / We / They ile HAVE kullanılır, HAS değil.",
+  "are>is":"Tek bir şey için IS kullanılır, ARE değil.", "is>are":"Birden fazla şey için ARE kullanılır, IS değil.",
+  "is>am":"I (ben) ile AM kullanılır.", "am>is":"He / She / It ile IS kullanılır.", "do>does":"He / She / It ile DOES kullanılır.", "does>do":"I / You / We / They ile DO kullanılır.",
+  "a>an":"Sesli harfle başlayan kelimeden önce AN gelir (an apple).", "an>a":"Sessiz harfle başlayan kelimeden önce A gelir (a cat)."};
+function editInfo(a, b){ // a: çocuğun yazdığı, b: doğru cevap
+  if(a.length === b.length){
+    const d = [...a].map((x,n)=>x!==b[n]?n:-1).filter(n=>n>=0);
+    if(d.length===2 && d[1]===d[0]+1 && a[d[0]]===b[d[1]] && a[d[1]]===b[d[0]]) return "İki harfin yeri karışmış. Harflerin sırasına dikkat et!";
+    if(d.length===1) return `Çok yaklaştın! Sadece ${d[0]+1}. harf yanlış.`;
+    if(d.length===2) return "Çok yaklaştın! Sadece iki harf farklı.";
+    return "";
+  }
+  const [s, l] = a.length < b.length ? [a, b] : [b, a];
+  if(l.length - s.length !== 1) return "";
+  for(let n=0; n<l.length; n++) if(l.slice(0,n)+l.slice(n+1) === s){
+    if(a.length < b.length) return /(.)\1/.test(b) && !/(.)\1/.test(a) ? "Bir harf eksik. İpucu: bu kelimede yan yana iki aynı harf var!" : "Çok yaklaştın! Bir harf eksik.";
+    return "Çok yaklaştın! Bir harf fazla.";
+  }
+  return "";
+}
+function whyTyped(given, ans){
+  const g = norm(given), a = norm(ans); if(!g || g === a) return "";
+  if(/[şçğıöü]/.test(g)){
+    return trOf(a) && g === trOf(a) ? "Bu kelimenin Türkçesini yazdın, aferin! Şimdi İngilizcesini yaz." : "İngilizcede ş, ç, ğ, ı, ö, ü harfleri yok. İngilizce harflerle yaz.";
+  }
+  if(GRAM[g+">"+a]) return GRAM[g+">"+a];
+  if(g === a+"s" || g === a+"es") return "Sonuna fazladan -s koymuşsun. Burada tek bir şey var.";
+  if(a === g+"s" || a === g+"es") return "Sonundaki -s eksik. Birden fazla şey varsa kelimenin sonuna -s gelir.";
+  const e = editInfo(g, a); if(e) return e;
+  const m = trOf(g); if(m) return `<b>${esc(g)}</b> = ${esc(m)} demek. Burada başka bir kelime lazım.`;
+  if(trOf(a) && g === norm(trOf(a))) return "Bu kelimenin Türkçesini yazdın, aferin! Şimdi İngilizcesini yaz.";
+  return "";
+}
+function whyOrder(t, words){
+  const A = norm(t.answer).split(" "), G = words.map(norm), x = norm(t.extra||"");
+  if(x && G.includes(x) && !A.includes(x)) return `<b>${esc(t.extra)}</b> kelimesi bu cümlede fazla. Onu kullanma! 🕵️`;
+  if(G.length < A.length) return `Cümle eksik: ${A.length - G.length} kelime daha eklemen gerekiyor.`;
+  const k = G.findIndex((w,n)=>w!==A[n]);
+  return k > 0 ? `İlk ${k} kelime doğru 👍, sonrası karışmış.` : "Kelimeler doğru ama sıra karışmış. İngilizcede cümle önce KİM ile başlar, sonra NE YAPIYOR gelir.";
+}
+function whyOpt(t, v){
+  const o = (t.options||[]).find(o=>(typeof o==="string" ? o : o.v) === v), e = o && o.e ? o.e + " " : "", m = trOf(v);
+  const what = `Seçtiğin ${e}<b>${esc(v)}</b>${m ? " = " + esc(m) : ""}.`;
+  if(t.type==="song") return `${what} Bu kelime şarkının bu satırına uymuyor.`;
+  if(t.type==="pick") return `${what} Ama soru başka birini soruyor.`;
+  return `${what} Ollie'nin anlattığıyla uyuşmuyor, dikkatlice dinle.`;
+}
+function whyWrong(t, given){
+  if(given == null) return "";
+  if(t.type==="order") return whyOrder(t, given);
+  if(t.options) return whyOpt(t, given);
+  return whyTyped(given, t.type==="songtype" ? t.blank : t.type==="dictation" ? t.word : t.answer);
+}
+const whyHTML = s => s ? `<div class="why">🦉 <b>Neden olmadı?</b> ${s}</div>` : "";
 function reviewCardHTML(){
   const n = Object.keys(S.rev).length; if(!n) return "";
   const due = revDue().length;
@@ -2064,7 +2135,7 @@ function revAnswer(v, btn){
     rv.queue.push({w:q.w, again:true});
   }
   if(q.tries===1){ say("Almost! Try again.", `İpucu: “${c.w[0]}” harfiyle başlıyor, ${c.w.replace(/ /g,"").length} harf.`);
-    $("#fb").innerHTML = `<div class="fb try"><div class="en">Almost! 🤔</div><div class="tr">İpucu: <b>${esc(c.w[0].toUpperCase())}</b> ile başlıyor, ${c.w.replace(/ /g,"").length} harf. Bu kelimeyi sonra bir kez daha soracağım.</div></div>`;
+    $("#fb").innerHTML = `<div class="fb try"><div class="en">Almost! 🤔</div><div class="tr">İpucu: <b>${esc(c.w[0].toUpperCase())}</b> ile başlıyor, ${c.w.replace(/ /g,"").length} harf. Bu kelimeyi sonra bir kez daha soracağım.</div>${whyHTML(btn ? (trOf(v) ? `Seçtiğin <b>${esc(v)}</b> = ${esc(trOf(v))}.` : "") : whyTyped(v, c.w))}</div>`;
     return; }
   q.solved = true;
   say("That's OK!", "Sorun değil, doğru cevap bu. Birazdan yine soracağım.");
@@ -2399,7 +2470,7 @@ document.addEventListener("click", e => {
       const s = play.order.picked.map(i=>play.order.tiles[i]).join(" ");
       if(!s){ say("Tap the words first!","Önce kelimelere dokun!"); return; }
       if(norm(s)===norm(t.answer)){ correct(`“${esc(t.answer)}.” <span class="tr">${esc(t.tr)}</span>`); speak(t.answer); }
-      else wrong(t);
+      else wrong(t, play.order.picked.map(i=>play.order.tiles[i]));
       return;
     }
   }
@@ -2411,7 +2482,7 @@ function answerOpt(b){
     b.classList.add("right");
     if(t.type==="song"){ $("#sline").innerHTML = L.song.lines[t.line]; correct(`“${plain(L.song.lines[t.line])}”`); }
     else { correct(""); speak(PRAISE[0][0]); }
-  } else { b.classList.add("wrong"); setTimeout(()=>b.classList.remove("wrong"),600); wrong(t); }
+  } else { b.classList.add("wrong"); setTimeout(()=>b.classList.remove("wrong"),600); wrong(t, b.dataset.v); }
 }
 document.addEventListener("keydown", e => {
   if(e.target.id==="card" && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); e.target.classList.toggle("flip"); }
@@ -2436,7 +2507,7 @@ document.addEventListener("submit", e => {
     if(t.type==="songtype"){ $("#sline").innerHTML = L.song.lines[t.line]; correct(`“${plain(L.song.lines[t.line])}”`); speak(plain(L.song.lines[t.line])); }
     else if(t.type==="dictation"){ $("#dictEmo").textContent = t.e; correct(`${t.e} <b>${esc(t.word)}</b>`); speak(t.word); }
     else { const full = t.sentence.replace("___",t.answer); correct(`“${esc(full)}”`); speak(full); }
-  } else wrong(t);
+  } else wrong(t, inp.value);
 });
 function sing(){
   if(singing){ stopSpeech(); document.querySelectorAll("#song p").forEach(p=>p.classList.remove("on")); return; }
