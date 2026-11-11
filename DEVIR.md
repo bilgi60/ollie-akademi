@@ -12,6 +12,17 @@
 > - **Madde 7 BİTTİ (dal `claude/friendly-dijkstra-r4vmx7`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Sıradaki: **Madde 8 — Movers (A1) + Flyers (A2) üniteleri.**
 > - **Madde 8, 1. kısım BİTTİ: Movers (A1) 10 ünite (dal `claude/charming-bohr-98r69d`, 2026-11-11; Madde 7'nin dalı da bu dala birleştirildi). Madde 7 + Madde 8/1 + Reading üst üste binme düzeltmesi main'e alındı 2026-11-11, YAYINDA.** Worker da yeniden yayınlandı (2026-11-11). Sıradaki: **Madde 8, 2. kısım — Flyers (A2) 10 ünite** (aynı yöntemle `units-a2.js`), sonra KET/PET hazırlık.
 
+> - **Madde 8, 2. kısım BİTTİ: Flyers (A2) 10 ünite (dal `claude/laughing-allen-n2i5qa`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** main'e alınınca Worker'ı yeniden yayınla (rapordaki ünite/rozet adları için). Sıradaki: **Madde 8, 3. kısım — KET/PET hazırlık** (ya da önce Movers/Flyers kütüphane kitapları), sonra **Madde 9 — MEB müfredatı eşleştirme.**
+
+> **Son durum (2026-11-11, 16. oturum): Flyers (A2) üniteleri (Ünite 21–30).**
+> - Yeni dosya `units-a2.js` (`const UNITS_A2 = [...]`), biçim `units-a1.js` ile aynı; `index.html` iki dosyayı sırayla ekler. Flyers bölümü artık "Yakında" değil.
+> - Üniteler (dilbilgisi): 21 Holidays (be going to) · 22 Space (will/won't) · 23 Materials (made of) · 24 Seasons and Dates (in/on, sıra sayıları) · 25 Shopping (how much/many, too, -er than; lira) · 26 Technology (present perfect: Have you ever) · 27 Our Planet (should/must) · 28 Fairy Tales (past continuous) · 29 Hobbies and Talents (good at + -ing, zarflar) · 30 Celebrations (because/so/when; 23 Nisan, Cumhuriyet Bayramı).
+> - Yeni rozetler: 🪁 Flyers'a Merhaba, 🦉 Flyers Mezunu. `admin.html` ünite adları, `gen-content.mjs` (A2'yi de okur; `content.js` yeniden üretildi: 30 ünite, 27 rozet).
+> - Denetleyici artık birden çok dosya alır, kelime tekrarını dosyalar arası arar: `node api/tools/check-units.js units-a1.js units-a2.js` → ✓.
+> - İçerik alt ajanlarla yazıldı (ünite başına 8 kelime ve dilbilgisi önceden verildi); örnekler okundu, iyi görünüyor ama bir insan gözüyle tamamı okunmadı. Kral kartında 🫅 yerine 👑 (eski cihazlar), dev kartı 👣.
+> - Tarayıcıda (sahte API, 390 px) 10 ünitenin hepsi: 5 şarkı, 8 kart, kolay/zor testlerin her sorusu (doğru cevapla), 3 kule, yazma (örnek metin ≥40 puan), Reading/Listening/Speaking, çalışma kâğıdı, Derslerim/Rozetler/Profil/Seviye testi sayfaları; hata yok, yatay kayma yok, ilerleme ve rozetler sunucuya kaydediliyor.
+> - Kütüphane kitabı Movers/Flyers için hâlâ YOK.
+
 > **Son durum (2026-11-11, 15. oturum): Movers (A1) üniteleri (Ünite 11–20).**
 > - Yeni dosya `units-a1.js` (`const UNITS_A1 = [...]`), `index.html` bunu ana betikten önce yükler ve "Seviyeler" bölümünde üniteleri `LEVELS/READING/LISTENING/SPEAKING/WRITE/TOWERS`'a ekler. Her ünite: 8 kart, 5 şarkı, kolay + zor test, yazma görevi, okuma, 5 dinleme, 5 konuşma, 3 Cümle Kulesi. Kütüphane kitabı YOK (ileride).
 > - Üniteler: 11 Jobs · 12 My Town · 13 Feelings · 14 Health · 15 Wild Animals (karşılaştırma) · 16 Nature (en üstünlük) · 17 My Home · 18 Food and Drinks (some/any) · 19 Sports (like + -ing) · 20 Last Weekend (geçmiş zaman).
