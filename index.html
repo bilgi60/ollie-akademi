@@ -246,6 +246,17 @@ span.chunk{display:inline-block;box-shadow:none}
 .story .line.on{background:var(--sun);color:#22304A}
 .story .line .tr{display:block;font-family:var(--body);font-size:.95rem;font-weight:400}
 .story .line.on .tr{color:#22304A}
+.lib-card{text-decoration:none;color:inherit;margin-bottom:4px}
+.bk-art{font-size:4.6rem;line-height:1.15;text-align:center;padding:8px 0;letter-spacing:.05em}
+.bk-text{font-family:var(--display);font-weight:600;font-size:1.35rem;line-height:1.7;text-align:center;background:var(--soft);border-radius:16px;padding:16px 12px;border:3px solid transparent;transition:border-color .2s}
+.book.lv1 .bk-text{font-size:1.8rem}
+.bk-text.on{border-color:var(--sun)}
+.bk-text .w{font:inherit;color:inherit;background:none;border:0;padding:0 2px;margin:0;border-radius:8px;cursor:pointer}
+.bk-text .w:hover,.bk-text .w.on{background:var(--sun);color:#22304A}
+.bk-tr{display:block;font-family:var(--body);font-weight:400;font-size:1rem;line-height:1.4;margin-top:8px}
+.bk-gl{min-height:2.2em;text-align:center;font-size:1.1rem}
+.bk-nav{flex-wrap:nowrap;gap:8px}
+@media (max-width:520px){.bk-art{font-size:3.6rem}.bk-text{font-size:1.2rem}.book.lv1 .bk-text{font-size:1.5rem}.bk-nav .btn{padding-left:12px;padding-right:12px;font-size:.92rem;white-space:nowrap}.bk-nav .lbl{display:none}}
 .rq{padding-top:12px;border-top:2px dashed var(--line)}
 .rq:first-of-type{border-top:0;padding-top:0}
 .heard .hw{padding:0 4px;border-radius:8px}
@@ -838,6 +849,182 @@ const SPEAKING = [
  [ {e:"🏊",en:"I can swim.",tr:"Yüzebilirim."}, {e:"🏃",en:"I can run fast.",tr:"Hızlı koşabilirim."}, {e:"💃",en:"I like dancing.",tr:"Dans etmeyi severim."}, {e:"🎤",en:"Can you sing?",tr:"Şarkı söyleyebilir misin?"}, {e:"🎨",en:"My hobby is drawing.",tr:"Benim hobim resim yapmak."} ]
 ];
 
+/* ---------- Seviyeli okuma kütüphanesi (📚 Kitaplık) ----------
+   Her kitap: sayfalar [resim, İngilizce, Türkçe], sonunda test. gl = kelimeye dokununca gösterilen Türkçe (ünite kelimeleri trOf'tan gelir). */
+const BOOK_LV = [
+ {n:1, e:"🌱", name:"İlk Kitaplar", en:"First Books", cefr:"Pre-A1", d:"Her sayfada tek kısa cümle. Okumaya buradan başla."},
+ {n:2, e:"🌿", name:"Küçük Okur", en:"Young Reader", cefr:"Starters", d:"Sayfa başına iki cümle, küçük bir macera."},
+ {n:3, e:"🌳", name:"Usta Okur", en:"Super Reader", cefr:"Movers · A1", d:"Daha uzun hikâyeler ve geçmiş zaman (was, went, saw…)."}
+];
+const BOOKS = [
+ {id:"max", lv:1, e:"🐶", title:"Where Is Max?", pages:[
+   ["🐶❓","Where is Max?","Max nerede?"],
+   ["🛏️","Is he under the bed? No!","Yatağın altında mı? Hayır!"],
+   ["📦","Is he in the box? No!","Kutunun içinde mi? Hayır!"],
+   ["🚪","Is he behind the door? No!","Kapının arkasında mı? Hayır!"],
+   ["🌳🐶","Is he in the garden? Yes!","Bahçede mi? Evet!"],
+   ["🐶❤️","Hello, Max! Good dog!","Merhaba Max! Aferin köpek!"]],
+  gl:{where:"nerede", under:"altında", bed:"yatak", box:"kutu", behind:"arkasında", door:"kapı", garden:"bahçe", good:"iyi", yes:"evet", no:"hayır"},
+  qs:[
+   {q:"What is Max?", tr:"Max nedir?", options:["a dog","a cat","a boy"], answer:"a dog"},
+   {q:"Where is Max?", tr:"Max nerede?", options:["under the bed","in the box","in the garden"], answer:"in the garden"},
+   {q:"Is Max behind the door?", tr:"Max kapının arkasında mı?", options:["Yes, he is.","No, he isn't."], answer:"No, he isn't."}]},
+ {id:"colors", lv:1, e:"🌈", title:"I Like Colors", pages:[
+   ["🍎","I like red apples.","Kırmızı elmaları severim."],
+   ["🍌","I like yellow bananas.","Sarı muzları severim."],
+   ["🐸","I like green frogs.","Yeşil kurbağaları severim."],
+   ["🐟","I like blue fish.","Mavi balıkları severim."],
+   ["🌸","I like pink flowers.","Pembe çiçekleri severim."],
+   ["🌈","I like all the colors!","Bütün renkleri severim!"]],
+  gl:{like:"sevmek", apples:"elmalar", bananas:"muzlar", frogs:"kurbağalar", fish:"balık", flowers:"çiçekler", all:"bütün", colors:"renkler"},
+  qs:[
+   {q:"What color are the bananas?", tr:"Muzlar ne renk?", options:["red","yellow","blue"], answer:"yellow"},
+   {q:"What is green?", tr:"Yeşil olan ne?", options:["the frogs","the apples","the fish"], answer:"the frogs"},
+   {q:"What color are the flowers?", tr:"Çiçekler ne renk?", options:["pink","green","yellow"], answer:"pink"}]},
+ {id:"bella", lv:1, e:"🐱", title:"My Cat Bella", pages:[
+   ["🐱🏠","This is my cat.","Bu benim kedim."],
+   ["🐱🏷️","Her name is Bella.","Onun adı Bella."],
+   ["🐱🤍","Bella is small and white.","Bella küçük ve beyazdır."],
+   ["🥛","She likes milk.","Sütü sever."],
+   ["🛏️😴","She sleeps on my bed.","Benim yatağımda uyur."],
+   ["🐱❤️","I love Bella!","Bella'yı çok seviyorum!"]],
+  gl:{this:"bu", cat:"kedi", her:"onun (kız)", name:"isim", small:"küçük", white:"beyaz", she:"o (kız)", likes:"sever", milk:"süt", sleeps:"uyur", on:"üstünde", bed:"yatak", love:"sevmek"},
+  qs:[
+   {q:"What is the cat's name?", tr:"Kedinin adı ne?", options:["Max","Bella","Tom"], answer:"Bella"},
+   {q:"What color is Bella?", tr:"Bella ne renk?", options:["black","orange","white"], answer:"white"},
+   {q:"What does Bella like?", tr:"Bella neyi sever?", options:["milk","apples","bread"], answer:"milk"}]},
+ {id:"morning", lv:1, e:"☀️", title:"Good Morning!", pages:[
+   ["⏰","I wake up.","Uyanırım."],
+   ["🚿","I wash my face.","Yüzümü yıkarım."],
+   ["🥣","I eat breakfast.","Kahvaltı yaparım."],
+   ["🪥","I brush my teeth.","Dişlerimi fırçalarım."],
+   ["👟","I put on my shoes.","Ayakkabılarımı giyerim."],
+   ["🏫👋","I go to school. Bye, Mom!","Okula giderim. Hoşça kal anne!"]],
+  gl:{wake:"uyanmak", up:"yukarı", wash:"yıkamak", face:"yüz", eat:"yemek", breakfast:"kahvaltı", brush:"fırçalamak", teeth:"dişler", put:"koymak (put on = giymek)", shoes:"ayakkabılar", go:"gitmek", school:"okul", bye:"hoşça kal"},
+  qs:[
+   {q:"What do I eat?", tr:"Ne yerim?", options:["dinner","breakfast","pizza"], answer:"breakfast"},
+   {q:"What do I brush?", tr:"Neyi fırçalarım?", options:["my teeth","my dog","my shoes"], answer:"my teeth"},
+   {q:"Where do I go?", tr:"Nereye giderim?", options:["to the park","to the zoo","to school"], answer:"to school"}]},
+
+ {id:"bear", lv:2, e:"🐻", title:"The Hungry Bear", pages:[
+   ["🐻🌲","Bobo is a big brown bear. He lives in the forest.","Bobo büyük, kahverengi bir ayıdır. Ormanda yaşar."],
+   ["🐻😋","One morning, Bobo is very hungry. “I want food!” he says.","Bir sabah Bobo çok acıkır. “Yemek istiyorum!” der."],
+   ["🐟🌊","He sees a fish in the river. But the fish is too fast!","Nehirde bir balık görür. Ama balık çok hızlı!"],
+   ["🍎🌳","He sees red apples in a tree. But the apples are too high!","Bir ağaçta kırmızı elmalar görür. Ama elmalar çok yüksekte!"],
+   ["🍯🐝","He sees some honey. But the bees say, “No! It's our honey!”","Biraz bal görür. Ama arılar “Hayır! O bizim balımız!” der."],
+   ["🐰🥕","A little rabbit comes. “Are you hungry, Bobo? Have some carrots!”","Küçük bir tavşan gelir. “Aç mısın Bobo? Biraz havuç al!”"],
+   ["🐻🐰❤️","Bobo eats the carrots. “Thank you, my friend!”","Bobo havuçları yer. “Teşekkürler arkadaşım!”"]],
+  gl:{bear:"ayı", brown:"kahverengi", lives:"yaşar", forest:"orman", morning:"sabah", hungry:"aç", want:"istemek", food:"yemek", sees:"görür", river:"nehir", too:"fazla, çok", fast:"hızlı", tree:"ağaç", high:"yüksek", honey:"bal", bees:"arılar", our:"bizim", little:"küçük", rabbit:"tavşan", carrots:"havuçlar", friend:"arkadaş"},
+  qs:[
+   {q:"Where does Bobo live?", tr:"Bobo nerede yaşar?", options:["in the sea","in the forest","in a house"], answer:"in the forest"},
+   {q:"Why can't Bobo eat the fish?", tr:"Bobo balığı neden yiyemez?", options:["It's too fast.","It's too big.","It's too high."], answer:"It's too fast."},
+   {q:"What does the rabbit give Bobo?", tr:"Tavşan Bobo'ya ne verir?", options:["honey","apples","carrots"], answer:"carrots"},
+   {q:"What color is Bobo?", tr:"Bobo ne renk?", options:["white","brown","black"], answer:"brown"}]},
+ {id:"rain", lv:2, e:"🌧️", title:"A Rainy Day", pages:[
+   ["🌧️🏠","It is Saturday. It is raining and it is cold.","Bugün cumartesi. Yağmur yağıyor ve hava soğuk."],
+   ["👧😟","Ela can't play in the park. She is sad.","Ela parkta oynayamaz. Üzgündür."],
+   ["👦💡","Her brother Efe has an idea. “Let's make a house with blankets!”","Kardeşi Efe'nin aklına bir fikir gelir. “Battaniyelerden bir ev yapalım!”"],
+   ["🪑🧸","They use chairs, blankets and pillows. Their teddy bear comes too.","Sandalye, battaniye ve yastık kullanırlar. Oyuncak ayıları da gelir."],
+   ["🔦📖","In the blanket house, they read books with a flashlight.","Battaniye evinde el feneriyle kitap okurlar."],
+   ["🌈☀️","Then the rain stops. Look! There is a rainbow in the sky!","Sonra yağmur durur. Bak! Gökyüzünde bir gökkuşağı var!"],
+   ["👧👦😊","Ela smiles. “Rainy days are fun too!”","Ela gülümser. “Yağmurlu günler de eğlenceli!”"]],
+  gl:{saturday:"cumartesi", raining:"yağmur yağıyor", cold:"soğuk", "can't":"-amaz, -emez", play:"oynamak", park:"park", sad:"üzgün", brother:"erkek kardeş", idea:"fikir", "let's":"hadi …-alım", make:"yapmak", house:"ev", blankets:"battaniyeler", blanket:"battaniye", use:"kullanmak", chairs:"sandalyeler", pillows:"yastıklar", teddy:"oyuncak ayı", read:"okumak", books:"kitaplar", flashlight:"el feneri", stops:"durur", rainbow:"gökkuşağı", sky:"gökyüzü", smiles:"gülümser", rainy:"yağmurlu", days:"günler", fun:"eğlenceli"},
+  qs:[
+   {q:"What day is it?", tr:"Bugün hangi gün?", options:["Monday","Saturday","Sunday"], answer:"Saturday"},
+   {q:"Who is Efe?", tr:"Efe kimdir?", options:["Ela's dad","Ela's friend","Ela's brother"], answer:"Ela's brother"},
+   {q:"What do they make?", tr:"Ne yaparlar?", options:["a cake","a house with blankets","a kite"], answer:"a house with blankets"},
+   {q:"What is in the sky at the end?", tr:"Sonunda gökyüzünde ne var?", options:["a rainbow","the moon","a plane"], answer:"a rainbow"}]},
+ {id:"sports", lv:2, e:"🏅", title:"Sports Day", pages:[
+   ["🏫🎉","Today is Sports Day at school. All the children are happy.","Bugün okulda spor günü. Bütün çocuklar mutlu."],
+   ["🏃‍♀️💨","Ayşe can run very fast. She wins the race!","Ayşe çok hızlı koşabilir. Yarışı kazanır!"],
+   ["🤸","Burak can jump very high. He jumps over the bar.","Burak çok yükseğe zıplayabilir. Çıtanın üstünden atlar."],
+   ["⚽🥅","Kerem plays football. He kicks the ball into the goal!","Kerem futbol oynar. Topu kaleye atar!"],
+   ["🥄🥚","Then there is an egg and spoon race. Oh no! Kerem drops his egg!","Sonra kaşıkla yumurta yarışı var. Eyvah! Kerem yumurtasını düşürür!"],
+   ["😂","Everybody laughs, and Kerem laughs too.","Herkes güler, Kerem de güler."],
+   ["🏅👏","At the end, the teacher gives every child a medal. “Well done, everyone!”","Sonunda öğretmen her çocuğa bir madalya verir. “Aferin hepinize!”"]],
+  gl:{today:"bugün", sports:"spor", day:"gün", children:"çocuklar", happy:"mutlu", run:"koşmak", very:"çok", fast:"hızlı", wins:"kazanır", race:"yarış", jump:"zıplamak", jumps:"zıplar", high:"yüksek", over:"üstünden", bar:"çıta", plays:"oynar", football:"futbol", kicks:"tekmeler", ball:"top", goal:"kale, gol", egg:"yumurta", spoon:"kaşık", drops:"düşürür", everybody:"herkes", laughs:"güler", teacher:"öğretmen", gives:"verir", every:"her", child:"çocuk", medal:"madalya", "well done":"aferin"},
+  qs:[
+   {q:"Who wins the race?", tr:"Yarışı kim kazanır?", options:["Burak","Ayşe","Kerem"], answer:"Ayşe"},
+   {q:"What does Kerem play?", tr:"Kerem ne oynar?", options:["football","tennis","basketball"], answer:"football"},
+   {q:"Who drops the egg?", tr:"Yumurtayı kim düşürür?", options:["the teacher","Ayşe","Kerem"], answer:"Kerem"},
+   {q:"What does every child get?", tr:"Her çocuk ne alır?", options:["a ball","a medal","an egg"], answer:"a medal"}]},
+ {id:"garden", lv:2, e:"👵", title:"Grandma's Garden", pages:[
+   ["👵🏡","Every summer, Leo visits his grandma. She has a big garden.","Leo her yaz büyükannesini ziyaret eder. Büyükannesinin büyük bir bahçesi var."],
+   ["🍅🫑","There are red tomatoes and green peppers in the garden.","Bahçede kırmızı domatesler ve yeşil biberler var."],
+   ["🐔🥚","There are four chickens too. They give eggs every day.","Dört tavuk da var. Her gün yumurta verirler."],
+   ["🧺","Leo helps Grandma. He picks tomatoes and puts them in a basket.","Leo büyükannesine yardım eder. Domates toplar ve onları bir sepete koyar."],
+   ["🐛🍃","Look! A little caterpillar is on a leaf. “Don't eat our tomatoes!” says Leo.","Bak! Bir yaprağın üstünde küçük bir tırtıl var. Leo “Domateslerimizi yeme!” der."],
+   ["🍲","In the evening, Grandma makes tomato soup.","Akşam büyükanne domates çorbası yapar."],
+   ["😋","“This is the best soup in the world!” says Leo.","Leo “Bu dünyanın en güzel çorbası!” der."]],
+  gl:{every:"her", summer:"yaz", visits:"ziyaret eder", grandma:"büyükanne", garden:"bahçe", tomatoes:"domatesler", tomato:"domates", peppers:"biberler", chickens:"tavuklar", eggs:"yumurtalar", helps:"yardım eder", picks:"toplar", puts:"koyar", basket:"sepet", caterpillar:"tırtıl", leaf:"yaprak", "don't":"yapma (olumsuz)", evening:"akşam", soup:"çorba", best:"en iyi", world:"dünya"},
+  qs:[
+   {q:"When does Leo visit Grandma?", tr:"Leo büyükannesini ne zaman ziyaret eder?", options:["every winter","every summer","every Sunday"], answer:"every summer"},
+   {q:"How many chickens are there?", tr:"Kaç tavuk var?", options:["two","four","six"], answer:"four"},
+   {q:"What does Leo put in the basket?", tr:"Leo sepete ne koyar?", options:["tomatoes","eggs","apples"], answer:"tomatoes"},
+   {q:"What does Grandma make?", tr:"Büyükanne ne yapar?", options:["a cake","pizza","tomato soup"], answer:"tomato soup"}]},
+
+ {id:"turtle", lv:3, e:"🐢", title:"The Brave Little Turtle", pages:[
+   ["🏖️🥚","One night, on a quiet beach, a little egg opened.","Bir gece, sessiz bir kumsalda küçük bir yumurta açıldı."],
+   ["🐢","A tiny turtle came out. Her name was Tiki.","Minicik bir kaplumbağa çıktı. Adı Tiki'ydi."],
+   ["🌊🌙","Tiki looked at the sea. It was big and dark, and the moon was shining on it.","Tiki denize baktı. Deniz büyük ve karanlıktı, ay da üstünde parlıyordu."],
+   ["🦀","On her way, she met a crab. “Where are you going?” asked the crab. “To the sea!” said Tiki.","Yolda bir yengeçle karşılaştı. Yengeç “Nereye gidiyorsun?” diye sordu. Tiki “Denize!” dedi."],
+   ["🐦","Suddenly, a big bird flew over the beach. Tiki was scared, but she didn't stop.","Birden büyük bir kuş kumsalın üstünden uçtu. Tiki korktu ama durmadı."],
+   ["🌊🐢","She walked and walked. At last, a wave came and carried her into the water.","Yürüdü de yürüdü. Sonunda bir dalga geldi ve onu suya taşıdı."],
+   ["🐠🐬","Under the water, she saw colorful fish and a friendly dolphin.","Suyun altında rengârenk balıklar ve dost canlısı bir yunus gördü."],
+   ["🐢💙","“I did it!” said Tiki. “The sea is my new home.”","Tiki “Başardım!” dedi. “Deniz benim yeni evim.”"]],
+  gl:{night:"gece", quiet:"sessiz", beach:"kumsal", egg:"yumurta", opened:"açıldı", tiny:"minicik", turtle:"kaplumbağa", came:"geldi", out:"dışarı", was:"idi", looked:"baktı", sea:"deniz", dark:"karanlık", moon:"ay", shining:"parlıyor", way:"yol", met:"karşılaştı", crab:"yengeç", going:"gidiyor", asked:"sordu", said:"dedi", suddenly:"birden", bird:"kuş", flew:"uçtu", scared:"korkmuş", "didn't":"-madı", stop:"durmak", walked:"yürüdü", last:"son (at last = sonunda)", wave:"dalga", carried:"taşıdı", water:"su", under:"altında", saw:"gördü", colorful:"rengârenk", friendly:"dost canlısı", dolphin:"yunus", did:"yaptı", new:"yeni", home:"ev, yuva", brave:"cesur"},
+  qs:[
+   {q:"When did the egg open?", tr:"Yumurta ne zaman açıldı?", options:["in the morning","at night","at noon"], answer:"at night"},
+   {q:"What was the turtle's name?", tr:"Kaplumbağanın adı neydi?", options:["Tiki","Tom","Mia"], answer:"Tiki"},
+   {q:"Who did Tiki meet on the beach?", tr:"Tiki kumsalda kiminle karşılaştı?", options:["a cat","a crab","a dog"], answer:"a crab"},
+   {q:"What carried Tiki into the water?", tr:"Tiki'yi suya ne taşıdı?", options:["a bird","a boat","a wave"], answer:"a wave"}]},
+ {id:"robot", lv:3, e:"🤖", title:"The Robot Who Wanted to Dance", pages:[
+   ["🤖🧸","In a small town, there was a robot called Bip. Bip worked in a toy shop.","Küçük bir kasabada Bip adında bir robot vardı. Bip bir oyuncak dükkânında çalışıyordu."],
+   ["🧹📦","Every day, he cleaned the floor and put the toys on the shelves.","Her gün yeri temizler, oyuncakları raflara dizerdi."],
+   ["🎶💃","One evening, Bip heard music in the street. People were dancing.","Bir akşam Bip sokakta müzik duydu. İnsanlar dans ediyordu."],
+   ["🤖😔","Bip wanted to dance too, but his legs were slow and heavy.","Bip de dans etmek istedi ama bacakları yavaş ve ağırdı."],
+   ["👧","A girl called Lily saw him. “I can teach you!” she said.","Lily adında bir kız onu gördü. “Sana öğretebilirim!” dedi."],
+   ["👣","“Left, right, turn around!” Lily showed him the steps. Bip practiced every night.","“Sol, sağ, dön!” Lily ona adımları gösterdi. Bip her gece çalıştı."],
+   ["🎉🕺","On Saturday, there was a party in the town square. Bip danced with Lily.","Cumartesi kasaba meydanında bir parti vardı. Bip Lily ile dans etti."],
+   ["🤖✨👏","Everyone clapped. “You're the best dancing robot in the world!”","Herkes alkışladı. “Sen dünyanın en iyi dans eden robotusun!”"]],
+  gl:{small:"küçük", town:"kasaba", there:"orada (there was = vardı)", was:"idi", robot:"robot", called:"adında", worked:"çalıştı", toy:"oyuncak", shop:"dükkân", cleaned:"temizledi", floor:"yer, zemin", put:"koydu", toys:"oyuncaklar", shelves:"raflar", evening:"akşam", heard:"duydu", music:"müzik", street:"sokak", people:"insanlar", dancing:"dans ediyor", wanted:"istedi", dance:"dans etmek", legs:"bacaklar", were:"idi (çoğul)", slow:"yavaş", heavy:"ağır", girl:"kız", saw:"gördü", teach:"öğretmek", said:"dedi", left:"sol", right:"sağ", turn:"dönmek", around:"etrafında", showed:"gösterdi", steps:"adımlar", practiced:"çalıştı, alıştırma yaptı", night:"gece", party:"parti", square:"meydan", danced:"dans etti", everyone:"herkes", clapped:"alkışladı", best:"en iyi", world:"dünya"},
+  qs:[
+   {q:"Where did Bip work?", tr:"Bip nerede çalışıyordu?", options:["in a school","in a toy shop","in a hospital"], answer:"in a toy shop"},
+   {q:"What did Bip hear one evening?", tr:"Bip bir akşam ne duydu?", options:["music","a dog","rain"], answer:"music"},
+   {q:"Who taught Bip to dance?", tr:"Bip'e dans etmeyi kim öğretti?", options:["another robot","a teacher","Lily"], answer:"Lily"},
+   {q:"When was the party?", tr:"Parti ne zamandı?", options:["on Saturday","on Monday","on Friday"], answer:"on Saturday"}]},
+ {id:"space", lv:3, e:"🚀", title:"A Letter from Space", pages:[
+   ["✉️🚀","Dear Elif, I am writing this letter from the space station.","Sevgili Elif, bu mektubu uzay istasyonundan yazıyorum."],
+   ["🌍","From my window, I can see the Earth. It is blue and white and very beautiful.","Penceremden Dünya'yı görebiliyorum. Mavi beyaz ve çok güzel."],
+   ["🧑‍🚀✏️","Up here, everything floats: my pencil, my food and even my hair!","Burada her şey havada süzülüyor: kalemim, yemeğim, hatta saçım bile!"],
+   ["🍫","Yesterday, my chocolate flew away! I caught it near the ceiling.","Dün çikolatam uçup gitti! Onu tavanın yanında yakaladım."],
+   ["😴","At night, I sleep in a sleeping bag on the wall. It's funny, isn't it?","Geceleri duvardaki bir uyku tulumunda uyuyorum. Komik, değil mi?"],
+   ["🏋️","Every day, I exercise for two hours. It keeps my body strong.","Her gün iki saat egzersiz yapıyorum. Bu vücudumu güçlü tutuyor."],
+   ["🌅","I see sixteen sunrises every day! Can you believe it?","Her gün on altı kez güneşin doğuşunu görüyorum! İnanabiliyor musun?"],
+   ["❤️","I miss you very much. See you in three months! Love, Mom","Seni çok özledim. Üç ay sonra görüşürüz! Sevgiler, Annen"]],
+  gl:{dear:"sevgili", writing:"yazıyor", letter:"mektup", space:"uzay", station:"istasyon", window:"pencere", see:"görmek", earth:"Dünya", beautiful:"güzel", everything:"her şey", floats:"süzülür", food:"yemek", even:"hatta", hair:"saç", yesterday:"dün", chocolate:"çikolata", flew:"uçtu", away:"uzağa", caught:"yakaladım", near:"yakınında", ceiling:"tavan", sleep:"uyumak", sleeping:"uyku", bag:"çanta, tulum", wall:"duvar", funny:"komik", exercise:"egzersiz yapmak", hours:"saatler", keeps:"tutar", body:"vücut", strong:"güçlü", sixteen:"on altı", sunrises:"gün doğumları", believe:"inanmak", miss:"özlemek", months:"aylar", love:"sevgi"},
+  qs:[
+   {q:"Who wrote the letter?", tr:"Mektubu kim yazdı?", options:["Elif's dad","Elif's mom","Elif's teacher"], answer:"Elif's mom"},
+   {q:"What color is the Earth?", tr:"Dünya ne renk?", options:["blue and white","red and yellow","green and black"], answer:"blue and white"},
+   {q:"What flew away yesterday?", tr:"Dün ne uçup gitti?", options:["the pencil","the sleeping bag","the chocolate"], answer:"the chocolate"},
+   {q:"Where does Mom sleep?", tr:"Anne nerede uyuyor?", options:["in a sleeping bag on the wall","in a big bed","on the floor"], answer:"in a sleeping bag on the wall"}]},
+ {id:"cake", lv:3, e:"🎂", title:"The Missing Cake", pages:[
+   ["🎂","On Sunday, Mom made a chocolate cake for Grandpa's birthday. She put it on the kitchen table.","Pazar günü annem dedemin doğum günü için çikolatalı pasta yaptı. Onu mutfak masasına koydu."],
+   ["😱","At four o'clock, the cake wasn't there! There were only some crumbs on the table.","Saat dörtte pasta yerinde yoktu! Masada sadece birkaç kırıntı vardı."],
+   ["🕵️🔍","Emre took his magnifying glass. “I'm a detective. I will find the cake!”","Emre büyütecini aldı. “Ben bir dedektifim. Pastayı bulacağım!”"],
+   ["🐾","He looked at the floor. There were small, dirty footprints.","Yere baktı. Küçük, kirli ayak izleri vardı."],
+   ["👧🌳","Was it his sister? No, she was at the park with Dad.","Kız kardeşi miydi? Hayır, o babasıyla parktaydı."],
+   ["🐱💤","Was it the cat? No, the cat was asleep on the sofa all afternoon.","Kedi miydi? Hayır, kedi bütün öğleden sonra kanepede uyuyordu."],
+   ["🐶🍫","Then Emre heard a noise under the table. It was Rocky, the dog! His nose was brown with chocolate.","Sonra Emre masanın altından bir ses duydu. Köpek Rocky'ydi! Burnu çikolatadan kahverengiydi."],
+   ["🎂😂","Mom laughed and made a new cake. “Chocolate is bad for dogs, Rocky!”","Annem güldü ve yeni bir pasta yaptı. “Çikolata köpeklere zararlı Rocky!”"]],
+  gl:{sunday:"pazar", made:"yaptı", chocolate:"çikolata", cake:"pasta", grandpa:"dede", birthday:"doğum günü", put:"koydu", kitchen:"mutfak", table:"masa", "o'clock":"saat …", "wasn't":"değildi, yoktu", there:"orada", were:"vardı (çoğul)", only:"sadece", crumbs:"kırıntılar", took:"aldı", magnifying:"büyüten (magnifying glass = büyüteç)", glass:"cam", detective:"dedektif", will:"-ecek", find:"bulmak", looked:"baktı", floor:"yer", dirty:"kirli", footprints:"ayak izleri", was:"idi", sister:"kız kardeş", park:"park", asleep:"uykuda", sofa:"kanepe", afternoon:"öğleden sonra", heard:"duydu", noise:"ses, gürültü", nose:"burun", laughed:"güldü", new:"yeni", bad:"kötü, zararlı", dogs:"köpekler", missing:"kayıp"},
+  qs:[
+   {q:"Who was the cake for?", tr:"Pasta kimin içindi?", options:["Emre","Grandpa","the dog"], answer:"Grandpa"},
+   {q:"Where was Emre's sister?", tr:"Emre'nin kız kardeşi neredeydi?", options:["at the park","in the kitchen","at school"], answer:"at the park"},
+   {q:"Where was the cat?", tr:"Kedi neredeydi?", options:["under the table","in the garden","on the sofa"], answer:"on the sofa"},
+   {q:"Who ate the cake?", tr:"Pastayı kim yedi?", options:["the cat","Rocky the dog","Emre's sister"], answer:"Rocky the dog"}]}
+];
+
 /* Cümle Kulesi: her katta cümleye tek bir parça eklenir. Renk = cümledeki görev. */
 const ROLE = {who:{e:"🔵",q:"Kim?"}, does:{e:"🟠",q:"Ne yapıyor?"}, where:{e:"🟢",q:"Nerede?"}, when:{e:"🟣",q:"Ne zaman?"}};
 const TOWERS = [
@@ -1085,7 +1272,7 @@ const fresh = () => ({unlocked:0, done:LEVELS.map(()=>[]), finished:false});
 
 /* ---------- Accounts & state ---------- */
 const UKEY = "ollie-akademi-accounts";
-const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}, skills:{r:{},l:{},s:{}}, towers:{}, rev:{}, revN:0, ad:{s:0, r:[], m:0}});
+const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}, skills:{r:{},l:{},s:{}}, books:{}, towers:{}, rev:{}, revN:0, ad:{s:0, r:[], m:0}});
 function normalize(s){
   s = s || {};
   if(!(s.p && s.p.easy && s.p.hard)){
@@ -1095,7 +1282,7 @@ function normalize(s){
   s.score = s.score||0; s.lessons = s.lessons||{}; s.days = s.days||[]; s.today = s.today||{d:"",pts:0};
   s.name = s.name||""; s.avatar = s.avatar||"🦊"; s.writings = s.writings||{}; s.sung = s.sung||{};
   s.towers = s.towers||{}; s.skills = s.skills||{}; for(const k of ["r","l","s"]) s.skills[k] = s.skills[k]||{};
-  s.revN = s.revN||0;
+  s.revN = s.revN||0; s.books = s.books||{};
   s.ad = Object.assign({s:0, r:[], m:0}, s.ad);
   s.place = s.place || null;
   if(!s.rev){ s.rev = {}; LEVELS.forEach((L,i)=>{ if(s.lessons["c"+i]) L.cards.forEach(c=>{ s.rev[c.w] = {b:1, d:todayKey(), x:0}; }); }); }
@@ -1234,6 +1421,8 @@ const BADGES = [
   {id:"writer5", e:"📝", n:"Usta Yazar", d:"5 ünitenin yazma görevini bitir.", ok:()=>Object.values(S.writings).filter(w=>w.best).length>=5},
   {id:"songs25", e:"🎤", n:"Şarkı Yıldızı", d:"25 şarkı söyle.", ok:()=>Object.values(S.sung).reduce((a,x)=>a+x.length,0)>=25},
   {id:"reader3", e:"📕", n:"Kitap Kurdu", d:"3 Reading hikâyesini bitir.", ok:()=>skCount("reading")>=3},
+  {id:"books5", e:"📚", n:"Kütüphane Faresi", d:"Kitaplıktan 5 kitap bitir.", ok:()=>booksDone()>=5},
+  {id:"bookL3", e:"🌳", n:"Usta Okur", d:"Kitaplıkta 3. seviyeden bir kitap bitir.", ok:()=>booksDoneLv(3)>=1},
   {id:"listen3", e:"🎧", n:"Dikkatli Kulak", d:"3 ünitenin Listening bölümünü bitir.", ok:()=>skCount("listening")>=3},
   {id:"speak3", e:"🗣️", n:"Konuşkan Baykuş", d:"3 ünitenin Speaking bölümünü bitir.", ok:()=>skCount("speaking")>=3},
   {id:"review5", e:"🔁", n:"Unutmayan Baykuş", d:"5 kez Bugünün Tekrarı'nı bitir.", ok:()=>S.revN>=5},
@@ -1289,7 +1478,7 @@ function stopSpeech(){ singing = false; try{ speechSynthesis.cancel(); }catch(e)
 /* ---------- Router ---------- */
 let page = "home", unitArg = 0, play = null;
 function route(){
-  stopSpeech(); stopRec(); play = null; sk = null; rv = null;
+  stopSpeech(); stopRec(); play = null; sk = null; rv = null; bk = null;
   const h = location.hash.slice(1) || "home";
   const tk = h.match(/^(reset|verify)-([0-9a-f]{64})$/);
   const un = h.match(/^unsub-(\d+)-([0-9a-f]{32})$/);
@@ -1314,6 +1503,8 @@ function route(){
   const sm = h.match(/^(reading|listening|speaking)(?:-(\d+))?$/);
   if(m && +m[1]>=1 && +m[1]<=LEVELS.length){ page = "unit"; unitArg = +m[1]-1; }
   else if(sm){ page = sm[1]; if(sm[2] && +sm[2]>=1 && +sm[2]<=LEVELS.length) startSkill(sm[1], +sm[2]-1); }
+  else if(h === "library"){ page = "library"; }
+  else if(/^book-[a-z]+$/.test(h) && bookById(h.slice(5))){ page = "library"; startBook(h.slice(5)); }
   else if(h === "review"){ page = "review"; startReview(); }
   else if(h === "placement"){ page = "placement"; pt = null; }
   else page = ["home","units","words","badges","profile"].includes(h) ? h : "home";
@@ -1321,13 +1512,13 @@ function route(){
 }
 function render(greet){
   updateTop();
-  const nav = play || page==="unit" || page==="placement" ? "units" : page==="review" ? "home" : page;
+  const nav = play || page==="unit" || page==="placement" ? "units" : page==="review" ? "home" : page==="library" ? "reading" : page;
   document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("on", a.dataset.nav===nav));
   const el = $("#screen");
   if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML, reset:resetHTML, profiles:profilesHTML, parent:parentHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
   if(play) el.innerHTML = play.kind==="song" ? songHTML() : play.kind==="cards" ? cardsHTML() : play.kind==="write" ? writeHTML() : play.kind==="tower" ? towerHTML() : quizHTML();
   else el.innerHTML = ({home:homeHTML, units:unitsHTML, unit:unitHTML, words:wordsHTML, badges:badgesHTML, profile:profileHTML,
-    review:reviewHTML, placement:placementHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
+    review:reviewHTML, placement:placementHTML, library:()=>bk ? bookHTML() : libraryHTML(), reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
   if(play && play.order) renderOrder();
   if(!play && page==="words") renderWords();
   if(!play && page==="review" && rv && !rv.done && rv.queue[rv.pos].type==="ear") setTimeout(()=>speak(rv.queue[rv.pos].w), 300);
@@ -1350,6 +1541,7 @@ function greetPage(){
     words:["My dictionary!","Bir kelimeye dokun, Ollie sana okusun."],
     badges:["Look at your badges!","Ders yaptıkça yeni rozetler kazanırsın."],
     reading: sk ? [`Let's read: ${READING[sk.unit].title}`, "Hikâyeyi oku, sonra soruları cevapla. 🔊 ile Ollie sana okur."] : ["Reading time! 📕","Bir hikâye seç. Her ünitenin kendi hikâyesi var."],
+    library: bk ? [`Let's read: ${bookById(bk.id).title}`, "Sayfaları çevir. Bilmediğin kelimeye dokun, Türkçesini gör."] : ["Welcome to the library! 📚","Seviyene uygun bir kitap seç. Her kitabın sonunda kısa bir test var."],
     listening: sk ? ["Listen carefully! 🎧","🔊 düğmesine bas, Ollie'yi dinle, doğru resmi seç."] : ["Listening time! 🎧","Bir ünite seç, Ollie'yi dinle ve doğru resmi bul."],
     speaking: sk ? ["Your turn to talk! 🗣️","Önce 🔊 ile dinle, sonra sen söyle."] : ["Speaking time! 🗣️","Bir ünite seç, cümleleri yüksek sesle söyle."],
     review: rv ? ["Review time! 🔁", rv.free ? "Bugünlük tekrar bitti, bu serbest tur. En zayıf kelimelerini çalışalım." : "Unutmaya başladığın kelimeleri birlikte hatırlayalım."] : ["Review time! 🔁","Önce kelime kartlarını bitir."],
@@ -1863,6 +2055,7 @@ function profileHTML(){
       <div class="stat"><b>${easyCount()}/10</b><span>🐣 Kolay test</span></div>
       <div class="stat"><b>${hardCount()}/10</b><span>🦅 Zor test</span></div>
       <div class="stat"><b>${skCount("reading")}/10</b><span>📕 Reading</span></div>
+      <div class="stat"><b>${booksDone()}/${BOOKS.length}</b><span>📚 Kitaplık</span></div>
       <div class="stat"><b>${skCount("listening")}/10</b><span>🎧 Listening</span></div>
       <div class="stat"><b>${skCount("speaking")}/10</b><span>🗣️ Speaking</span></div>
       <div class="stat"><b>${towerCount()}/${towerTotal()}</b><span>🧱 Cümle Kulesi</span></div>
@@ -2583,6 +2776,7 @@ function skillListHTML(type){
   const note = type==="speaking" && !SR ? `<div class="fb try">Bu tarayıcı konuşmayı dinleyemiyor. Chrome, Edge ya da Safari'de Ollie sesini kontrol eder. Burada da çalışabilirsin: cümleyi yüksek sesle söyleyip "I said it!" düğmesine bas.</div>` : "";
   return `<section class="panel"><div class="eyebrow">${K.n} · ${K.tr}</div><h1>${K.e} ${K.n}</h1><p class="muted">${desc}</p>${note}
     <div class="row"><span class="chip ok">✓ ${skCount(type)}/10 ünite tamam</span></div></section>
+  ${type==="reading" ? `<a class="continue lib-card" href="#library"><span class="ic">📚</span><div class="txt"><div class="eyebrow">Yeni · Kitaplık</div><h3>Seviyeli kitaplar: ${BOOKS.length} sesli kitap</h3><span class="tr">🌱 İlk Kitaplar · 🌿 Küçük Okur · 🌳 Usta Okur — ${booksDone()}/${BOOKS.length} okundu</span></div><span class="btn">Kitaplığa git ▶</span></a>` : ""}
   <div class="grid g3">${LEVELS.map((L,i)=>{ const open = unitOpen(i), n = skDone(type,i).length, tot = K.total(i), done = n >= tot;
     const nm = type==="reading" ? READING[i].title : L.theme;
     const st = !open ? `<span class="chip">🔒 Kilitli</span>` : done ? `<span class="chip ok">✓ Tamam</span>` : n ? `<span class="chip">Devam ediyor</span>` : `<span class="chip">Yeni</span>`;
@@ -2634,7 +2828,7 @@ function readAnswer(b, n){
     say(`${p[0]} ⭐ +${r.pts}`, `${p[1]} ${r.pts} yıldız kazandın!`);
     if(Object.keys(sk.answered).length === R.qs.length){
       $("#rdone").innerHTML = `<div class="fb good"><div class="en">🏆 Story complete!${r.bonus?" ⭐ +5 bonus":""}</div><div class="tr">Hikâyeyi bitirdin, bütün soruları doğru cevapladın!</div></div>
-        <div class="row center" style="margin-top:12px"><a class="btn ghost" href="#reading">📕 Hikâyeler</a>${i<LEVELS.length-1 && unitOpen(i+1)?`<a class="btn" href="#reading-${i+2}">Sonraki hikâye ▶</a>`:""}</div>`;
+        <div class="row center" style="margin-top:12px"><a class="btn ghost" href="#reading">📕 Hikâyeler</a><a class="btn ghost" href="#library">📚 Kitaplık</a>${i<LEVELS.length-1 && unitOpen(i+1)?`<a class="btn" href="#reading-${i+2}">Sonraki hikâye ▶</a>`:""}</div>`;
       speak("Great reading! You finished the story!");
     }
   } else {
@@ -2642,6 +2836,144 @@ function readAnswer(b, n){
     b.classList.add("wrong"); setTimeout(()=>b.classList.remove("wrong"), 600);
     $("#rfb-"+n).innerHTML = `<div class="fb try">Not quite! Read the story again. 🔍 <span class="tr">Cevap hikâyenin içinde, bir daha oku!</span></div>`;
     say("Good try! Look at the story again.", "Güzel deneme! Hikâyeye bir daha bak.");
+  }
+}
+
+/* ---------- 📚 Kitaplık: seviyeli okuma ----------
+   S.books[id] = {q:[doğru cevaplanan soru no'ları], done:1, d:gün}. Seviye 1 hep açık; 2 ve 3, önceki seviyeden 2 kitap ya da ünite ilerlemesiyle açılır. */
+let bk = null;
+const BOOK_GL = {the:"belirli bir şeyi gösterir (o …)", a:"bir", an:"bir", and:"ve", in:"içinde", on:"üstünde", at:"-de, -da", to:"-e, -a", with:"ile", for:"için", from:"-den, -dan",
+  into:"içine", over:"üstünden", under:"altında", but:"ama", too:"de, da / çok", very:"çok", much:"çok", i:"ben", you:"sen, siz", he:"o (erkek)", she:"o (kız)", it:"o (şey)",
+  we:"biz", they:"onlar", my:"benim", your:"senin", his:"onun (erkek)", her:"onun / onu (kız)", our:"bizim", their:"onların", him:"onu (erkek)", them:"onları", me:"beni, bana",
+  this:"bu", that:"şu, o", here:"burada", there:"orada (there is / there are = var)", then:"sonra", some:"biraz, birkaç", all:"bütün, hepsi", every:"her", one:"bir", look:"bak",
+  oh:"ah, eyvah", no:"hayır", yes:"evet", up:"yukarı", end:"son", can:"-ebilir, -abilir", "can't":"-emez, -amaz", "it's":"o … (it is)", "i'm":"ben … (I am)", "you're":"sen … (you are)",
+  "isn't":"değil", "don't":"yapma / -mez", "didn't":"-medi, -madı", "wasn't":"değildi, yoktu", was:"idi (geçmiş zaman)", were:"idiler (geçmiş zaman)", is:"-dir (he/she/it)", are:"-dir (we/you/they)", am:"-im (I)",
+  big:"büyük", small:"küçük", little:"küçük", dog:"köpek", fish:"balık", apples:"elmalar", day:"gün", days:"günler", name:"isim, ad", mom:"anne", dad:"baba", says:"der", say:"der, söyler",
+  comes:"gelir", eats:"yer", makes:"yapar", give:"vermek", bear:"ayı", rain:"yağmur", done:"yapılmış (well done = aferin)", well:"iyi", thank:"teşekkür etmek", where:"nerede", how:"nasıl",
+  what:"ne", who:"kim", hello:"merhaba", good:"iyi", brown:"kahverengi", end:"son", "o'clock":"saat …"};
+const BOOK_NAMES = ["max","bella","bobo","ela","efe","ayşe","burak","kerem","leo","tiki","bip","lily","elif","emre","rocky"];
+const bookById = id => BOOKS.find(b=>b.id===id);
+const bookRec = b => S.books[b.id] || {q:[]};
+const bookDone = b => !!bookRec(b).done;
+const booksDone = () => BOOKS.filter(bookDone).length;
+const booksDoneLv = n => BOOKS.filter(b=>b.lv===n && bookDone(b)).length;
+const bookLvOpen = n => n===1 || (n===2 ? unitOpen(3) || booksDoneLv(1)>=2 : unitOpen(6) || booksDoneLv(2)>=2);
+const bookLvNeed = n => n===2 ? "1. seviyeden 2 kitap bitir ya da Ünite 4'e ulaş." : "2. seviyeden 2 kitap bitir ya da Ünite 7'ye ulaş.";
+function startBook(id){ bk = {id, pg:0, showTr:false, answered:{}, tries:{}, auto:false}; }
+const bkWordKey = t => t.replace(/[’]/g,"'").replace(/^[“"(‘']+|[”"),.!?:;‘']+$/g,"").toLowerCase();
+function bkGloss(B, w){
+  if(!w) return "";
+  const g = B.gl || {};
+  const b = w.replace(/'s$/,"");
+  return g[w] || g[b] || BOOK_GL[w] || BOOK_GL[b] || trOf(w) || trOf(b) || (BOOK_NAMES.includes(b) ? "bir isim 🙂" : "");
+}
+
+function libraryHTML(){
+  return `<div class="row between"><a class="link" href="#reading">← 📕 Reading · Okuma</a></div>
+  <section class="panel"><div class="eyebrow">Reading · Kitaplık</div><h1>📚 Kitaplık</h1>
+    <p class="muted">Seviyene uygun bir kitap seç. Sayfaları çevir, 🔊 ile Ollie sana okusun, bilmediğin kelimeye dokun ve Türkçesini gör. Kitabın sonundaki soruları ilk denemede bilirsen ⭐+5, kitabı bitirince ⭐+5 bonus!</p>
+    <div class="row"><span class="chip ok">✓ ${booksDone()}/${BOOKS.length} kitap okundu</span></div></section>
+  ${BOOK_LV.map(V=>{ const open = bookLvOpen(V.n), list = BOOKS.filter(b=>b.lv===V.n);
+    return `<section class="panel"><div class="row between"><h2>${V.e} Seviye ${V.n} · ${V.name} <span class="tr">${V.en} · ${V.cefr}</span></h2>
+      <span class="chip ${open?"ok":""}">${open ? `${booksDoneLv(V.n)}/${list.length} okundu` : "🔒 Kilitli"}</span></div>
+      <p class="tr">${V.d}${open ? "" : ` <b>Açmak için:</b> ${bookLvNeed(V.n)}`}</p>
+      <div class="grid g3">${list.map(B=>{ const r = bookRec(B), n = r.q.length, tot = B.qs.length;
+        const st = !open ? `<span class="chip">🔒 Kilitli</span>` : r.done ? `<span class="chip ok">✓ Okundu</span>` : n ? `<span class="chip">Devam ediyor</span>` : `<span class="chip">Yeni</span>`;
+        return `<a class="unit ${open?"":"locked"}" href="#book-${B.id}" ${open?"":'aria-disabled="true"'}>
+          <div class="top"><span class="ic">${B.e}</span><div style="min-width:0"><div class="no">Seviye ${V.n} · ${B.pages.length} sayfa</div><div class="nm">${esc(B.title)}</div><div class="tr">${tot} soru</div></div></div>
+          <div class="bar"><i style="width:${Math.round(n/tot*100)}%"></i></div>
+          <div class="meta"><span>${st}</span><span>${n}/${tot}</span></div></a>`; }).join("")}</div></section>`; }).join("")}`;
+}
+
+function bookHTML(){
+  const B = bookById(bk.id), V = BOOK_LV[B.lv-1], N = B.pages.length;
+  const back = `<div class="row between"><a class="link" href="#library">← 📚 Kitaplık</a><span class="chip">${V.e} Seviye ${V.n} · ${V.name}</span></div>`;
+  if(!bookLvOpen(B.lv)) return `${back}<section class="panel"><div class="uhead"><span class="ic">🔒</span><div><div class="eyebrow">Seviye ${V.n}</div><h1>${esc(B.title)}</h1></div></div>
+    <p>Bu kitap henüz kilitli. ${bookLvNeed(V.n)}</p><a class="btn" href="#library">📚 Kitaplığa dön</a></section>`;
+  const dots = `<div class="progress">${[...Array(N+1).keys()].map(n=>`<span class="${n<bk.pg?"done":n===bk.pg?"now":""}"></span>`).join("")}</div>`;
+  if(bk.pg < N){
+    const [art, en, tr] = B.pages[bk.pg];
+    const words = en.split(" ").map(t=>{ const k = bkWordKey(t); return `<button type="button" class="w" data-act="bkWord" data-arg="${esc(k)}">${esc(t)}</button>`; }).join(" ");
+    return `${back}<section class="panel book lv${B.lv}">
+      <div class="eyebrow">${B.e} ${esc(B.title)} · Sayfa ${bk.pg+1}/${N}</div>
+      ${dots}
+      <div class="bk-art" aria-hidden="true">${art}</div>
+      <div class="bk-text" id="bktext">${words}${bk.showTr ? `<span class="tr bk-tr">${esc(tr)}</span>` : ""}</div>
+      <div class="bk-gl" id="bkgl" aria-live="polite"><span class="tr">Bir kelimeye dokun: Ollie okur, Türkçesini gösterir.</span></div>
+      <div class="row center"><button class="btn" data-act="bkRead">🔊 Read</button><button class="btn ghost small" data-act="bkSlow">🐢 Slow</button><button class="btn ghost small" data-act="bkTr">🇹🇷 ${bk.showTr?"Türkçeyi gizle":"Türkçesi"}</button></div>
+      <div class="row between bk-nav"><button class="btn ghost" data-act="bkPrev" ${bk.pg?"":"disabled"} aria-label="Önceki sayfa">◀<span class="lbl"> Önceki</span></button>
+        <button class="btn ghost small" data-act="bkAuto">${bk.auto ? "⏹ Durdur" : "📖 Ollie okusun"}</button>
+        <button class="btn" data-act="bkNext">${bk.pg===N-1 ? "Sorular ▶" : "Sonraki ▶"}</button></div>
+    </section>`;
+  }
+  const r = bookRec(B);
+  return `${back}<section class="panel"><div class="eyebrow">${B.e} ${esc(B.title)} · Sorular</div>${dots}
+    <h2>Questions <span class="tr">· Sorular · <span id="bkcount">${B.qs.filter((_,n)=>bk.answered[n]).length}</span>/${B.qs.length} doğru</span></h2>
+    ${B.qs.map((q,n)=>{ const ok = bk.answered[n];
+      return `<div class="stack rq"><div class="q" style="font-size:1.2rem">${n+1}. ${esc(q.q)} <span class="tr">${esc(q.tr)}</span></div>
+        <div class="opts">${q.options.map(o=>`<button class="ans ${ok && o===q.answer?"right":""}" data-act="bkAns" data-arg="${n}" data-v="${esc(o)}" ${ok?"disabled":""}>${esc(o)}</button>`).join("")}</div>
+        <div id="bkfb-${n}"></div></div>`; }).join("")}
+    <div id="bkdone"></div>
+    <div class="row"><button class="btn ghost small" data-act="bkPrev">◀ Kitaba dön</button>${r.done ? `<span class="chip ok">✓ Bu kitabı daha önce bitirdin</span>` : ""}</div>
+  </section>`;
+}
+function bkGo(pg){ stopSpeech(); bk.auto = false; bk.pg = pg; render(); }
+function bkReadPage(rate, onend){
+  const B = bookById(bk.id), el = $("#bktext");
+  if(el) el.classList.add("on");
+  speak(B.pages[bk.pg][1], ()=>{ const e = $("#bktext"); if(e) e.classList.remove("on"); onend && onend(); }, rate);
+}
+function bkAuto(){
+  if(bk.auto){ stopSpeech(); bk.auto = false; return render(); }
+  const B = bookById(bk.id), me = bk;
+  bk.auto = true; singing = true; render();
+  const step = () => {
+    if(bk !== me || !bk.auto || !singing) return;
+    bkReadPage(null, ()=>{
+      if(bk !== me || !bk.auto || !singing) return;
+      if(bk.pg >= B.pages.length-1){ bk.auto = false; singing = false; return render(); }
+      setTimeout(()=>{ if(bk !== me || !bk.auto || !singing) return; bk.pg++; render(); setTimeout(step, 500); }, 700);
+    });
+  };
+  step();
+}
+function bkWord(k, b){
+  const B = bookById(bk.id), g = bkGloss(B, k);
+  document.querySelectorAll("#bktext .w").forEach(x=>x.classList.toggle("on", x === b));
+  const shown = b.textContent.replace(/^[“"(‘]+|[”"),.!?:;‘]+$/g,"");
+  $("#bkgl").innerHTML = `<b>${esc(shown)}</b>${g ? ` = ${esc(g)}` : ` <span class="tr">(yeni kelime)</span>`}`;
+  speak(shown, ()=>b.classList.remove("on"));
+}
+function bkAnswer(b, n){
+  const B = bookById(bk.id), q = B.qs[n];
+  if(bk.answered[n]) return;
+  if(b.dataset.v === q.answer){
+    bk.answered[n] = true;
+    const r = S.books[B.id] = S.books[B.id] || {q:[]}, was = !!r.done;
+    let pts = bk.tries[n] ? 2 : 5;
+    if(r.q.includes(n)) pts = 1; else r.q.push(n);
+    addPts(pts);
+    let bonus = 0;
+    if(!was && r.q.length >= B.qs.length){ r.done = 1; r.d = todayKey(); bonus = 5; addPts(5); confetti(); toast(`📚 “${B.title}” bitti! +5 ⭐`); }
+    else save();
+    b.classList.add("right"); b.parentNode.querySelectorAll("button").forEach(x=>x.disabled = true);
+    const c = $("#bkcount"); if(c) c.textContent = B.qs.filter((_,k)=>bk.answered[k]).length;
+    const p = PRAISE[Math.floor(Math.random()*PRAISE.length)];
+    $("#bkfb-"+n).innerHTML = `<div class="fb good">${p[0]} ⭐ +${pts}</div>`;
+    say(`${p[0]} ⭐ +${pts}`, `${p[1]} ${pts} yıldız kazandın!`);
+    if(Object.keys(bk.answered).length === B.qs.length){
+      const same = BOOKS.filter(x=>x.lv===B.lv), nx = same[(same.indexOf(B)+1) % same.length];
+      const up = B.lv < 3 && bookLvOpen(B.lv+1) && !BOOKS.some(x=>x.lv===B.lv+1 && bookRec(x).q.length) ? BOOKS.find(x=>x.lv===B.lv+1) : null;
+      $("#bkdone").innerHTML = `<div class="fb good"><div class="en">🏆 Book complete!${bonus?" ⭐ +5 bonus":""}</div><div class="tr">Kitabı bitirdin, bütün soruları doğru cevapladın!${up ? ` ${BOOK_LV[B.lv].e} Seviye ${B.lv+1} açıldı!` : ""}</div></div>
+        <div class="row center" style="margin-top:12px"><a class="btn ghost" href="#library">📚 Kitaplık</a>${up ? `<a class="btn" href="#book-${up.id}">${up.e} Yeni seviye ▶</a>` : nx !== B ? `<a class="btn" href="#book-${nx.id}">${nx.e} Sonraki kitap ▶</a>` : ""}</div>`;
+      speak("Great reading! You finished the book!");
+    }
+  } else {
+    bk.tries[n] = (bk.tries[n]||0) + 1;
+    b.classList.add("wrong"); setTimeout(()=>b.classList.remove("wrong"), 600);
+    const pg = B.pages.findIndex(p=>norm(p[1]).includes(norm(q.answer).replace(/^(a|an|the) /,"")));
+    $("#bkfb-"+n).innerHTML = `<div class="fb try">Not quite! 🔍 <span class="tr">${bk.tries[n] >= 2 && pg >= 0 ? `İpucu: cevap ${pg+1}. sayfada.` : "Cevap kitabın içinde, bir daha düşün!"}</span></div>`;
+    say("Good try! Think about the story.", "Güzel deneme! Kitabı bir daha düşün.");
   }
 }
 
@@ -2846,6 +3178,14 @@ document.addEventListener("click", e => {
     case "rvMore": startReview(); return revShow();
     case "rvPlay": return speak(rv.queue[rv.pos].w);
     case "rvSlow": return speak(rv.queue[rv.pos].w, null, .5);
+    case "bkRead": stopSpeech(); bk.auto = false; return bkReadPage();
+    case "bkSlow": stopSpeech(); bk.auto = false; return bkReadPage(.55);
+    case "bkTr": { bk.showTr = !bk.showTr; const y = window.scrollY; render(); window.scrollTo({top:y}); } return;
+    case "bkPrev": return bkGo(Math.max(0, bk.pg-1));
+    case "bkNext": return bkGo(bk.pg+1);
+    case "bkAuto": return bkAuto();
+    case "bkWord": return bkWord(arg, b);
+    case "bkAns": return bkAnswer(b, +arg);
     case "readAll": return readStory();
     case "readSlow": return readStory(.55);
     case "readLine": { stopSpeech(); document.querySelectorAll("#story .line").forEach((p,n)=>p.classList.toggle("on", n === +arg)); return speak(READING[sk.unit].lines[+arg][0], ()=>{ const l = document.querySelectorAll("#story .line")[+arg]; if(l) l.classList.remove("on"); }); }

@@ -9,6 +9,16 @@
 > - **Madde 4 BİTTİ (dal `claude/quirky-cori-yc21ft`, 2026-11-11), main'e alındı 2026-11-11, YAYINDA.** Sıradaki: **Madde 5 — Seviye tespit testi.**
 > - **Madde 6 BİTTİ (dal `claude/blissful-curie-oeo7li`), main'e alındı 2026-11-11, YAYINDA.** Worker yeniden yayınlanmadı (izin engeli): yeni ⚡ rozetin adı e-posta raporunda görünsün diye `cd api && CLOUDFLARE_API_TOKEN=proxy-injected CLOUDFLARE_ACCOUNT_ID=9a69de8230786ced37e7236b8221b494 npx wrangler deploy` çalıştırılmalı.
 > - **Madde 5 BİTTİ (aynı dal), main'e alındı 2026-11-11, YAYINDA.** Sıradaki: **Madde 7 — Seviyeli okuma kütüphanesi.**
+> - **Madde 7 BİTTİ (dal `claude/zen-dirac-bcgqz8`, 2026-11-11), tarayıcıda denendi. main'e ALINMADI — kullanıcı onayı bekleniyor.** Sıradaki: **Madde 8 — Movers (A1) + Flyers (A2) üniteleri.** Bekleyen: Worker'ı yeniden yayınla (yeni rozet adları için, komut Madde 6 notunda).
+
+> **Son durum (2026-11-11, 14. oturum): Seviyeli okuma kütüphanesi (📚 Kitaplık).**
+> - Adres `#library`, kitap `#book-<id>`. Giriş: Reading sayfasının üstündeki "📚 Kitaplık" kartı, Reading hikâyesi bitince "📚 Kitaplık" düğmesi. Menüde Reading seçili görünür.
+> - 12 kitap, 3 seviye (`BOOK_LV`, `BOOKS`): 🌱 İlk Kitaplar (Pre-A1, 6 sayfa, sayfa başına 1 cümle, 3 soru; her zaman açık) · 🌿 Küçük Okur (Starters, 7 sayfa, 2 cümle, 4 soru; 1. seviyeden 2 kitap ya da Ünite 4 açılınca) · 🌳 Usta Okur (Movers/A1, 8 sayfa, geçmiş zaman, 4 soru; 2. seviyeden 2 kitap ya da Ünite 7 açılınca).
+> - Okuyucu: sayfa sayfa emoji resim + metin; 🔊 Read, 🐢 Slow, 🇹🇷 Türkçesi, ◀/▶, "📖 Ollie okusun" (sayfaları kendisi çevirerek baştan sona okur). Kelimeye dokununca Ollie okur ve Türkçesi çıkar (sıra: kitabın `gl` sözlüğü → ortak `BOOK_GL` → ünite kelimeleri `trOf` → isimler `BOOK_NAMES`). Bütün kitaplarda Türkçesi bulunmayan kelime kalmadı (test bunu kontrol ediyor).
+> - Sorular: ilk denemede ⭐+5, sonra +2, daha önce bilinmişse +1; kitap ilk bitişte +5 bonus. İkinci yanlışta "İpucu: cevap N. sayfada". Bitince sonraki kitap ya da yeni açılan seviye önerilir. Kayıt `S.books[id] = {q:[...], done:1, d}`.
+> - Yeni rozetler: 📚 Kütüphane Faresi (5 kitap), 🌳 Usta Okur (3. seviyeden 1 kitap). Profilde "📚 Kitaplık x/12". `api/src/content.js` yeniden üretildi.
+> - Tarayıcıda (sahte API ile) 12 kitabın hepsi baştan sona okundu ve çözüldü, sunucuya kayıt, otomatik okuma, kilit, telefonda yatay kayma kontrol edildi; hata yok.
+> - İleride: haftalık raporda okunan kitaplar; yeni kitap eklemek için `BOOKS` dizisine eleman eklemek yeter.
 
 > **Son durum (2026-11-11, 13. oturum, 2. iş): Seviye tespit testi.**
 > - Adres `#placement`. Giriş: yeni çocuğun ana sayfasında (hiç yıldızı/dersi yokken) "🎯 İngilizceyi biraz biliyor musun?" kartı (Seviye testi / Baştan başlayacağım), Derslerim sayfasında her zaman "🎯 Seviye testi" düğmesi ve son sonuç.
