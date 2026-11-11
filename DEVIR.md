@@ -7,7 +7,7 @@
 > - **Madde 2 BİTTİ (dal `claude/cool-thompson-cddezq`, 2026-11-11). main'e alındı 2026-11-11, YAYINDA.**
 > - **Madde 3 BİTTİ (dal `claude/eloquent-davinci-bm11d7`), 2026-11-11 YAYINDA:** canlı veritabanına göç yapıldı, Worker güncellendi (zamanlayıcı: `0,20,40 15-17 * * SUN`), main'e alındı. Kullanıcı Veli paneli → "✉️ Bana şimdi gönder" ile gerçek e-postayı deneyebilir. Sıradaki: **Madde 4 — Yazdırılabilir çalışma kâğıdı.**
 > - **Madde 4 BİTTİ (dal `claude/quirky-cori-yc21ft`, 2026-11-11), main'e alındı 2026-11-11, YAYINDA.** Sıradaki: **Madde 5 — Seviye tespit testi.**
-> - **Madde 6 BİTTİ (dal `claude/blissful-curie-oeo7li`), main'e alındı 2026-11-11, YAYINDA.** Worker yeniden yayınlanmadı (izin engeli): yeni ⚡ rozetin adı e-posta raporunda görünsün diye `cd api && CLOUDFLARE_API_TOKEN=proxy-injected CLOUDFLARE_ACCOUNT_ID=9a69de8230786ced37e7236b8221b494 npx wrangler deploy` çalıştırılmalı.
+> - **Madde 6 BİTTİ (dal `claude/blissful-curie-oeo7li`), main'e alındı 2026-11-11, YAYINDA.** Worker da yeniden yayınlandı (2026-11-11).
 > - **Madde 5 BİTTİ (aynı dal), main'e alındı 2026-11-11, YAYINDA.** Sıradaki: **Madde 7 — Seviyeli okuma kütüphanesi.**
 
 > **Son durum (2026-11-11, 13. oturum, 2. iş): Seviye tespit testi.**
