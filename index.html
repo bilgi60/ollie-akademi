@@ -235,6 +235,8 @@ span.chunk{display:inline-block;box-shadow:none}
 .helpmask{font-family:var(--display);font-weight:700;font-size:1.4rem;letter-spacing:.25em;white-space:nowrap}
 :is(.opt,.ans).gone{opacity:.25;pointer-events:none;filter:grayscale(1)}
 .build .tile.lock{background:var(--leaf-soft);color:var(--ink);border-color:var(--leaf);box-shadow:none;cursor:default}
+.ptbar{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}.ptbar span{height:8px;border-radius:99px;background:var(--line)}.ptbar span.ok{background:var(--leaf)}.ptbar span.now{background:var(--sun)}.ptbar span.no{background:var(--berry)}
+.opt.pick{border-color:var(--ink);background:var(--soft)}
 .chal{background:var(--sky-soft);border:2px solid var(--sky);border-radius:16px;padding:10px 14px;font-weight:600}
 :is(.kind,.chip).hot{background:var(--sun);color:#22304A}
 .ans:disabled{cursor:default}
@@ -1095,6 +1097,7 @@ function normalize(s){
   s.towers = s.towers||{}; s.skills = s.skills||{}; for(const k of ["r","l","s"]) s.skills[k] = s.skills[k]||{};
   s.revN = s.revN||0;
   s.ad = Object.assign({s:0, r:[], m:0}, s.ad);
+  s.place = s.place || null;
   if(!s.rev){ s.rev = {}; LEVELS.forEach((L,i)=>{ if(s.lessons["c"+i]) L.cards.forEach(c=>{ s.rev[c.w] = {b:1, d:todayKey(), x:0}; }); }); }
   if(!s.badges){ s.badges = []; s.needBadgeInit = true; }
   return s;
@@ -1178,7 +1181,7 @@ const todayKey = () => dayKey(new Date());
 
 const easyDone = i => S.p.easy.done[i].length >= 5;
 const hardDone = i => S.p.hard.done[i].length >= 5;
-const unitOpen = i => i === 0 || easyDone(i-1);
+const unitOpen = i => i === 0 || easyDone(i-1) || !!(S.place && i <= S.place.u);   // seviye testi başlangıç ünitesine kadar açar
 const easyCount = () => LEVELS.filter((_,i)=>easyDone(i)).length;
 const hardCount = () => LEVELS.filter((_,i)=>hardDone(i)).length;
 const lessonCount = k => LEVELS.filter((_,i)=>S.lessons[k+i]).length;
@@ -1203,7 +1206,8 @@ function addPts(n){
   save(); updateTop(true); checkBadges();
 }
 function nextStep(){
-  for(let i=0;i<LEVELS.length;i++){
+  const u0 = S.place ? S.place.u : 0;   // seviye testiyle başlanan üniteden ileri, sonra öncekiler
+  for(const i of LEVELS.map((_,k)=>(k + u0) % LEVELS.length)){
     if(!S.lessons["s"+i]) return {i, kind:"song"};
     if(!S.lessons["c"+i]) return {i, kind:"cards"};
     if(!easyDone(i)) return {i, kind:"easy"};
@@ -1311,18 +1315,19 @@ function route(){
   if(m && +m[1]>=1 && +m[1]<=LEVELS.length){ page = "unit"; unitArg = +m[1]-1; }
   else if(sm){ page = sm[1]; if(sm[2] && +sm[2]>=1 && +sm[2]<=LEVELS.length) startSkill(sm[1], +sm[2]-1); }
   else if(h === "review"){ page = "review"; startReview(); }
+  else if(h === "placement"){ page = "placement"; pt = null; }
   else page = ["home","units","words","badges","profile"].includes(h) ? h : "home";
   render(true);
 }
 function render(greet){
   updateTop();
-  const nav = play || page==="unit" ? "units" : page==="review" ? "home" : page;
+  const nav = play || page==="unit" || page==="placement" ? "units" : page==="review" ? "home" : page;
   document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("on", a.dataset.nav===nav));
   const el = $("#screen");
   if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML, reset:resetHTML, profiles:profilesHTML, parent:parentHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
   if(play) el.innerHTML = play.kind==="song" ? songHTML() : play.kind==="cards" ? cardsHTML() : play.kind==="write" ? writeHTML() : play.kind==="tower" ? towerHTML() : quizHTML();
   else el.innerHTML = ({home:homeHTML, units:unitsHTML, unit:unitHTML, words:wordsHTML, badges:badgesHTML, profile:profileHTML,
-    review:reviewHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
+    review:reviewHTML, placement:placementHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
   if(play && play.order) renderOrder();
   if(!play && page==="words") renderWords();
   if(!play && page==="review" && rv && !rv.done && rv.queue[rv.pos].type==="ear") setTimeout(()=>speak(rv.queue[rv.pos].w), 300);
@@ -1339,6 +1344,7 @@ function greetPage(){
     profiles:["Who's learning today? 🦉","Profiline dokun ve derslere başla!"],
     parent:["Parent panel","Çocuklarının ilerlemesini buradan görebilirsin."],
     home:[`Hello${n}! 👋`, `Bugünkü hedefin ${DAILY} yıldız. Hadi başlayalım!`],
+    placement:["Let's find your level! 🎯","Birkaç kısa soruyla sana en uygun üniteyi bulalım."],
     units:["Here are your units!","Her ünitede 4 ders var: şarkı, kelime kartları, kolay test ve zor test."],
     unit:[`Unit ${unitArg+1}: ${LEVELS[unitArg]?.theme}`, "Dersleri sırayla yap. Kolay testi bitirince sonraki ünite açılır."],
     words:["My dictionary!","Bir kelimeye dokun, Ollie sana okusun."],
@@ -1643,6 +1649,7 @@ function homeHTML(){
       </div>
       ${ringHTML()}
     </div>
+    ${placeCardHTML()}
     ${cont}
     ${reviewCardHTML()}
   </section>
@@ -1678,6 +1685,7 @@ function unitsHTML(){
     <div class="eyebrow">Derslerim · My Units</div>
     <h1>10 ünite, 40 ders</h1>
     <p class="muted">Her ünitede sırayla: 🎵 Şarkı · 🃏 Kelime Kartları · 🐣 Kolay Test · 🦅 Zor Test. Kolay testi bitirdiğinde sonraki ünite açılır.</p>
+    <div class="row"><a class="btn ghost small" href="#placement">🎯 Seviye testi</a><span class="tr">${S.place && !S.place.skip ? `Son sonuç: Ünite ${den(S.place.u+1)} başla (${fmtDate(S.place.d+"T12:00")}).` : "İngilizceyi biraz biliyorsan, kısa testle uygun üniteye atla."}</span></div>
   </section>
   <div class="grid g3">${LEVELS.map(unitCard).join("")}</div>`;
 }
@@ -2439,6 +2447,100 @@ function revNext(){
   revShow(); window.scrollTo({top:0});
 }
 
+/* ---------- Seviye tespit testi ----------
+   Ünite 1'den başlayarak her üniteden 2 soru sorulur: kelime (resme bak-kelimeyi seç ya da dinle-resmi seç) ve ünitenin kolay testinden
+   bir anlama sorusu (bilmece/dinleme). 2/2 → sonraki üniteye geçilir; 1/2 → bir kelime sorusu daha, 2/3 ise geçilir; değilse test biter.
+   Sonuç S.place = {u: başlangıç ünitesi, d: tarih, r: doğru, n: soru}. 0..u ünitelerinin hepsi açılır (unitOpen), "Kaldığın yerden devam"
+   u'dan başlar. Geçilen ünitelerin kelimeleri birkaç gün sonra Bugünün tekrarı'na gelir. Testte doğru/yanlış gösterilmez (çocuk üzülmesin). */
+let pt = null;
+const den = n => n + ({3:"'ten",4:"'ten",5:"'ten",6:"'dan",9:"'dan",10:"'dan"}[n] || "'den");   // Türkçe ayrılma eki: 4'ten, 6'dan
+function ptVocab(u, type, not){
+  const cards = LEVELS[u].cards.filter(c=>c.w !== not), c = cards[Math.floor(Math.random()*cards.length)];
+  const opts = LEVELS[u].cards.filter(x=>x.w!==c.w).sort(()=>Math.random()-.5).slice(0,2).concat(c).sort(()=>Math.random()-.5);
+  return {type, w:c.w, e:c.e, answer:c.w, opts:opts.map(o=>({v:o.w, e:o.e}))};
+}
+function ptUnit(u){
+  const tk = LEVELS[u].tasks.filter(t=>t.type==="pick" || t.type==="listen"), t = tk[(u + (Math.random() < .5 ? 0 : 1)) % tk.length];
+  const v = ptVocab(u, Math.random() < .5 ? "pic" : "ear");
+  return [v, {type:t.type, q:t.q, tr:t.tr, say:t.say, answer:t.answer, opts:t.options.map(o=>typeof o==="string" ? {v:o} : o)}];
+}
+function startPlace(){ pt = {u:0, qs:ptUnit(0), k:0, ok:0, n:0, right:0, marks:[], done:false, busy:false}; }
+function placeCardHTML(){
+  if(S.place || S.lessons.s0 || S.score > 0) return "";
+  return `<div class="continue"><span class="ic">🎯</span><div class="txt"><div class="eyebrow">Yeni misin?</div><h3>İngilizceyi biraz biliyor musun?</h3>
+    <span class="tr">3–5 dakikalık seviye testini çöz, Ollie seni sana uygun üniteden başlatsın.</span></div>
+    <div class="row"><a class="btn" href="#placement">Seviye testi ▶</a><button class="btn ghost small" data-act="placeSkip">Baştan başlayacağım</button></div></div>`;
+}
+function placementHTML(){
+  const top = `<div class="row between"><a class="link" href="#units">← Derslerim</a><span class="chip">🎯 Seviye testi</span></div>`;
+  if(!pt) return `${top}<section class="panel" style="text-align:center">
+    <div style="font-size:3.5rem">🎯</div><h1>Seviye testi</h1>
+    <p>Ollie her üniteden birkaç kısa soru soracak. Bildiğin kadar ilerlersin, zorlandığın yerde test biter.</p>
+    <p class="tr">Bilmediğin soruda tahmin etme, <b>🤷 Bilmiyorum</b> düğmesine bas. Böylece sana en uygun yeri buluruz. Bu bir sınav değil, yanlış yapmak sorun değil! 😊</p>
+    ${S.place && !S.place.skip ? `<p class="tr">Son sonucun: <b>Ünite ${S.place.u+1}</b>. Testi yeniden çözersen açık üniteler kapanmaz.</p>` : ""}
+    <div class="row center"><button class="btn" data-act="ptStart">Başla ▶</button></div></section>`;
+  if(pt.done){
+    const u = pt.res, L = LEVELS[u], all = pt.all;
+    return `${top}<section class="panel" style="text-align:center">
+      <div style="font-size:3.5rem">${u ? "🚀" : "🌱"}</div>
+      <h1>${all ? "Harikasın! Bütün ünitelerin sorularını bildin!" : u ? `Ünite ${den(u+1)} başlayabilirsin!` : "Ünite 1'den başlamak en iyisi!"}</h1>
+      <p><b>${pt.n}</b> sorudan <b>${pt.right}</b> tanesini bildin.${pt.pts ? ` ⭐ +${pt.pts}` : ""}</p>
+      ${u ? `<p class="tr">Ünite 1–${u+1} senin için açıldı. Geçtiğin ünitelerin kelimelerini Ollie birkaç gün sonra 🔁 Bugünün tekrarı'nda soracak. İstersen o ünitelere de dönebilirsin.</p>
+        <div class="row center" style="flex-wrap:wrap">${LEVELS.slice(0,u).map((x,i)=>`<span class="chip ok">✓ ${x.icon} ${x.theme}</span>`).join(" ")}</div>`
+        : `<p class="tr">Şarkıyla ve kelime kartlarıyla başlayacağız. Her şey adım adım! 🦉</p>`}
+      ${all ? `<p class="tr">Son ünitenin derslerinden sonra 🦅 Zor testleri dene!</p>` : ""}
+      ${S.place.u > u ? `<p class="tr">Daha önce açılan Ünite 1–${S.place.u+1} açık kalıyor. Zorlandığın yerleri tekrar etmek iyi gelir!</p>` : ""}
+      <div class="row center"><a class="btn" href="#unit-${u+1}">${L.icon} Ünite ${u+1}: ${L.theme} ▶</a><a class="btn ghost" href="#home">Ana sayfa</a></div></section>`;
+  }
+  const q = pt.qs[pt.k], L = LEVELS[pt.u];
+  const bar = LEVELS.map((_,i)=>`<span class="${pt.marks[i] || (i===pt.u ? "now" : "")}"></span>`).join("");
+  let body;
+  if(q.type==="pic") body = `<div class="q">What is it in English? <span class="tr">Bu ne? İngilizcesini seç.</span></div><div class="bigemo">${q.e}</div>`;
+  else if(q.type==="ear") body = `<div class="q">Listen and pick! <span class="tr">Dinle ve resmini seç.</span></div>
+    <div class="row center"><button class="btn" data-act="ptPlay">🔊 Listen</button><button class="btn ghost small" data-act="ptSlow">🐢 Slow</button></div>`;
+  else body = (q.type==="listen" ? `<div class="row center"><button class="btn" data-act="ptPlay">🔊 Listen to Ollie</button><button class="btn ghost small" data-act="ptSlow">🐢 Slow</button></div>` : "")
+    + `<div class="q">${esc(q.q)} <span class="tr">${esc(q.tr)}</span></div>`;
+  const opts = q.opts.map(o=> q.type==="pic" ? `<button class="opt" data-act="ptAns" data-arg="${esc(o.v)}">${esc(o.v)}</button>`
+    : `<button class="opt" data-act="ptAns" data-arg="${esc(o.v)}" aria-label="${esc(o.v)}">${o.c ? `<span class="sw" style="background:${o.c}"></span>` : o.e ? `<span class="emo">${o.e}</span>` : esc(o.v)}</button>`).join("");
+  return `${top}<section class="panel">
+    <div class="eyebrow">Soru ${pt.n+1} · Ünite ${pt.u+1}: ${L.theme}</div>
+    <div class="ptbar" aria-label="Üniteler">${bar}</div>
+    ${body}
+    <div class="opts">${opts}</div>
+    <div class="row center"><button class="btn ghost small" data-act="ptAns" data-arg="">🤷 Bilmiyorum</button></div>
+  </section>`;
+}
+function ptShow(){ $("#screen").innerHTML = placementHTML(); window.scrollTo({top:0});
+  const q = pt && !pt.done && pt.qs[pt.k]; if(q && (q.type==="ear" || q.type==="listen")) setTimeout(()=>speak(q.type==="ear" ? q.w : q.say), 300); }
+function ptAnswer(v, btn){
+  if(!pt || pt.done || pt.busy) return;
+  const q = pt.qs[pt.k], ok = v === q.answer;
+  pt.n++; if(ok){ pt.ok++; pt.right++; }
+  if(btn && v) btn.classList.add("pick");
+  pt.busy = true; stopSpeech();
+  setTimeout(()=>{ pt.busy = false; ptStep(); }, v ? 450 : 150);
+}
+function ptStep(){
+  pt.k++;
+  const asked = pt.k, ok = pt.ok;
+  if(asked === 2 && ok === 1){ pt.qs.push(ptVocab(pt.u, pt.qs[0].type==="pic" ? "ear" : "pic", pt.qs[0].w)); return ptShow(); }
+  if(asked < pt.qs.length) return ptShow();
+  const pass = ok >= 2;
+  pt.marks[pt.u] = pass ? "ok" : "no";
+  if(pass && pt.u + 1 < LEVELS.length){ pt.u++; pt.qs = ptUnit(pt.u); pt.k = 0; pt.ok = 0; say("Great! Next unit.", `Ünite ${pt.u+1}: ${LEVELS[pt.u].theme} soruları geliyor.`); return ptShow(); }
+  finishPlace(pass ? LEVELS.length - 1 : pt.u, pass);
+}
+function finishPlace(u, all){
+  const first = !S.place || S.place.skip, prev = S.place && !S.place.skip ? S.place.u : 0;
+  pt.done = true; pt.res = u; pt.all = all; pt.pts = first ? 10 : 0;
+  S.place = {u: Math.max(prev, u), d: todayKey(), r: pt.right, n: pt.n};
+  for(let i = 0; i < u; i++) LEVELS[i].cards.forEach(c=>{ if(!S.rev[c.w]) S.rev[c.w] = {b:2, d:addDays(3 + i % 4), x:0}; });
+  if(pt.pts) addPts(pt.pts); else save();
+  confetti(); speak(u ? "Well done! Let's go!" : "Let's start together!");
+  say(u ? "Level found! 🎯" : "Let's start! 🌱", u ? `Ünite ${u+1}: ${LEVELS[u].theme} senin için en uygun yer.` : "Ünite 1'den, şarkılarla başlayalım.");
+  ptShow();
+}
+
 /* ---------- Reading · Listening · Speaking bölümleri ---------- */
 const SKILL = {
   reading:{e:"📕", n:"Reading", tr:"Okuma", key:"r", unitName:"hikâye", total:i=>READING[i].qs.length},
@@ -2670,7 +2772,7 @@ document.addEventListener("click", e => {
   if(b.classList.contains("tile")){ if(play.solved) return; const i=+b.dataset.i, o=play.order;
     if(o.lock && o.picked.indexOf(i) > -1 && o.picked.indexOf(i) < o.lock) return;
     o.picked = o.picked.includes(i) ? o.picked.filter(x=>x!==i) : o.picked.concat(i); renderOrder(); return; }
-  if(b.classList.contains("opt")) return answerOpt(b);
+  if(b.classList.contains("opt") && !act) return answerOpt(b);
   const t = play && play.kind==="quiz" ? tasksOf()[play.task] : null;
   switch(act){
     case "close": return;
@@ -2735,6 +2837,11 @@ document.addEventListener("click", e => {
     case "resetNo": render(); return;
     case "nextTask": return nextTask();
     case "rvAns": return revAnswer(arg, b);
+    case "ptStart": startPlace(); say("Let's go! 🎯", "Bilmediğin soruda 🤷 Bilmiyorum'a bas."); return ptShow();
+    case "ptAns": return ptAnswer(arg, b);
+    case "ptPlay": { const q = pt.qs[pt.k]; return speak(q.type==="ear" ? q.w : q.say); }
+    case "ptSlow": { const q = pt.qs[pt.k]; return speak(q.type==="ear" ? q.w : q.say, null, .5); }
+    case "placeSkip": S.place = {u:0, skip:1, d:todayKey()}; save(); render(); say("OK! Let's start from Unit 1.", "Ünite 1'den şarkılarla başlıyoruz!"); return;
     case "rvNext": return revNext();
     case "rvMore": startReview(); return revShow();
     case "rvPlay": return speak(rv.queue[rv.pos].w);

@@ -7,7 +7,16 @@
 > - **Madde 2 BİTTİ (dal `claude/cool-thompson-cddezq`, 2026-11-11). main'e alındı 2026-11-11, YAYINDA.**
 > - **Madde 3 BİTTİ (dal `claude/eloquent-davinci-bm11d7`), 2026-11-11 YAYINDA:** canlı veritabanına göç yapıldı, Worker güncellendi (zamanlayıcı: `0,20,40 15-17 * * SUN`), main'e alındı. Kullanıcı Veli paneli → "✉️ Bana şimdi gönder" ile gerçek e-postayı deneyebilir. Sıradaki: **Madde 4 — Yazdırılabilir çalışma kâğıdı.**
 > - **Madde 4 BİTTİ (dal `claude/quirky-cori-yc21ft`, 2026-11-11), main'e alındı 2026-11-11, YAYINDA.** Sıradaki: **Madde 5 — Seviye tespit testi.**
-> - **Madde 6 BİTTİ (dal `claude/blissful-curie-oeo7li`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Kullanıcı 5'i atlayıp 6'ya geçmek istedi. **Madde 5 (Seviye tespit testi) hâlâ yapılmadı.** Sıradaki: Madde 5, sonra Madde 7.
+> - **Madde 6 BİTTİ (dal `claude/blissful-curie-oeo7li`), main'e alındı 2026-11-11, YAYINDA.** Worker yeniden yayınlanmadı (izin engeli): yeni ⚡ rozetin adı e-posta raporunda görünsün diye `cd api && CLOUDFLARE_API_TOKEN=proxy-injected CLOUDFLARE_ACCOUNT_ID=9a69de8230786ced37e7236b8221b494 npx wrangler deploy` çalıştırılmalı.
+> - **Madde 5 BİTTİ (aynı dal, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Sıradaki: **Madde 7 — Seviyeli okuma kütüphanesi.**
+
+> **Son durum (2026-11-11, 13. oturum, 2. iş): Seviye tespit testi.**
+> - Adres `#placement`. Giriş: yeni çocuğun ana sayfasında (hiç yıldızı/dersi yokken) "🎯 İngilizceyi biraz biliyor musun?" kartı (Seviye testi / Baştan başlayacağım), Derslerim sayfasında her zaman "🎯 Seviye testi" düğmesi ve son sonuç.
+> - Akış: Ünite 1'den başlar, her üniteden 2 soru: kelime (resme bak-seç ya da dinle-resmi seç, ünitenin kartlarından) + ünitenin kolay testindeki bilmece/dinleme sorusu. 2/2 → sonraki ünite; 1/2 → bir kelime sorusu daha, 2/3 ise geçer; yoksa test biter. "🤷 Bilmiyorum" düğmesi var; doğru/yanlış gösterilmez (çocuk üzülmesin). En fazla ~20–30 soru.
+> - Sonuç `S.place = {u: başlangıç ünitesi, d, r: doğru, n: soru}` (atlayınca `{u:0, skip:1}`). `unitOpen` 0..u ünitelerini açar (Reading/Listening/Speaking dahil), `nextStep` u'dan başlar, sonra öncekilere döner. Geçilen ünitelerin kelimeleri 3–6 gün sonra Bugünün tekrarı'na eklenir (kutu 2). İlk testte ⭐ +10. Yeniden çözünce açık üniteler kapanmaz (u = en yüksek sonuç).
+> - Kod: `index.html` → "Seviye tespit testi" bölümü (`ptUnit`, `placementHTML`, `ptStep`, `finishPlace`, `placeCardHTML`).
+> - Tarayıcıda (sahte API ile) denendi: Ünite 4'te durma, ek soru, Bilmiyorum, yeniden çözme, hepsini bilme, atlama, sunucuya kayıt; hata yok, telefonda yatay kayma yok.
+> - İleride: veli panelinde/haftalık raporda seviye testi sonucunu göstermek.
 
 > **Son durum (2026-11-11, 13. oturum): Uyarlanabilir zorluk.**
 > - Veri: `S.ad = {s: üst üste ilk denemede doğru sayısı, r: son 10 sonuç (1/0), m: en uzun seri}`. Kolay/Zor test ve Bugünün tekrarı sonuçları yazar (`adRec`). "I said it!" soruları (speak, speakTr) sayılmaz.
