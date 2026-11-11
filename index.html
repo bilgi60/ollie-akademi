@@ -246,6 +246,16 @@ span.chunk{display:inline-block;box-shadow:none}
 .story .line.on{background:var(--sun);color:#22304A}
 .story .line .tr{display:block;font-family:var(--body);font-size:.95rem;font-weight:400}
 .story .line.on .tr{color:#22304A}
+.bkpage{display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--soft);border-radius:18px;padding:18px 12px;margin:12px 0;text-align:center}
+.bkpic{font-size:4.2rem;line-height:1.15;letter-spacing:.08em}
+.bktext{font-family:var(--display);font-weight:600;font-size:1.55rem;line-height:1.6;margin:0;padding:4px 10px;border-radius:12px;max-width:34ch}
+.bktext.on{background:var(--sun);color:#22304A}
+.bktr{margin:0;font-size:1.05rem}
+.bw{background:none;border:0;padding:0 2px;margin:0;font:inherit;color:inherit;cursor:pointer;border-radius:6px;border-bottom:2px dotted var(--line)}
+.bw:hover,.bw.on{background:var(--sun);color:#22304A}
+.bkgl{min-height:1.6em;font-size:1.1rem}
+.bknav{margin-top:12px}
+@media (max-width:440px){.bktext{font-size:1.3rem}.bkpic{font-size:3.4rem}}
 .rq{padding-top:12px;border-top:2px dashed var(--line)}
 .rq:first-of-type{border-top:0;padding-top:0}
 .heard .hw{padding:0 4px;border-radius:8px}
@@ -1085,7 +1095,7 @@ const fresh = () => ({unlocked:0, done:LEVELS.map(()=>[]), finished:false});
 
 /* ---------- Accounts & state ---------- */
 const UKEY = "ollie-akademi-accounts";
-const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}, skills:{r:{},l:{},s:{}}, towers:{}, rev:{}, revN:0, ad:{s:0, r:[], m:0}});
+const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}, skills:{r:{},l:{},s:{}}, towers:{}, rev:{}, revN:0, ad:{s:0, r:[], m:0}, books:{}});
 function normalize(s){
   s = s || {};
   if(!(s.p && s.p.easy && s.p.hard)){
@@ -1098,6 +1108,7 @@ function normalize(s){
   s.revN = s.revN||0;
   s.ad = Object.assign({s:0, r:[], m:0}, s.ad);
   s.place = s.place || null;
+  s.books = s.books || {};
   if(!s.rev){ s.rev = {}; LEVELS.forEach((L,i)=>{ if(s.lessons["c"+i]) L.cards.forEach(c=>{ s.rev[c.w] = {b:1, d:todayKey(), x:0}; }); }); }
   if(!s.badges){ s.badges = []; s.needBadgeInit = true; }
   return s;
@@ -1234,6 +1245,8 @@ const BADGES = [
   {id:"writer5", e:"📝", n:"Usta Yazar", d:"5 ünitenin yazma görevini bitir.", ok:()=>Object.values(S.writings).filter(w=>w.best).length>=5},
   {id:"songs25", e:"🎤", n:"Şarkı Yıldızı", d:"25 şarkı söyle.", ok:()=>Object.values(S.sung).reduce((a,x)=>a+x.length,0)>=25},
   {id:"reader3", e:"📕", n:"Kitap Kurdu", d:"3 Reading hikâyesini bitir.", ok:()=>skCount("reading")>=3},
+  {id:"lib5", e:"📚", n:"Küçük Kütüphaneci", d:"Kütüphaneden 5 kitap oku.", ok:()=>bookCount()>=5},
+  {id:"liball", e:"🏛️", n:"Kütüphane Ustası", d:"Kütüphanedeki bütün kitapları oku.", ok:()=>bookCount()>=BOOKS.length},
   {id:"listen3", e:"🎧", n:"Dikkatli Kulak", d:"3 ünitenin Listening bölümünü bitir.", ok:()=>skCount("listening")>=3},
   {id:"speak3", e:"🗣️", n:"Konuşkan Baykuş", d:"3 ünitenin Speaking bölümünü bitir.", ok:()=>skCount("speaking")>=3},
   {id:"review5", e:"🔁", n:"Unutmayan Baykuş", d:"5 kez Bugünün Tekrarı'nı bitir.", ok:()=>S.revN>=5},
@@ -1289,7 +1302,7 @@ function stopSpeech(){ singing = false; try{ speechSynthesis.cancel(); }catch(e)
 /* ---------- Router ---------- */
 let page = "home", unitArg = 0, play = null;
 function route(){
-  stopSpeech(); stopRec(); play = null; sk = null; rv = null;
+  stopSpeech(); stopRec(); play = null; sk = null; rv = null; bk = null;
   const h = location.hash.slice(1) || "home";
   const tk = h.match(/^(reset|verify)-([0-9a-f]{64})$/);
   const un = h.match(/^unsub-(\d+)-([0-9a-f]{32})$/);
@@ -1314,6 +1327,8 @@ function route(){
   const sm = h.match(/^(reading|listening|speaking)(?:-(\d+))?$/);
   if(m && +m[1]>=1 && +m[1]<=LEVELS.length){ page = "unit"; unitArg = +m[1]-1; }
   else if(sm){ page = sm[1]; if(sm[2] && +sm[2]>=1 && +sm[2]<=LEVELS.length) startSkill(sm[1], +sm[2]-1); }
+  else if(h === "library") page = "library";
+  else if(/^book-b\d+$/.test(h) && startBook(h.slice(5))) page = "book";
   else if(h === "review"){ page = "review"; startReview(); }
   else if(h === "placement"){ page = "placement"; pt = null; }
   else page = ["home","units","words","badges","profile"].includes(h) ? h : "home";
@@ -1321,13 +1336,13 @@ function route(){
 }
 function render(greet){
   updateTop();
-  const nav = play || page==="unit" || page==="placement" ? "units" : page==="review" ? "home" : page;
+  const nav = play || page==="unit" || page==="placement" ? "units" : page==="review" ? "home" : page==="library" || page==="book" ? "reading" : page;
   document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("on", a.dataset.nav===nav));
   const el = $("#screen");
   if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML, reset:resetHTML, profiles:profilesHTML, parent:parentHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
   if(play) el.innerHTML = play.kind==="song" ? songHTML() : play.kind==="cards" ? cardsHTML() : play.kind==="write" ? writeHTML() : play.kind==="tower" ? towerHTML() : quizHTML();
   else el.innerHTML = ({home:homeHTML, units:unitsHTML, unit:unitHTML, words:wordsHTML, badges:badgesHTML, profile:profileHTML,
-    review:reviewHTML, placement:placementHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
+    review:reviewHTML, placement:placementHTML, library:libraryHTML, book:bookHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
   if(play && play.order) renderOrder();
   if(!play && page==="words") renderWords();
   if(!play && page==="review" && rv && !rv.done && rv.queue[rv.pos].type==="ear") setTimeout(()=>speak(rv.queue[rv.pos].w), 300);
@@ -1350,6 +1365,8 @@ function greetPage(){
     words:["My dictionary!","Bir kelimeye dokun, Ollie sana okusun."],
     badges:["Look at your badges!","Ders yaptıkça yeni rozetler kazanırsın."],
     reading: sk ? [`Let's read: ${READING[sk.unit].title}`, "Hikâyeyi oku, sonra soruları cevapla. 🔊 ile Ollie sana okur."] : ["Reading time! 📕","Bir hikâye seç. Her ünitenin kendi hikâyesi var."],
+    library:["Library time! 📚","Seviyene uygun bir kitap seç. Ollie sana okur."],
+    book: bk ? [`Let's read: ${bk.b.t}`, "Sayfaları oku, bilmediğin kelimeye dokun. Sonunda kısa sorular var."] : ["",""],
     listening: sk ? ["Listen carefully! 🎧","🔊 düğmesine bas, Ollie'yi dinle, doğru resmi seç."] : ["Listening time! 🎧","Bir ünite seç, Ollie'yi dinle ve doğru resmi bul."],
     speaking: sk ? ["Your turn to talk! 🗣️","Önce 🔊 ile dinle, sonra sen söyle."] : ["Speaking time! 🗣️","Bir ünite seç, cümleleri yüksek sesle söyle."],
     review: rv ? ["Review time! 🔁", rv.free ? "Bugünlük tekrar bitti, bu serbest tur. En zayıf kelimelerini çalışalım." : "Unutmaya başladığın kelimeleri birlikte hatırlayalım."] : ["Review time! 🔁","Önce kelime kartlarını bitir."],
@@ -1652,6 +1669,7 @@ function homeHTML(){
     ${placeCardHTML()}
     ${cont}
     ${reviewCardHTML()}
+    ${libCardHTML()}
   </section>
   <div class="stats">
     <div class="stat"><b>⭐ ${S.score}</b><span>Toplam yıldız</span></div>
@@ -1863,6 +1881,7 @@ function profileHTML(){
       <div class="stat"><b>${easyCount()}/10</b><span>🐣 Kolay test</span></div>
       <div class="stat"><b>${hardCount()}/10</b><span>🦅 Zor test</span></div>
       <div class="stat"><b>${skCount("reading")}/10</b><span>📕 Reading</span></div>
+      <div class="stat"><b>${bookCount()}/${BOOKS.length}</b><span>📚 Kütüphane kitabı</span></div>
       <div class="stat"><b>${skCount("listening")}/10</b><span>🎧 Listening</span></div>
       <div class="stat"><b>${skCount("speaking")}/10</b><span>🗣️ Speaking</span></div>
       <div class="stat"><b>${towerCount()}/${towerTotal()}</b><span>🧱 Cümle Kulesi</span></div>
@@ -2335,6 +2354,11 @@ function whyWrong(t, given){
   return whyTyped(given, t.type==="songtype" ? t.blank : t.type==="dictation" ? t.word : t.answer);
 }
 const whyHTML = s => s ? `<div class="why">🦉 <b>Neden olmadı?</b> ${s}</div>` : "";
+function libCardHTML(){
+  const nb = nextBook(); if(!nb) return "";
+  return `<div class="continue review"><span class="ic">📚</span><div class="txt"><div class="eyebrow">Kütüphane · ${BOOK_LV[nb.lv].e} ${BOOK_LV[nb.lv].n}</div><h3>${nb.e} ${esc(nb.t)}</h3>
+    <span class="tr">${bookCount() ? `${bookCount()} kitap okudun. Sıradaki kitabın hazır.` : "Seviyene uygun kısa resimli kitaplar. Ollie sana okur."}</span></div><a class="btn ghost" href="#book-${nb.id}">Oku ▶</a></div>`;
+}
 function reviewCardHTML(){
   const n = Object.keys(S.rev).length; if(!n) return "";
   const due = revDue().length;
@@ -2582,7 +2606,8 @@ function skillListHTML(type){
   }[type];
   const note = type==="speaking" && !SR ? `<div class="fb try">Bu tarayıcı konuşmayı dinleyemiyor. Chrome, Edge ya da Safari'de Ollie sesini kontrol eder. Burada da çalışabilirsin: cümleyi yüksek sesle söyleyip "I said it!" düğmesine bas.</div>` : "";
   return `<section class="panel"><div class="eyebrow">${K.n} · ${K.tr}</div><h1>${K.e} ${K.n}</h1><p class="muted">${desc}</p>${note}
-    <div class="row"><span class="chip ok">✓ ${skCount(type)}/10 ünite tamam</span></div></section>
+    <div class="row"><span class="chip ok">✓ ${skCount(type)}/10 ünite tamam</span></div>
+    ${type==="reading" ? `<div class="continue" style="margin-top:12px"><span class="ic">📚</span><div class="txt"><div class="eyebrow">Yeni · Okuma Kütüphanesi</div><h3>${BOOKS.length} resimli kitap, 3 seviye</h3><span class="tr">${bookCount()} kitap okudun. Ünite hikâyelerinden sonra seviyene uygun kitaplarla devam et.</span></div><a class="btn" href="#library">Kütüphane ▶</a></div>` : ""}</section>
   <div class="grid g3">${LEVELS.map((L,i)=>{ const open = unitOpen(i), n = skDone(type,i).length, tot = K.total(i), done = n >= tot;
     const nm = type==="reading" ? READING[i].title : L.theme;
     const st = !open ? `<span class="chip">🔒 Kilitli</span>` : done ? `<span class="chip ok">✓ Tamam</span>` : n ? `<span class="chip">Devam ediyor</span>` : `<span class="chip">Yeni</span>`;
@@ -2643,6 +2668,158 @@ function readAnswer(b, n){
     $("#rfb-"+n).innerHTML = `<div class="fb try">Not quite! Read the story again. 🔍 <span class="tr">Cevap hikâyenin içinde, bir daha oku!</span></div>`;
     say("Good try! Look at the story again.", "Güzel deneme! Hikâyeye bir daha bak.");
   }
+}
+
+/* ---------- Seviyeli okuma kütüphanesi ----------
+   BOOKS: 3 seviyede kısa resimli kitaplar. Her kitap bir üniteye bağlı (o ünite açılınca okunur).
+   Okuyucu sayfa sayfa gider; her kelimeye dokununca Ollie okur ve Türkçesini söyler. Sonunda kısa test.
+   İlerleme: S.books[id] = {n: kaç kez bitirdi, q: ilk denemede doğru (en iyi), d: son okuma günü}. */
+const BOOK_LV = [null,
+  {e:"🌱", n:"Seviye 1", tr:"Başlangıç", d:"Kısa kitaplar: her sayfada tek bir kısa cümle."},
+  {e:"🌿", n:"Seviye 2", tr:"Gelişen okur", d:"Her sayfada bir iki cümle, yeni kelimeler."},
+  {e:"🌳", n:"Seviye 3", tr:"Usta okur", d:"Daha uzun hikâyeler ve konuşmalar."}];
+const BOOK_GOAL = 4;   // bir seviyede bu kadar kitap okuyan o seviyenin okuru olur
+const BASIC_TR = {a:"bir", an:"bir", the:"(belirli tanımlık)", i:"ben", you:"sen / siz", he:"o (erkek)", she:"o (kız)", it:"o (eşya, hayvan)",
+  we:"biz", they:"onlar", is:"-dir (he/she/it)", are:"-dir (we/you/they)", am:"-im (I)", and:"ve", but:"ama", in:"içinde", on:"üstünde",
+  at:"-de / -da", to:"-e / -a", my:"benim", his:"onun (erkek)", her:"onun (kız) / onu", its:"onun", our:"bizim", their:"onların", this:"bu",
+  that:"şu / o", can:"-ebilir", "can’t":"-emez", yes:"evet", no:"hayır", not:"değil", with:"ile", of:"-in", has:"-si var (he/she/it)",
+  have:"-im var / sahip olmak", do:"yapmak", does:"yapar", look:"bak", what:"ne", where:"nerede", who:"kim", very:"çok", too:"de / da, çok",
+  so:"bu yüzden / çok", now:"şimdi", here:"burada", there:"orada", oh:"ah, oh", me:"beni / bana", him:"onu (erkek)", them:"onları",
+  us:"bizi", your:"senin", one:"bir", two:"iki", three:"üç", up:"yukarı", wake:"uyanmak", teeth:"dişler", brush:"fırçalamak",
+  go:"gitmek", eat:"yemek", white:"beyaz", black:"siyah", orange:"turuncu", eraser:"silgi", desk:"sıra", teacher:"öğretmen",
+  grandma:"büyükanne", grandpa:"büyükbaba", morning:"sabah", night:"gece", like:"sevmek", hungry:"aç", umbrella:"şemsiye", kite:"uçurtma",
+  snowman:"kardan adam", head:"baş", feet:"ayaklar", mouth:"ağız", wear:"giymek", cold:"soğuk", warm:"sıcak", play:"oynamak",
+  football:"futbol", friend:"arkadaş", team:"takım", climb:"tırmanmak", fly:"uçmak", jump:"zıplamak"};
+let bk = null;
+const bookById = id => BOOKS.find(b=>b.id===id);
+const bookRead = b => !!(S.books[b.id] && S.books[b.id].n);
+const bookCount = () => BOOKS.filter(bookRead).length;
+const bookLvCount = lv => BOOKS.filter(b=>b.lv===lv && bookRead(b)).length;
+const readerLevel = () => [3,2,1].find(lv => bookLvCount(lv) >= Math.min(BOOK_GOAL, BOOKS.filter(b=>b.lv===lv).length)) || 0;
+function nextBook(){
+  const open = BOOKS.filter(b=>unitOpen(b.u) && !bookRead(b));
+  return open.sort((a,b)=>a.lv-b.lv || a.u-b.u)[0] || null;
+}
+function glossOf(raw, b){
+  const w = raw.toLowerCase().replace(/'/g,"’");
+  const look = x => b.g && b.g[x] || WORDS[x] && WORDS[x].c.tr.toLowerCase() || EXTRA_TR[x] || BASIC_TR[x];
+  return look(w) || look(w.replace(/’s$/,"")) || look(w.replace(/es$/,"")) || look(w.replace(/s$/,"")) || "";
+}
+function bookWords(text){
+  return text.split(/\s+/).map(tok=>{
+    const m = tok.match(/^([^A-Za-z’']*)([A-Za-z’'-]*[A-Za-z])([^A-Za-z]*)$/);
+    return m ? `${esc(m[1])}<button type="button" class="bw" data-act="bkWord" data-arg="${esc(m[2])}">${esc(m[2])}</button>${esc(m[3])}` : esc(tok);
+  }).join(" ");
+}
+function libraryHTML(){
+  const nb = nextBook(), rl = readerLevel();
+  return `<div class="row between"><a class="link" href="#reading">← Reading · Okuma</a><span class="chip">📚 ${bookCount()}/${BOOKS.length} kitap</span></div>
+  <section class="panel"><div class="eyebrow">Reading · Okuma Kütüphanesi</div><h1>📚 Kütüphane</h1>
+    <p class="muted">Seviyene göre kısa resimli kitaplar. Ollie sana okur, bilmediğin kelimeye dokununca Türkçesini söyler. Kitabın sonunda kısa bir test var: ilk denemede her doğru ⭐+2, kitabı bitirince ⭐+5.</p>
+    <div class="row"><span class="chip ok">📖 Okuma seviyem: ${rl ? `${BOOK_LV[rl].e} ${BOOK_LV[rl].n}` : "henüz yok"}</span></div>
+    ${nb ? `<div class="continue" style="margin-top:12px"><span class="ic">${nb.e}</span><div class="txt"><div class="eyebrow">Sıradaki kitabın · ${BOOK_LV[nb.lv].e} ${BOOK_LV[nb.lv].n}</div><h3>${esc(nb.t)}</h3><span class="tr">${nb.pages.length} sayfa · Ünite ${nb.u+1}: ${LEVELS[nb.u].theme}</span></div><a class="btn" href="#book-${nb.id}">Oku ▶</a></div>` : ""}
+  </section>
+  ${[1,2,3].map(lv=>{ const L = BOOK_LV[lv], list = BOOKS.filter(b=>b.lv===lv), n = bookLvCount(lv), goal = Math.min(BOOK_GOAL, list.length);
+    return `<section class="panel"><h2>${L.e} ${L.n} <span class="tr">· ${L.tr} · ${n}/${list.length} okundu</span></h2>
+      <p class="muted">${L.d} ${n >= goal ? `<b>${L.e} Bu seviyenin okurusun!</b>` : `${goal} kitap oku, ${L.n} okuru ol.`}</p>
+      <div class="grid g3">${list.map(b=>{ const open = unitOpen(b.u), r = S.books[b.id];
+        const st = !open ? `<span class="chip">🔒 Ünite ${b.u+1}</span>` : r && r.n ? `<span class="chip ok">✓ Okundu</span>` : `<span class="chip">Yeni</span>`;
+        return `<a class="unit book ${open?"":"locked"}" href="#book-${b.id}" ${open?"":'aria-disabled="true"'}>
+          <div class="top"><span class="ic">${b.e}</span><div style="min-width:0"><div class="no">${L.e} ${L.n} · ${LEVELS[b.u].theme}</div><div class="nm">${esc(b.t)}</div><div class="tr">${b.pages.length} sayfa · ${b.qs.length} soru</div></div></div>
+          <div class="meta"><span>${st}</span><span>${r && r.n ? `⭐ ${r.q}/${b.qs.length}` : ""}</span></div></a>`; }).join("")}</div></section>`; }).join("")}`;
+}
+function startBook(id){
+  const b = bookById(id); if(!b) return false;
+  bk = {b, pg:0, phase:"read", showTr:false, auto:false, answered:{}, tries:{}, firstOk:0, seen:new Set([0])};
+  return true;
+}
+function bookHTML(){
+  const b = bk.b, L = BOOK_LV[b.lv];
+  const head = `<div class="row between"><a class="link" href="#library">← Kütüphane</a><span class="chip">${L.e} ${L.n} · Ünite ${b.u+1}: ${LEVELS[b.u].theme}</span></div>`;
+  if(!unitOpen(b.u)) return `${head}<section class="panel"><div class="uhead"><span class="ic">🔒</span><div><div class="eyebrow">${L.e} ${L.n}</div><h1>${esc(b.t)}</h1></div></div>
+    <p>Bu kitap henüz kilitli. Önce <a class="link" href="#unit-${b.u}">Ünite ${b.u}: ${LEVELS[b.u-1].theme}</a> kolay testini bitir.</p></section>`;
+  if(bk.phase === "read"){
+    const p = b.pages[bk.pg], last = bk.pg === b.pages.length - 1;
+    return `${head}<section class="panel">
+      <div class="eyebrow">${b.e} ${esc(b.t)} · Sayfa ${bk.pg+1}/${b.pages.length}</div>
+      <div class="progress">${b.pages.map((_,n)=>`<span class="${n<bk.pg?"done":n===bk.pg?"now":""}"></span>`).join("")}</div>
+      <div class="bkpage"><div class="bkpic" aria-hidden="true">${p[0]}</div>
+        <p class="bktext" id="bktext">${bookWords(p[1])}</p>
+        ${bk.showTr ? `<p class="tr bktr">${esc(p[2])}</p>` : ""}
+        <div class="bkgl" id="bkgl" aria-live="polite"><span class="tr">Bir kelimeye dokun: Ollie okur ve Türkçesini söyler.</span></div></div>
+      <div class="row center"><button class="btn" data-act="bkRead">🔊 Read to me</button><button class="btn ghost small" data-act="bkSlow">🐢 Slow</button>
+        <button class="btn ghost small" data-act="bkAuto">${bk.auto ? "⏹ Durdur" : "▶ Bütün kitabı oku"}</button>
+        <button class="btn ghost small" data-act="bkTr">🇹🇷 ${bk.showTr ? "Türkçeyi gizle" : "Türkçesi"}</button></div>
+      <div class="row between bknav"><button class="btn ghost" data-act="bkPrev" ${bk.pg ? "" : "disabled"}>◀ Geri</button>
+        <button class="btn" data-act="bkNext">${last ? "Sorulara geç ▶" : "İleri ▶"}</button></div>
+    </section>`;
+  }
+  const done = Object.keys(bk.answered).length === b.qs.length;
+  return `${head}<section class="panel"><div class="eyebrow">${b.e} ${esc(b.t)} · Questions</div>
+    <h2>Questions <span class="tr">· Sorular · <span id="bkcount">${Object.keys(bk.answered).length}</span>/${b.qs.length}</span></h2>
+    <p class="tr">Hatırlamıyorsan <button class="link" data-act="bkBackRead" style="background:none;border:0;padding:0;cursor:pointer;font:inherit">kitaba geri dön</button>, sonra cevapla.</p>
+    ${b.qs.map((q,n)=>{ const ok = bk.answered[n];
+      return `<div class="stack rq"><div class="q" style="font-size:1.2rem">${n+1}. ${esc(q.q)} <span class="tr">${esc(q.tr)}</span></div>
+        <div class="opts">${q.options.map(o=>`<button class="ans ${ok && o===q.answer?"right":""}" data-act="bkAns" data-arg="${n}" data-v="${esc(o)}" ${ok?"disabled":""}>${esc(o)}</button>`).join("")}</div>
+        <div id="bkfb-${n}"></div></div>`; }).join("")}
+    <div id="bkdone">${done ? bookDoneHTML() : ""}</div></section>`;
+}
+function bookDoneHTML(){
+  const b = bk.b, nb = nextBook();
+  return `<div class="fb good"><div class="en">🏆 You read the book!${bk.pts ? ` ⭐ +${bk.pts}` : ""}</div>
+    <div class="tr">${esc(b.t)} bitti. ${bk.firstOk}/${b.qs.length} soruyu ilk denemede doğru cevapladın.${bk.lvUp ? ` <b>${BOOK_LV[bk.lvUp].e} Artık ${BOOK_LV[bk.lvUp].n} okurusun!</b>` : ""}</div></div>
+    <div class="row center" style="margin-top:12px"><button class="btn ghost" data-act="bkAgain">🔁 Bir daha oku</button><a class="btn ghost" href="#library">📚 Kütüphane</a>
+    ${nb ? `<a class="btn" href="#book-${nb.id}">Sıradaki kitap: ${esc(nb.t)} ▶</a>` : ""}</div>`;
+}
+function bookShow(){ const y = window.scrollY; stopSpeech(); render(); if(bk.phase !== "read") window.scrollTo({top:y}); }
+function bookReadPage(rate){
+  const t = $("#bktext"); if(!t) return;
+  stopSpeech(); t.classList.add("on");
+  speak(bk.b.pages[bk.pg][1].replace(/[“”]/g,""), ()=>{
+    t.classList.remove("on");
+    if(!bk || !bk.auto || !document.body.contains(t)) return;
+    if(bk.pg < bk.b.pages.length - 1) setTimeout(()=>{ if(bk && bk.auto && document.body.contains(t)){ bk.pg++; bk.seen.add(bk.pg); render(); bookReadPage(rate); } }, 700);
+    else { bk.auto = false; render(); say("The end! 📖", "Kitap bitti. Şimdi soruları cevaplayalım: Sorulara geç ▶"); }
+  }, rate);
+}
+function bookWord(w){
+  const tr = glossOf(w, bk.b), el = $("#bkgl");
+  document.querySelectorAll(".bw").forEach(x=>x.classList.toggle("on", x.dataset.arg === w));
+  if(el) el.innerHTML = `<b>${esc(w)}</b>${tr ? ` = ${esc(tr)}` : ""}`;
+  speak(w, ()=>document.querySelectorAll(".bw.on").forEach(x=>x.classList.remove("on")));
+}
+function bookAnswer(b, n){
+  const B = bk.b, q = B.qs[n], first = !bookRead(B);
+  if(bk.answered[n]) return;
+  if(b.dataset.v === q.answer){
+    bk.answered[n] = true;
+    const pts = first && !bk.tries[n] ? 2 : 0;
+    if(!bk.tries[n]) bk.firstOk++;
+    if(pts){ bk.pts = (bk.pts||0) + pts; addPts(pts); }
+    b.classList.add("right"); b.parentNode.querySelectorAll("button").forEach(x=>x.disabled = true);
+    const c = $("#bkcount"); if(c) c.textContent = Object.keys(bk.answered).length;
+    const p = PRAISE[Math.floor(Math.random()*PRAISE.length)];
+    $("#bkfb-"+n).innerHTML = `<div class="fb good">${p[0]}${pts ? ` ⭐ +${pts}` : ""}</div>`;
+    say(p[0], pts ? `${p[1]} ${pts} yıldız kazandın!` : p[1]);
+    if(Object.keys(bk.answered).length === B.qs.length) finishBook();
+  } else {
+    bk.tries[n] = (bk.tries[n]||0) + 1;
+    b.classList.add("wrong"); setTimeout(()=>b.classList.remove("wrong"), 600);
+    if(bk.tries[n] >= 2) b.classList.add("gone");
+    $("#bkfb-"+n).innerHTML = `<div class="fb try">Not quite! Think about the story. 🔍 <span class="tr">Cevap kitabın içinde. Hatırlamıyorsan kitaba geri dönebilirsin.</span></div>`;
+    say("Good try! Think again.", "Güzel deneme! Kitabı düşün, bir daha dene.");
+  }
+}
+function finishBook(){
+  const B = bk.b, r = S.books[B.id], before = readerLevel();
+  const pts = !r || !r.n ? 5 : r.d !== todayKey() ? 1 : 0;
+  S.books[B.id] = {n:(r && r.n || 0) + 1, q:Math.max(r && r.q || 0, bk.firstOk), d:todayKey()};
+  if(pts){ bk.pts = (bk.pts||0) + pts; addPts(pts); } else save();
+  const after = readerLevel(); bk.lvUp = after > before ? after : 0;
+  confetti(); speak("Great reading! You finished the book!");
+  if(bk.lvUp) toast(`${BOOK_LV[bk.lvUp].e} Okuma seviyen: ${BOOK_LV[bk.lvUp].n}!`);
+  $("#bkdone").innerHTML = bookDoneHTML();
+  checkBadges();
 }
 
 function listeningHTML(){
@@ -2846,6 +3023,18 @@ document.addEventListener("click", e => {
     case "rvMore": startReview(); return revShow();
     case "rvPlay": return speak(rv.queue[rv.pos].w);
     case "rvSlow": return speak(rv.queue[rv.pos].w, null, .5);
+    case "bkWord": return bookWord(arg);
+    case "bkRead": bk.auto = false; return bookReadPage();
+    case "bkSlow": bk.auto = false; return bookReadPage(.55);
+    case "bkAuto": bk.auto = !bk.auto; if(!bk.auto){ stopSpeech(); return render(); } render(); return bookReadPage();
+    case "bkTr": bk.showTr = !bk.showTr; return bookShow();
+    case "bkPrev": if(bk.pg){ bk.pg--; bk.auto = false; render(); } return;
+    case "bkNext": bk.auto = false;
+      if(bk.pg < bk.b.pages.length - 1){ bk.pg++; bk.seen.add(bk.pg); render(); return; }
+      bk.phase = "quiz"; render(); say("Questions! 🤔", "Kitabı okudun. Şimdi soruları cevapla!"); return;
+    case "bkBackRead": bk.phase = "read"; bk.pg = 0; return render();
+    case "bkAgain": startBook(bk.b.id); render(); say("Let's read again! 📖", "Kitabı bir daha okuyalım."); return;
+    case "bkAns": return bookAnswer(b, +arg);
     case "readAll": return readStory();
     case "readSlow": return readStory(.55);
     case "readLine": { stopSpeech(); document.querySelectorAll("#story .line").forEach((p,n)=>p.classList.toggle("on", n === +arg)); return speak(READING[sk.unit].lines[+arg][0], ()=>{ const l = document.querySelectorAll("#story .line")[+arg]; if(l) l.classList.remove("on"); }); }
