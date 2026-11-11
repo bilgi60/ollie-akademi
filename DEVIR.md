@@ -10,7 +10,7 @@
 > - **Madde 6 BİTTİ (dal `claude/blissful-curie-oeo7li`), main'e alındı 2026-11-11, YAYINDA.** Worker da yeniden yayınlandı (2026-11-11).
 > - **Madde 5 BİTTİ (aynı dal), main'e alındı 2026-11-11, YAYINDA.** Sıradaki: **Madde 7 — Seviyeli okuma kütüphanesi.**
 > - **Madde 7 BİTTİ (dal `claude/friendly-dijkstra-r4vmx7`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Sıradaki: **Madde 8 — Movers (A1) + Flyers (A2) üniteleri.**
-> - **Madde 8, 1. kısım BİTTİ: Movers (A1) 10 ünite (dal `claude/charming-bohr-98r69d`, 2026-11-11; Madde 7'nin dalı da bu dala birleştirildi) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Sıradaki: **Madde 8, 2. kısım — Flyers (A2) 10 ünite** (aynı yöntemle `units-a2.js`), sonra KET/PET hazırlık.
+> - **Madde 8, 1. kısım BİTTİ: Movers (A1) 10 ünite (dal `claude/charming-bohr-98r69d`, 2026-11-11; Madde 7'nin dalı da bu dala birleştirildi). Madde 7 + Madde 8/1 + Reading üst üste binme düzeltmesi main'e alındı 2026-11-11, YAYINDA.** Worker yeniden yayınlanmadı (izin engeli): rapordaki yeni ünite/rozet adları için `cd api && CLOUDFLARE_API_TOKEN=proxy-injected CLOUDFLARE_ACCOUNT_ID=9a69de8230786ced37e7236b8221b494 npx wrangler deploy` çalıştırılmalı. Sıradaki: **Madde 8, 2. kısım — Flyers (A2) 10 ünite** (aynı yöntemle `units-a2.js`), sonra KET/PET hazırlık.
 
 > **Son durum (2026-11-11, 15. oturum): Movers (A1) üniteleri (Ünite 11–20).**
 > - Yeni dosya `units-a1.js` (`const UNITS_A1 = [...]`), `index.html` bunu ana betikten önce yükler ve "Seviyeler" bölümünde üniteleri `LEVELS/READING/LISTENING/SPEAKING/WRITE/TOWERS`'a ekler. Her ünite: 8 kart, 5 şarkı, kolay + zor test, yazma görevi, okuma, 5 dinleme, 5 konuşma, 3 Cümle Kulesi. Kütüphane kitabı YOK (ileride).
