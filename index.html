@@ -238,6 +238,21 @@ span.chunk{display:inline-block;box-shadow:none}
 .ptbar{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
 .stage{margin-top:18px}.stage.soon{opacity:.75}.stagehead{display:flex;align-items:center;gap:12px;margin:0 2px 10px;flex-wrap:wrap}.stagehead .ic{font-size:2rem}.stagehead h2{margin:2px 0}.stagehead>div{flex:1}.ptbar span{height:8px;border-radius:99px;background:var(--line)}.ptbar span.ok{background:var(--leaf)}.ptbar span.now{background:var(--sun)}.ptbar span.no{background:var(--berry)}
 .opt.pick{border-color:var(--ink);background:var(--soft)}
+.exrow{margin-top:12px}.exbar{grid-template-columns:repeat(20,1fr)}.ptbar span.seen{background:var(--sky)}
+.exparts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:12px 0}.exparts .bar{margin-top:6px}
+@media (max-width:520px){.exparts{grid-template-columns:1fr}}
+.exstory{background:var(--soft);border-radius:14px;padding:12px 16px;margin-bottom:12px;text-align:left}.exstory h3{margin:0 0 6px}.exstory p{margin:0 0 4px;line-height:1.5}
+.exrev{padding-left:22px;display:flex;flex-direction:column;gap:10px}.exrev li>div:first-child{font-weight:600}
+.certlist{display:flex;flex-direction:column;gap:10px}
+.cert{color:#1d1d1f}.certin{border:6px double #c99a2e;border-radius:14px;padding:28px 26px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.certtop{display:flex;justify-content:space-between;width:100%;font-weight:700;color:#7a6a3a;flex-wrap:wrap;gap:6px}
+.certeb{font-size:1.5rem;font-weight:800;letter-spacing:.5px;color:#a37a1a;margin-top:6px}
+.cert p{margin:0;max-width:560px}
+.certname{font-size:2.2rem;font-weight:800;border-bottom:2px solid #c99a2e;padding:0 24px 4px;overflow-wrap:anywhere}
+.certgrade{font-size:1.5rem;font-weight:800}.certgrade span{font-size:1rem;font-weight:600;color:#5a5a60}
+.certparts{display:flex;gap:16px;flex-wrap:wrap;justify-content:center}
+.certfoot{display:flex;justify-content:space-around;width:100%;margin-top:14px;gap:20px;flex-wrap:wrap}.certfoot div{display:flex;flex-direction:column;border-top:1.5px solid #1d1d1f;padding-top:4px;min-width:150px}.certfoot span{font-size:.8rem;color:#7a7a80}
+.certnote{font-size:.72rem;color:#8a8a90;margin-top:8px}
 .chal{background:var(--sky-soft);border:2px solid var(--sky);border-radius:16px;padding:10px 14px;font-weight:600}
 :is(.kind,.chip).hot{background:var(--sun);color:#22304A}
 .ans:disabled{cursor:default}
@@ -373,6 +388,8 @@ body.sheeton #sheet{display:block;max-width:232mm;margin:0 auto;padding:16px}
   .noprint,#toastBox{display:none!important}
   .paper{box-shadow:none;border-radius:0;margin:0;padding:0;max-width:none}
   .keyp{break-before:page}
+  @page cert{size:A4 landscape;margin:12mm}
+  .cert{page:cert}
   .paper *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 </style>
@@ -1148,7 +1165,7 @@ const fresh = () => ({unlocked:0, done:LEVELS.map(()=>[]), finished:false});
 
 /* ---------- Accounts & state ---------- */
 const UKEY = "ollie-akademi-accounts";
-const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}, skills:{r:{},l:{},s:{}}, towers:{}, rev:{}, revN:0, ad:{s:0, r:[], m:0}, books:{}});
+const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}, skills:{r:{},l:{},s:{}}, towers:{}, rev:{}, revN:0, ad:{s:0, r:[], m:0}, books:{}, exams:{}});
 function normalize(s){
   s = s || {};
   if(!(s.p && s.p.easy && s.p.hard)){
@@ -1162,6 +1179,7 @@ function normalize(s){
   s.ad = Object.assign({s:0, r:[], m:0}, s.ad);
   s.place = s.place || null;
   s.books = s.books || {};
+  s.exams = s.exams || {};
   if(!s.rev){ s.rev = {}; LEVELS.forEach((L,i)=>{ if(s.lessons["c"+i]) L.cards.forEach(c=>{ s.rev[c.w] = {b:1, d:todayKey(), x:0}; }); }); }
   if(!s.badges){ s.badges = []; s.needBadgeInit = true; }
   return s;
@@ -1313,7 +1331,14 @@ const BADGES = [
   {id:"key1", e:"🔑", n:"Key'e Merhaba", d:"İlk A2 Key ünitesinin kolay testini bitir.", ok:()=>LEVELS.some((_,i)=>i>=30 && i<40 && easyDone(i))},
   {id:"key", e:"🏅", n:"Key Mezunu", d:"A2 Key ünitelerinin hepsinin kolay testini bitir.", ok:()=>LEVELS.length>=40 && LEVELS.every((_,i)=>i<30 || i>=40 || easyDone(i))},
   {id:"pet1", e:"🏆", n:"B1'e Merhaba", d:"İlk B1 Preliminary ünitesinin kolay testini bitir.", ok:()=>LEVELS.some((_,i)=>i>=40 && i<50 && easyDone(i))},
-  {id:"pet", e:"🎖️", n:"Preliminary Mezunu", d:"B1 Preliminary ünitelerinin hepsinin kolay testini bitir.", ok:()=>LEVELS.length>=50 && LEVELS.every((_,i)=>i<40 || i>=50 || easyDone(i))}
+  {id:"pet", e:"🎖️", n:"Preliminary Mezunu", d:"B1 Preliminary ünitelerinin hepsinin kolay testini bitir.", ok:()=>LEVELS.length>=50 && LEVELS.every((_,i)=>i<40 || i>=50 || easyDone(i))},
+  {id:"exam1", e:"📝", n:"Sınav Cesareti", d:"İlk deneme sınavını çöz.", ok:()=>Object.keys(S.exams).length>=1},
+  {id:"cert-starters", e:"📜", n:"Starters Sertifikası", d:"Starters (Pre-A1) deneme sınavını geç.", ok:()=>examPassed(STAGES[0])},
+  {id:"cert-movers", e:"📜", n:"Movers Sertifikası", d:"Movers (A1) deneme sınavını geç.", ok:()=>examPassed(STAGES[1])},
+  {id:"cert-flyers", e:"📜", n:"Flyers Sertifikası", d:"Flyers (A2) deneme sınavını geç.", ok:()=>examPassed(STAGES[2])},
+  {id:"cert-key", e:"📜", n:"A2 Key Sertifikası", d:"A2 Key deneme sınavını geç.", ok:()=>examPassed(STAGES[3])},
+  {id:"cert-pet", e:"📜", n:"B1 Sertifikası", d:"B1 Preliminary deneme sınavını geç.", ok:()=>examPassed(STAGES[4])},
+  {id:"excellent", e:"🥇", n:"Üstün Başarı", d:"Bir deneme sınavından %90 ve üstü al.", ok:()=>Object.values(S.exams).some(r=>r.best>=90)}
 ];
 function checkBadges(silent){
   const fresh = BADGES.filter(b=>!S.badges.includes(b.id) && b.ok());
@@ -1363,7 +1388,7 @@ function stopSpeech(){ singing = false; try{ speechSynthesis.cancel(); }catch(e)
 /* ---------- Router ---------- */
 let page = "home", unitArg = 0, play = null;
 function route(){
-  stopSpeech(); stopRec(); play = null; sk = null; rv = null; bk = null;
+  stopSpeech(); stopRec(); play = null; sk = null; rv = null; bk = null; ex = null;
   const h = location.hash.slice(1) || "home";
   const tk = h.match(/^(reset|verify)-([0-9a-f]{64})$/);
   const un = h.match(/^unsub-(\d+)-([0-9a-f]{32})$/);
@@ -1384,6 +1409,10 @@ function route(){
     render(true); return;
   }
   if(["login","register","forgot","profiles","parent"].includes(h)){ history.replaceState(null, "", "#home"); }
+  const ce = h.match(/^cert-(\w+)$/), cg = ce && STAGES.find(g=>g.id===ce[1]);
+  if(cg && examPassed(cg)){ showCert(cg); return; }
+  if(cg){ history.replaceState(null, "", "#exam-" + cg.id); return route(); }
+  const em = h.match(/^exam-(\w+)$/), eg = em && STAGES.find(g=>g.id===em[1]);
   const m = h.match(/^unit-(\d+)$/);
   const sm = h.match(/^(reading|listening|speaking)(?:-(\d+))?$/);
   if(m && +m[1]>=1 && +m[1]<=LEVELS.length){ page = "unit"; unitArg = +m[1]-1; }
@@ -1392,18 +1421,19 @@ function route(){
   else if(/^book-b\d+$/.test(h) && startBook(h.slice(5))) page = "book";
   else if(h === "review"){ page = "review"; startReview(); }
   else if(h === "placement"){ page = "placement"; pt = null; }
+  else if(eg){ page = "exam"; ex = {g:eg, phase:"intro"}; }
   else page = ["home","units","words","badges","profile"].includes(h) ? h : "home";
   render(true);
 }
 function render(greet){
   updateTop();
-  const nav = play || page==="unit" || page==="placement" ? "units" : page==="review" ? "home" : page==="library" || page==="book" ? "reading" : page;
+  const nav = play || page==="unit" || page==="placement" || page==="exam" ? "units" : page==="review" ? "home" : page==="library" || page==="book" ? "reading" : page;
   document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("on", a.dataset.nav===nav));
   const el = $("#screen");
   if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML, reset:resetHTML, profiles:profilesHTML, parent:parentHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
   if(play) el.innerHTML = play.kind==="song" ? songHTML() : play.kind==="cards" ? cardsHTML() : play.kind==="write" ? writeHTML() : play.kind==="tower" ? towerHTML() : quizHTML();
   else el.innerHTML = ({home:homeHTML, units:unitsHTML, unit:unitHTML, words:wordsHTML, badges:badgesHTML, profile:profileHTML,
-    review:reviewHTML, placement:placementHTML, library:libraryHTML, book:bookHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
+    review:reviewHTML, placement:placementHTML, exam:examHTML, library:libraryHTML, book:bookHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
   if(play && play.order) renderOrder();
   if(!play && page==="words") renderWords();
   if(!play && page==="review" && rv && !rv.done && rv.queue[rv.pos].type==="ear") setTimeout(()=>speak(rv.queue[rv.pos].w), 300);
@@ -1420,6 +1450,7 @@ function greetPage(){
     profiles:["Who's learning today? 🦉","Profiline dokun ve derslere başla!"],
     parent:["Parent panel","Çocuklarının ilerlemesini buradan görebilirsin."],
     home:[`Hello${n}! 👋`, `Bugünkü hedefin ${DAILY} yıldız. Hadi başlayalım!`],
+    exam: ex ? [`${ex.g.n} practice test 📝`, examReady(ex.g) ? "Gerçek bir sınav gibi: 20 soru, 3 bölüm. Sonuçlar en sonda!" : "Önce bu seviyenin ünitelerini bitir."] : ["",""],
     placement:["Let's find your level! 🎯","Birkaç kısa soruyla sana en uygun üniteyi bulalım."],
     units:["Here are your units!","Her ünitede 4 ders var: şarkı, kelime kartları, kolay test ve zor test."],
     unit:[`Unit ${unitArg+1}: ${LEVELS[unitArg]?.theme}`, "Dersleri sırayla yap. Kolay testi bitirince sonraki ünite açılır."],
@@ -1729,13 +1760,14 @@ function homeHTML(){
     </div>
     ${placeCardHTML()}
     ${cont}
+    ${examCardHTML()}
     ${reviewCardHTML()}
     ${libCardHTML()}
   </section>
   <div class="stats">
     <div class="stat"><b>⭐ ${S.score}</b><span>Toplam yıldız</span></div>
     <div class="stat"><b>🔥 ${streak()}</b><span>Gün serisi</span></div>
-    <div class="stat"><b>✅ ${lessonsDone()}/40</b><span>Tamamlanan ders</span></div>
+    <div class="stat"><b>✅ ${lessonsDone()}/${N()*4}</b><span>Tamamlanan ders</span></div>
     <div class="stat"><b>🏅 ${S.badges.length}/${BADGES.length}</b><span>Rozet</span></div>
   </div>
   <div class="grid g2">
@@ -1775,7 +1807,7 @@ function stageHTML(g){
     ${us.length ? `<span class="chip ${done===us.length?"ok":""}">${done===us.length ? "✓ " : open ? "" : "🔒 "}${done}/${us.length} ünite</span>` : `<span class="chip">⏳ Yakında</span>`}</div>`;
   if(!us.length) return `<section class="stage soon">${head}</section>`;
   return `<section class="stage">${head}${!open ? `<p class="tr">${STAGES[STAGES.indexOf(g)-1].n} seviyesinin son ünitesini bitirince açılır. İngilizcen iyiyse <a class="link" href="#placement">🎯 seviye testi</a> seni buraya da atlatabilir.</p>` : ""}
-    <div class="grid g3">${us.map(x=>unitCard(x.L, x.i)).join("")}</div></section>`;
+    <div class="grid g3">${us.map(x=>unitCard(x.L, x.i)).join("")}</div>${examRowHTML(g)}</section>`;
 }
 function lessonRow(i, kind){
   const l = LESSON[kind], L = LEVELS[i];
@@ -1959,6 +1991,11 @@ function profileHTML(){
     </div>
     <p class="tr">İlerlemen veli hesabına kaydedilir. Aynı hesapla giriş yapılan her cihazdan kaldığın yerden devam edebilirsin.</p>
     <div class="row" id="resetRow"><button class="btn ghost small" data-act="reset">↺ İlerlemeyi sıfırla</button></div>
+  </section>
+  <section class="panel"><h2>📜 Sertifikalarım</h2>
+    <p class="tr">Her seviyenin ünitelerini bitirince deneme sınavı açılır. %${EXAM_PASS} ve üstünü alınca sertifika kazanırsın.</p>
+    <div class="certlist">${STAGES.filter(g=>examUnits(g).length).map(g=>{ const r = examRec(g), gr = r && examGrade(r.best);
+      return `<div class="row between"><span>${g.e} <b>${g.n}</b> <span class="chip">${g.lv}</span></span>${gr ? `<a class="btn small" href="#cert-${g.id}">${gr.e} ${gr.n} · %${r.best}</a>` : r ? `<a class="link" href="#exam-${g.id}">En iyi %${r.best} · yeniden dene</a>` : examReady(g) ? `<a class="link" href="#exam-${g.id}">📝 Sınava hazırsın</a>` : `<span class="tr">🔒 Henüz değil</span>`}</div>`; }).join("")}</div>
   </section>
   <div><button class="btn ghost" data-act="childOut">🔄 Profil değiştir</button></div>`;
 }
@@ -2635,6 +2672,161 @@ function finishPlace(u, all){
   ptShow();
 }
 
+/* ---------- Deneme sınavı + seviye sertifikası ----------
+   Her seviye (STAGES) için 20 soruluk deneme sınavı, adres #exam-<seviye>: 📕 Reading (2 hikâye × 3 soru), 🎧 Listening (6 soru),
+   ✏️ Vocabulary & Grammar (4 bilmece + 4 boşluk doldurma, yazarak). Sorular seviyenin ünitelerinden her seferinde rastgele seçilir.
+   Sınav sırasında doğru/yanlış gösterilmez; sonunda bölüm puanları ve yanlışların doğruları gösterilir.
+   %60 ve üstü geçer: 🥉 Başarılı, %75 🥈 Çok iyi, %90 🥇 Üstün başarı. Geçince rozet ve yazdırılabilir sertifika (#cert-<seviye>).
+   Sınav, seviyenin bütün ünitelerinin kolay testi bitince açılır.
+   Veri: S.exams[seviye] = {best: en iyi %, n: kaç kez, d: son gün, last: son %, parts/tot: en iyi denemenin bölüm doğruları/soru sayıları, pd: ilk geçtiği gün}.
+   Yıldız: ilk sınav ⭐+10, ilk geçiş ⭐+30, en iyi sonucu geçmek ⭐+5. */
+const EXAM_PASS = 60;
+const EXAM_PARTS = [{e:"📕", n:"Reading", tr:"Okuma"}, {e:"🎧", n:"Listening", tr:"Dinleme"}, {e:"✏️", n:"Vocabulary & Grammar", tr:"Kelime ve dilbilgisi"}];
+let ex = null;
+const pickN = (arr, n) => arr.slice().sort(()=>Math.random()-.5).slice(0, n);
+const optObj = o => typeof o === "string" ? {v:o} : o;
+const examUnits = g => stageUnits(g).map(x=>x.i);
+const examReady = g => { const u = examUnits(g); return u.length > 0 && u.every(easyDone); };
+const examRec = g => S.exams[g.id] || null;
+const examPassed = g => !!(S.exams[g.id] && S.exams[g.id].best >= EXAM_PASS);
+const examGrade = p => p >= 90 ? {e:"🥇", n:"Üstün başarı", en:"Excellent"} : p >= 75 ? {e:"🥈", n:"Çok iyi", en:"Very good"} : p >= EXAM_PASS ? {e:"🥉", n:"Başarılı", en:"Pass"} : null;
+const examOk = (q, a) => q.type === "write" ? !!a && (norm(a) === norm(q.answer) || q.alts.map(norm).includes(norm(a))) : a === q.answer;
+function buildExam(g){
+  const us = examUnits(g), qs = [];
+  pickN(us, 2).sort((a,b)=>a-b).forEach(i=>{ const R = READING[i];
+    R.qs.slice(0, 3).forEach(q=>qs.push({part:0, type:"read", u:i, q:q.q, tr:q.tr, opts:pickN(q.options.map(optObj), 9), answer:q.answer})); });
+  pickN(us, 6).forEach(i=>{ const t = pickN(LISTENING[i], 1)[0];
+    qs.push({part:1, type:"listen", u:i, say:t.say, q:t.q, tr:t.tr, opts:pickN(t.options.map(optObj), 9), answer:t.answer}); });
+  const all = us.flatMap(i=>LEVELS[i].tasks.concat(LEVELS[i].hard || []).map(t=>({t, i})));
+  pickN(all.filter(x=>x.t.type==="pick"), 4).forEach(({t, i})=>qs.push({part:2, type:"pick", u:i, q:t.q, tr:t.tr, opts:pickN(t.options.map(optObj), 9), answer:t.answer}));
+  pickN(all.filter(x=>x.t.type==="write"), 4).forEach(({t, i})=>qs.push({part:2, type:"write", u:i, e:t.e, sentence:t.sentence, tr:t.tr, mask:t.mask, answer:t.answer, alts:t.alts || []}));
+  return qs;
+}
+function startExam(g){ ex = {g, phase:"q", qs:buildExam(g), k:0, ans:[], busy:false}; }
+function examRowHTML(g){
+  const us = examUnits(g); if(!us.length) return "";
+  const r = examRec(g), ready = examReady(g), gr = r && examGrade(r.best), done = us.filter(easyDone).length;
+  return `<div class="continue exrow"><span class="ic">${gr ? gr.e : ready ? "📝" : "🔒"}</span>
+    <div class="txt"><div class="eyebrow">${g.e} ${g.n} · Deneme sınavı</div>
+      <h3>${gr ? `📜 Sertifika: ${gr.n} · %${r.best}` : r ? `En iyi sonucun %${r.best} · geçmek için %${EXAM_PASS}` : ready ? "Deneme sınavına hazırsın!" : "Deneme sınavı"}</h3>
+      <span class="tr">${ready ? "20 soru: 📕 Reading · 🎧 Listening · ✏️ Kelime ve dilbilgisi. Geçince 📜 sertifika ve rozet kazanırsın." : `${g.n} ünitelerinin hepsinin 🐣 kolay testini bitirince açılır (${done}/${us.length}).`}</span></div>
+    <div class="row">${gr ? `<a class="btn small" href="#cert-${g.id}">📜 Sertifikam</a>` : ""}${ready ? `<a class="btn ${gr ? "ghost " : ""}small" href="#exam-${g.id}">${r ? "🔁 Yeniden çöz" : "Sınava başla ▶"}</a>` : ""}</div></div>`;
+}
+function examCardHTML(){
+  const g = STAGES.find(x=>examReady(x) && !examPassed(x)); if(!g) return "";
+  const r = examRec(g);
+  return `<div class="continue review"><span class="ic">📝</span><div class="txt"><div class="eyebrow">${g.e} ${g.n} · Deneme sınavı</div>
+    <h3>${r ? `Sertifikaya az kaldı! En iyi sonucun %${r.best}` : `${g.n} deneme sınavına hazırsın!`}</h3>
+    <span class="tr">%${EXAM_PASS} ve üstünü alırsan 📜 ${g.n} sertifikası senin!</span></div>
+    <a class="btn" href="#exam-${g.id}">Sınav ▶</a></div>`;
+}
+function examHTML(){
+  const g = ex.g, r = examRec(g), us = examUnits(g);
+  const top = `<div class="row between"><a class="link" href="#units">← Derslerim</a><span class="chip">📝 ${g.e} ${g.n} deneme sınavı</span></div>`;
+  if(!examReady(g)) return `${top}<section class="panel" style="text-align:center"><div style="font-size:3.5rem">🔒</div><h1>${g.n} deneme sınavı</h1>
+    <p>Bu sınav, ${g.n} ünitelerinin hepsinin 🐣 kolay testini bitirince açılır.</p><p class="tr">${us.filter(easyDone).length}/${us.length} ünite bitti.</p>
+    <div class="row center"><a class="btn" href="#units">Derslerim</a></div></section>`;
+  if(ex.phase === "intro") return `${top}<section class="panel" style="text-align:center">
+    <div style="font-size:3.5rem">📝</div><h1>${g.n} deneme sınavı <span class="chip">${g.lv}</span></h1>
+    <p>Gerçek bir sınav gibi: <b>20 soru</b>, üç bölüm. Yaklaşık 15 dakika sürer.</p>
+    <div class="exparts">${EXAM_PARTS.map((p,n)=>`<div class="stat"><b>${p.e} ${[6,6,8][n]}</b><span>${p.n} · ${p.tr}</span></div>`).join("")}</div>
+    <p class="tr">Sınav sırasında Ollie doğru mu yanlış mı söylemez; sonuçlar en sonda gelir. Bilmediğin soruyu boş geçebilirsin.
+      <b>%${EXAM_PASS}</b> ve üstünü alırsan 📜 <b>${g.n} sertifikası</b> ve rozet kazanırsın. İstediğin kadar yeniden çözebilirsin, her seferinde sorular değişir.</p>
+    ${r ? `<p class="tr">En iyi sonucun: <b>%${r.best}</b>${examGrade(r.best) ? ` ${examGrade(r.best).e} ${examGrade(r.best).n}` : ""} · ${r.n} kez çözdün.</p>` : ""}
+    <div class="row center"><button class="btn" data-act="exStart">Sınava başla ▶</button>${examPassed(g) ? `<a class="btn ghost" href="#cert-${g.id}">📜 Sertifikam</a>` : ""}</div></section>`;
+  if(ex.phase === "done") return `${top}${examDoneHTML()}`;
+  const q = ex.qs[ex.k], P = EXAM_PARTS[q.part], L = LEVELS[q.u];
+  const bar = ex.qs.map((_,n)=>`<span class="${n < ex.k ? "seen" : n === ex.k ? "now" : ""}"></span>`).join("");
+  let body = "";
+  if(q.type === "read"){ const R = READING[q.u];
+    body = `<div class="exstory"><h3>${R.e} ${esc(R.title)}</h3>${R.lines.map(l=>`<p>${esc(l[0])}</p>`).join("")}</div>
+      <div class="q">${esc(q.q)} <span class="tr">${esc(q.tr)}</span></div>`; }
+  else if(q.type === "listen") body = `<div class="row center"><button class="btn" data-act="exPlay">🔊 Listen</button><button class="btn ghost small" data-act="exSlow">🐢 Slow</button></div>
+      <div class="q">${esc(q.q)} <span class="tr">${esc(q.tr)}</span></div>`;
+  else if(q.type === "pick") body = `<div class="q">${esc(q.q)} <span class="tr">${esc(q.tr)}</span></div>`;
+  else body = `<div class="q">Write the missing word! <span class="tr">Eksik kelimeyi yaz!</span></div>
+      <div class="bigemo">${q.e}</div><div class="mask">${esc(q.mask)}</div>
+      <div class="sentence">${esc(q.sentence).replace("___",'<span class="blank">?</span>')} <span class="tr">(${esc(q.tr)})</span></div>
+      <form id="exForm" class="row center"><input class="write" id="exIn" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Cevabın" value="${esc(ex.ans[ex.k] || "")}"><button class="btn" type="submit">Next ▶</button></form>`;
+  const opts = q.type === "write" ? "" : `<div class="opts">${q.opts.map(o=>`<button class="opt" data-act="exAns" data-arg="${esc(o.v)}" aria-label="${esc(o.v)}">${o.c ? `<span class="sw" style="background:${o.c}"></span>` : o.e ? `<span class="emo">${o.e}</span>` : esc(o.v)}</button>`).join("")}</div>`;
+  return `${top}<section class="panel">
+    <div class="eyebrow">Soru ${ex.k+1}/${ex.qs.length} · ${P.e} ${P.n} · ${P.tr}</div>
+    <div class="ptbar exbar" aria-label="Sorular">${bar}</div>
+    ${body}${opts}
+    <div class="row center"><button class="btn ghost small" data-act="exAns" data-arg="">⏭️ Boş geç</button></div>
+    <div class="tr" style="text-align:center">Ünite ${q.u+1}: ${L.theme}</div>
+  </section>`;
+}
+function examDoneHTML(){
+  const g = ex.g, R = ex.res, gr = examGrade(R.pct), rec = examRec(g);
+  const wrong = ex.qs.map((q,n)=>({q, a:ex.ans[n], ok:R.ok[n]})).filter(x=>!x.ok);
+  const weak = [...new Set(wrong.map(x=>x.q.u))].sort((a,b)=>a-b);
+  const qText = q => q.type === "write" ? esc(q.sentence) : esc(q.q);
+  const optTxt = (q, v) => { if(!v) return "<i>boş</i>"; const o = (q.opts || []).find(x=>x.v === v); return `${o && o.e ? o.e + " " : ""}${esc(v)}`; };
+  return `<section class="panel" style="text-align:center">
+    <div style="font-size:3.5rem">${gr ? gr.e : "💪"}</div>
+    <h1>${gr ? `Tebrikler! ${g.n} sınavını geçtin!` : "Az kaldı, biraz daha çalışalım!"}</h1>
+    <p><b>${ex.qs.length}</b> sorudan <b>${R.right}</b> doğru · <b>%${R.pct}</b>${gr ? ` · ${gr.n}` : ` · geçmek için %${EXAM_PASS}`}${R.pts ? ` · ⭐ +${R.pts}` : ""}</p>
+    <div class="exparts">${EXAM_PARTS.map((p,n)=>`<div class="stat"><b>${p.e} ${R.parts[n]}/${R.tot[n]}</b><span>${p.n}</span><div class="bar"><i style="width:${R.tot[n] ? Math.round(R.parts[n]*100/R.tot[n]) : 0}%"></i></div></div>`).join("")}</div>
+    ${R.newPass ? `<p class="tr">📜 ${g.n} sertifikası senin! Yazdırıp duvarına asabilirsin.</p>` : rec.best > R.pct ? `<p class="tr">En iyi sonucun hâlâ %${rec.best}.</p>` : ""}
+    ${!gr && weak.length ? `<p class="tr">Şu ünitelere bir daha bakmak iyi gelir: ${weak.map(i=>`<a class="link" href="#unit-${i+1}">${LEVELS[i].icon} ${LEVELS[i].theme}</a>`).join(", ")}</p>` : ""}
+    <div class="row center">${examPassed(g) ? `<a class="btn" href="#cert-${g.id}">📜 Sertifikam</a>` : ""}<button class="btn ${examPassed(g) ? "ghost" : ""}" data-act="exStart">🔁 Yeniden çöz</button><a class="btn ghost" href="#units">Derslerim</a></div>
+  </section>
+  ${wrong.length ? `<section class="panel"><h2>Yanlışların ve doğruları</h2><ol class="exrev">${wrong.map(({q, a})=>`<li><div>${EXAM_PARTS[q.part].e} ${qText(q)}</div>
+    <div class="tr">Senin cevabın: ${q.type === "write" ? (a ? esc(a) : "<i>boş</i>") : optTxt(q, a)} · Doğrusu: <b>${q.type === "write" ? esc(q.answer) : optTxt(q, q.answer)}</b>${q.type === "listen" ? ` · <span>“${esc(q.say)}”</span>` : ""}</div></li>`).join("")}</ol></section>` : ""}`;
+}
+function examShow(){ $("#screen").innerHTML = examHTML(); window.scrollTo({top:0});
+  const q = ex.phase === "q" && ex.qs[ex.k];
+  if(q && q.type === "listen") setTimeout(()=>speak(q.say), 300);
+  if(q && q.type === "write"){ const i = $("#exIn"); if(i && matchMedia("(pointer:fine)").matches) i.focus(); } }
+function examAnswer(v, btn){
+  if(!ex || ex.phase !== "q" || ex.busy) return;
+  ex.ans[ex.k] = v; stopSpeech();
+  if(btn && v) btn.classList.add("pick");
+  ex.busy = true;
+  setTimeout(()=>{ ex.busy = false; ex.k++; if(ex.k >= ex.qs.length) finishExam(); else examShow(); }, v && btn ? 350 : 100);
+}
+function finishExam(){
+  const g = ex.g, qs = ex.qs, ok = qs.map((q,n)=>examOk(q, ex.ans[n]));
+  const parts = [0,1,2].map(p=>qs.filter((q,n)=>q.part === p && ok[n]).length), tot = [0,1,2].map(p=>qs.filter(q=>q.part === p).length);
+  const right = ok.filter(Boolean).length, pct = Math.round(right * 100 / qs.length);
+  const prev = S.exams[g.id], wasPassed = examPassed(g), newPass = pct >= EXAM_PASS && !wasPassed;
+  const pts = (prev ? (pct > prev.best ? 5 : 0) : 10) + (newPass ? 30 : 0);
+  const r = Object.assign({best:0, n:0}, prev);
+  r.n++; r.d = todayKey(); r.last = pct;
+  if(!prev || pct >= r.best){ r.best = pct; r.parts = parts; r.tot = tot; }
+  if(newPass) r.pd = todayKey();
+  S.exams[g.id] = r;
+  ex.phase = "done"; ex.res = {ok, parts, tot, right, pct, pts, newPass};
+  if(pts) addPts(pts); else save();
+  if(examGrade(pct)){ confetti(); speak("Congratulations! You passed!"); say("You passed! 📜", `${g.n} deneme sınavında %${pct} aldın. Sertifikan hazır!`); }
+  else say("Good try! 💪", `%${pct} aldın. Yanlışlarına bak, ünitelere dön, sonra yeniden dene!`);
+  examShow();
+}
+function certHTML(g){
+  const r = examRec(g), gr = examGrade(r.best), name = S.name || "Öğrenci";
+  return `<div class="wbar noprint"><a class="link" href="#exam-${g.id}">← Geri</a><button class="btn" data-act="sheetPrint">🖨️ Yazdır / PDF kaydet</button></div>
+  <div class="paper cert">
+    <div class="certin">
+      <div class="certtop"><span>🦉 Ollie Akademi</span><span>${g.e} ${g.n} · ${g.lv}</span></div>
+      <div class="certeb">Başarı Belgesi · Certificate of Achievement</div>
+      <p>Bu belge</p>
+      <div class="certname">${S.avatar} ${esc(name)}</div>
+      <p>Ollie Akademi <b>${g.n} (${g.lv})</b> seviyesinin ünitelerini bitirdiğini ve deneme sınavını başarıyla geçtiğini gösterir.</p>
+      <div class="certgrade">${gr.e} ${gr.n} <span>· ${gr.en} · %${r.best}</span></div>
+      ${r.parts ? `<div class="certparts">${EXAM_PARTS.map((p,n)=>`<span>${p.e} ${p.n}: <b>${r.parts[n]}/${r.tot[n]}</b></span>`).join("")}</div>` : ""}
+      <div class="certfoot"><div><b>${fmtDate((r.pd || r.d) + "T12:00")}</b><span>Tarih</span></div><div><b>Ollie 🦉</b><span>ollieakademi.com</span></div></div>
+      <div class="certnote">Bu belge Ollie Akademi'nin kendi başarı belgesidir; Cambridge English'in resmî sınav sertifikası değildir.</div>
+    </div>
+  </div>`;
+}
+function showCert(g){
+  document.body.classList.add("sheeton");
+  $("#sheet").innerHTML = certHTML(g);
+  document.title = `Ollie Akademi – ${g.n} sertifikası`;
+  window.scrollTo({top:0});
+}
+
 /* ---------- Reading · Listening · Speaking bölümleri ---------- */
 const SKILL = {
   reading:{e:"📕", n:"Reading", tr:"Okuma", key:"r", unitName:"hikâye", total:i=>READING[i].qs.length},
@@ -3087,6 +3279,10 @@ document.addEventListener("click", e => {
     case "resetNo": render(); return;
     case "nextTask": return nextTask();
     case "rvAns": return revAnswer(arg, b);
+    case "exStart": startExam(ex.g); say("Good luck! 🍀", "Acele etme, her soruyu dikkatle oku."); return examShow();
+    case "exAns": return examAnswer(arg, b);
+    case "exPlay": return speak(ex.qs[ex.k].say);
+    case "exSlow": return speak(ex.qs[ex.k].say, null, .5);
     case "ptStart": startPlace(); say("Let's go! 🎯", "Bilmediğin soruda 🤷 Bilmiyorum'a bas."); return ptShow();
     case "ptAns": return ptAnswer(arg, b);
     case "ptPlay": { const q = pt.qs[pt.k]; return speak(q.type==="ear" ? q.w : q.say); }
@@ -3167,6 +3363,7 @@ document.addEventListener("submit", e => {
   e.preventDefault();
   const f = {loginForm:onLogin, regForm:onRegister, forgotForm:onForgot, resetForm:onReset, childForm:onAddChild, pwForm:onChangePw, delForm:onDeleteAccount}[e.target.id];
   if(f){ const btn = e.target.querySelector('[type="submit"]'); btn.disabled = true; f().finally(()=>{ btn.disabled = false; }); return; }
+  if(e.target.id==="exForm"){ return examAnswer($("#exIn").value.trim(), null); }
   if(e.target.id==="rvForm"){ const v = $("#rvIn").value; if(!norm(v)){ say("Type the word first!","Önce kelimeyi yaz!"); return; } return revAnswer(v); }
   if(!play || play.solved) return;
   const L = LEVELS[play.unit], t = tasksOf()[play.task], inp = $("input.write");

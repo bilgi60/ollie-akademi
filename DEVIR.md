@@ -20,6 +20,19 @@
 
 > - **Madde 8, 5. kısım BİTTİ: B1 Preliminary (PET) 10 ünite (dal `claude/new-session-ymk9cm`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA; Worker da yeniden yayınlandı.** Sıradaki: **Madde 8, 6. kısım — deneme sınavları + sertifika benzeri seviye rozeti**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
 
+> - **Madde 8, 6. kısım BİTTİ: deneme sınavları + seviye sertifikası (dal `claude/lucid-heisenberg-trli15`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Main'e alınınca Worker'ı yeniden yayınla (yeni rozet adları için; `content.js` üretildi: 38 rozet). Sıradaki: **Madde 9 — MEB müfredatı eşleştirme.**
+
+> **Son durum (2026-11-11, 20. oturum): Deneme sınavları + sertifika.**
+> - Her seviye için (Starters, Movers, Flyers, A2 Key, B1 Preliminary) 20 soruluk deneme sınavı, adres `#exam-<starters|movers|flyers|key|pet>`. Bölümler: 📕 Reading (2 hikâye × 3 soru, READING'den), 🎧 Listening (6 soru, LISTENING'den), ✏️ Vocabulary & Grammar (4 bilmece "pick" + 4 yazarak boşluk doldurma "write", ünitelerin kolay/zor testlerinden). Sorular her seferinde rastgele.
+> - Seviyenin bütün ünitelerinin kolay testi bitince açılır. Sınavda doğru/yanlış gösterilmez, "⏭️ Boş geç" var; sonunda bölüm puanları, yanlışların doğruları (dinlemede cümlenin kendisi), zayıf ünitelere bağlantı.
+> - %60 geçer: 🥉 Başarılı, %75 🥈 Çok iyi, %90 🥇 Üstün başarı. Geçince yazdırılabilir sertifika `#cert-<seviye>` (A4 yatay, çocuğun adı/avatarı, not, bölümler, tarih; "Cambridge'in resmî sertifikası değildir" notu). Geçilmemişse `#cert-…` sınav sayfasına döner.
+> - Yıldız: ilk sınav ⭐+10, ilk geçiş ⭐+30, en iyi sonucu geçmek ⭐+5. Veri `S.exams[seviye] = {best, n, d, last, parts, tot, pd}`.
+> - Yeni rozetler: 📝 Sınav Cesareti, 📜 Starters/Movers/Flyers/A2 Key/B1 Sertifikası, 🥇 Üstün Başarı.
+> - Giriş yerleri: Derslerim'de her seviyenin altında sınav kartı, ana sayfada "deneme sınavına hazırsın" kartı (geçilmemiş ilk hazır seviye), Profil'de "📜 Sertifikalarım".
+> - Ayrıca: ana sayfadaki "Tamamlanan ders /40" artık ünite sayısına göre (/200).
+> - Tarayıcıda (sahte API, 390 px) denendi: 5 seviyenin sınavı 30'ar kez üretildi (her biri 6/6/8 soru, cevaplar seçeneklerde), Starters baştan sona doğru cevaplarla (%95, rozetler, yıldız, sunucuya kayıt), Movers boş geçerek (%0, yanlış listesi), kilitli Flyers, sertifika ekranı ve PDF (tek sayfa yatay), profil; hata yok, yatay kayma yok. Gerçek telefonda yazdırma denenmedi.
+> - Not (hâlâ geçerli): seviye testi 50 üniteye kadar gidebiliyor, uzun.
+
 > **Son durum (2026-11-11, 19. oturum): B1 Preliminary for Schools üniteleri (Ünite 41–50).**
 > - Yeni dosya `units-pet.js` (`const UNITS_PET`), biçim `units-key.js` ile aynı; `index.html` yükler. 🏆 "B1 Preliminary" bölümü artık "Yakında" değil.
 > - Üniteler (dilbilgisi): 41 Teen Life (present perfect + for/since/ever) · 42 Inventions (edilgen yapı) · 43 Childhood Memories (used to) · 44 Dreams and Wishes (2. tip koşul) · 45 Mysteries (must/might/can't be) · 46 Friendship (dolaylı anlatım) · 47 Places to Visit (who/which/where/whose) · 48 Music and Concerts (-ed/-ing sıfatlar) · 49 Healthy Habits (fiil + -ing / to) · 50 Adventure Stories (past perfect, hikâye yazma). Yazma model metinleri 95–110 kelime (PET e-posta / makale / hikâye).
