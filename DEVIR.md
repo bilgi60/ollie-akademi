@@ -12,7 +12,7 @@
 > - **Madde 7 BİTTİ (dal `claude/friendly-dijkstra-r4vmx7`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Sıradaki: **Madde 8 — Movers (A1) + Flyers (A2) üniteleri.**
 > - **Madde 8, 1. kısım BİTTİ: Movers (A1) 10 ünite (dal `claude/charming-bohr-98r69d`, 2026-11-11; Madde 7'nin dalı da bu dala birleştirildi). Madde 7 + Madde 8/1 + Reading üst üste binme düzeltmesi main'e alındı 2026-11-11, YAYINDA.** Worker da yeniden yayınlandı (2026-11-11). Sıradaki: **Madde 8, 2. kısım — Flyers (A2) 10 ünite** (aynı yöntemle `units-a2.js`), sonra KET/PET hazırlık.
 
-> - **Madde 8, 2. kısım BİTTİ: Flyers (A2) 10 ünite (dal `claude/laughing-allen-n2i5qa`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** main'e alınınca Worker'ı yeniden yayınla (rapordaki ünite/rozet adları için). Sıradaki: **Madde 8, 3. kısım — KET/PET hazırlık** (ya da önce Movers/Flyers kütüphane kitapları), sonra **Madde 9 — MEB müfredatı eşleştirme.**
+> - **Madde 8, 2. kısım BİTTİ: Flyers (A2) 10 ünite (dal `claude/laughing-allen-n2i5qa`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA; Worker da yeniden yayınlandı.** Sıradaki: **Madde 8, 3. kısım — KET/PET hazırlık** (ya da önce Movers/Flyers kütüphane kitapları), sonra **Madde 9 — MEB müfredatı eşleştirme.**
 
 > - **Madde 8, 3. kısım BİTTİ: Movers/Flyers kütüphane kitapları (dal `claude/charming-goldberg-k7icw1`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Worker değişmedi (yayın gerekmez). **Ama Flyers main'e alındıktan sonra Worker henüz yeniden yayınlanmadı** (bu oturumda izin reddedildi; kullanıcı kendisi yayınlayacak ya da izin verecek). Sıradaki: **Madde 8, 4. kısım — KET/PET hazırlık**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
 
