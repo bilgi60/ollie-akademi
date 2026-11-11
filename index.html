@@ -111,6 +111,11 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,.c
 .continue{display:flex;gap:14px;align-items:center;background:var(--soft);border-radius:18px;padding:14px 16px;flex-wrap:wrap}
 .continue .ic{font-size:2.2rem}
 .continue .txt{flex:1;min-width:160px}
+.continue.review{margin-top:10px}
+.rvopt{font-size:1.2rem;padding:14px}
+.rvopt .emo{font-size:2.6rem}
+.rvopt.right{background:var(--leaf-soft);border-color:var(--leaf)}
+.rvopt.wrong{animation:shake .4s}
 .week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;text-align:center}
 .week div{display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:600;font-size:.85rem;color:var(--muted)}
 .week i{width:34px;height:34px;border-radius:50%;background:var(--soft);border:2px solid var(--line);display:grid;place-items:center;font-style:normal}
@@ -1016,7 +1021,7 @@ const fresh = () => ({unlocked:0, done:LEVELS.map(()=>[]), finished:false});
 
 /* ---------- Accounts & state ---------- */
 const UKEY = "ollie-akademi-accounts";
-const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}, skills:{r:{},l:{},s:{}}, towers:{}});
+const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}, skills:{r:{},l:{},s:{}}, towers:{}, rev:{}, revN:0});
 function normalize(s){
   s = s || {};
   if(!(s.p && s.p.easy && s.p.hard)){
@@ -1026,6 +1031,8 @@ function normalize(s){
   s.score = s.score||0; s.lessons = s.lessons||{}; s.days = s.days||[]; s.today = s.today||{d:"",pts:0};
   s.name = s.name||""; s.avatar = s.avatar||"🦊"; s.writings = s.writings||{}; s.sung = s.sung||{};
   s.towers = s.towers||{}; s.skills = s.skills||{}; for(const k of ["r","l","s"]) s.skills[k] = s.skills[k]||{};
+  s.revN = s.revN||0;
+  if(!s.rev){ s.rev = {}; LEVELS.forEach((L,i)=>{ if(s.lessons["c"+i]) L.cards.forEach(c=>{ s.rev[c.w] = {b:1, d:todayKey(), x:0}; }); }); }
   if(!s.badges){ s.badges = []; s.needBadgeInit = true; }
   return s;
 }
@@ -1162,6 +1169,7 @@ const BADGES = [
   {id:"reader3", e:"📕", n:"Kitap Kurdu", d:"3 Reading hikâyesini bitir.", ok:()=>skCount("reading")>=3},
   {id:"listen3", e:"🎧", n:"Dikkatli Kulak", d:"3 ünitenin Listening bölümünü bitir.", ok:()=>skCount("listening")>=3},
   {id:"speak3", e:"🗣️", n:"Konuşkan Baykuş", d:"3 ünitenin Speaking bölümünü bitir.", ok:()=>skCount("speaking")>=3},
+  {id:"review5", e:"🔁", n:"Unutmayan Baykuş", d:"5 kez Bugünün Tekrarı'nı bitir.", ok:()=>S.revN>=5},
   {id:"tower1", e:"🧱", n:"Kule Ustası", d:"İlk Cümle Kulesini bitir.", ok:()=>towerCount()>=1},
   {id:"legend", e:"👑", n:"Efsane", d:"10 ünitenin zor testlerini bitir.", ok:()=>hardCount()>=10}
 ];
@@ -1213,7 +1221,7 @@ function stopSpeech(){ singing = false; try{ speechSynthesis.cancel(); }catch(e)
 /* ---------- Router ---------- */
 let page = "home", unitArg = 0, play = null;
 function route(){
-  stopSpeech(); stopRec(); play = null; sk = null;
+  stopSpeech(); stopRec(); play = null; sk = null; rv = null;
   const h = location.hash.slice(1) || "home";
   const tk = h.match(/^(reset|verify)-([0-9a-f]{64})$/);
   if(tk){
@@ -1233,20 +1241,22 @@ function route(){
   const sm = h.match(/^(reading|listening|speaking)(?:-(\d+))?$/);
   if(m && +m[1]>=1 && +m[1]<=LEVELS.length){ page = "unit"; unitArg = +m[1]-1; }
   else if(sm){ page = sm[1]; if(sm[2] && +sm[2]>=1 && +sm[2]<=LEVELS.length) startSkill(sm[1], +sm[2]-1); }
+  else if(h === "review"){ page = "review"; startReview(); }
   else page = ["home","units","words","badges","profile"].includes(h) ? h : "home";
   render(true);
 }
 function render(greet){
   updateTop();
-  const nav = play || page==="unit" ? "units" : page;
+  const nav = play || page==="unit" ? "units" : page==="review" ? "home" : page;
   document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("on", a.dataset.nav===nav));
   const el = $("#screen");
   if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML, reset:resetHTML, profiles:profilesHTML, parent:parentHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
   if(play) el.innerHTML = play.kind==="song" ? songHTML() : play.kind==="cards" ? cardsHTML() : play.kind==="write" ? writeHTML() : play.kind==="tower" ? towerHTML() : quizHTML();
   else el.innerHTML = ({home:homeHTML, units:unitsHTML, unit:unitHTML, words:wordsHTML, badges:badgesHTML, profile:profileHTML,
-    reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
+    review:reviewHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
   if(play && play.order) renderOrder();
   if(!play && page==="words") renderWords();
+  if(!play && page==="review" && rv && !rv.done && rv.queue[rv.pos].type==="ear") setTimeout(()=>speak(rv.queue[rv.pos].w), 300);
   window.scrollTo({top:0});
   if(greet && !play) greetPage();
 }
@@ -1267,6 +1277,7 @@ function greetPage(){
     reading: sk ? [`Let's read: ${READING[sk.unit].title}`, "Hikâyeyi oku, sonra soruları cevapla. 🔊 ile Ollie sana okur."] : ["Reading time! 📕","Bir hikâye seç. Her ünitenin kendi hikâyesi var."],
     listening: sk ? ["Listen carefully! 🎧","🔊 düğmesine bas, Ollie'yi dinle, doğru resmi seç."] : ["Listening time! 🎧","Bir ünite seç, Ollie'yi dinle ve doğru resmi bul."],
     speaking: sk ? ["Your turn to talk! 🗣️","Önce 🔊 ile dinle, sonra sen söyle."] : ["Speaking time! 🗣️","Bir ünite seç, cümleleri yüksek sesle söyle."],
+    review: rv ? ["Review time! 🔁", rv.free ? "Bugünlük tekrar bitti, bu serbest tur. En zayıf kelimelerini çalışalım." : "Unutmaya başladığın kelimeleri birlikte hatırlayalım."] : ["Review time! 🔁","Önce kelime kartlarını bitir."],
     profile:["This is you!","Adını ve hayvan avatarını buradan değiştirebilirsin."]
   }[page];
   say(g[0], g[1]);
@@ -1527,6 +1538,7 @@ function homeHTML(){
       ${ringHTML()}
     </div>
     ${cont}
+    ${reviewCardHTML()}
   </section>
   <div class="stats">
     <div class="stat"><b>⭐ ${S.score}</b><span>Toplam yıldız</span></div>
@@ -1904,6 +1916,7 @@ function correct(note){
 }
 function wrong(t){
   play.tries++;
+  if(play.tries===1) revMiss(play.unit, t);
   if(play.mode==="hard" && play.tries===1){
     say("Almost! Try once more.", "Neredeyse! Bir kez daha dene.");
     $("#fb").innerHTML = `<div class="fb try"><div class="en">Almost! Think again. 🤔</div><div class="tr">Bir daha dene. Bir kez daha yanılırsan Ollie ipucu verecek.</div></div>`;
@@ -1940,6 +1953,135 @@ function finishQuiz(){
   ov.querySelector(".btn").focus();
 }
 
+/* ---------- Akıllı tekrar (Bugünün tekrarı) ----------
+   S.rev[kelime] = {b: kutu 0–5, d: tekrar günü "YYYY-AA-GG", x: yanlış sayısı}.
+   Doğru cevapta kutu bir artar ve kelime REV_GAP[kutu] gün sonra yeniden gelir; yanlışta kutu 0'a düşer, yarın yine sorulur. */
+const REV_GAP = [1,1,3,7,14,30], REV_SIZE = 8;
+const WORDS = {}; LEVELS.forEach((L,i)=>L.cards.forEach(c=>{ WORDS[c.w] = {i, c}; }));
+const addDays = n => { const d = new Date(); d.setDate(d.getDate()+n); return dayKey(d); };
+const revDue = () => Object.keys(S.rev).filter(w=>WORDS[w] && S.rev[w].d <= todayKey());
+const revRank = (a,b) => S.rev[b].x - S.rev[a].x || S.rev[a].b - S.rev[b].b || (S.rev[a].d < S.rev[b].d ? -1 : 1);
+let rv = null;
+function revAddUnit(i){ LEVELS[i].cards.forEach(c=>{ if(!S.rev[c.w]) S.rev[c.w] = {b:0, d:addDays(1), x:0}; }); }
+function revMiss(i, t){
+  const ws = new Set();
+  [t.answer, t.word, t.blank].forEach(a=>{ if(typeof a==="string" && WORDS[norm(a)]) ws.add(norm(a)); });
+  if(!ws.size && typeof (t.answer||t.sentence) === "string"){ const txt = " " + norm(t.answer||t.sentence) + " ";
+    LEVELS[i].cards.forEach(c=>{ if(new RegExp(` ${c.w}(s|es)? `).test(txt)) ws.add(c.w); }); }
+  ws.forEach(w=>{ const r = S.rev[w] || {b:0, d:"", x:0}; S.rev[w] = {b:0, d:todayKey(), x:r.x+1}; });
+  if(ws.size) save();
+}
+function reviewCardHTML(){
+  const n = Object.keys(S.rev).length; if(!n) return "";
+  const due = revDue().length;
+  if(due) return `<div class="continue review"><span class="ic">🔁</span><div class="txt"><div class="eyebrow">Bugünün tekrarı</div><h3>${due} kelime seni bekliyor</h3>
+    <span class="tr">Unutmaya başladığın ve yanlış yaptığın kelimeler. Her doğru ⭐+2.</span></div><a class="btn" href="#review">Tekrar et ▶</a></div>`;
+  const next = Object.values(S.rev).map(r=>r.d).sort()[0], tm = Object.values(S.rev).filter(r=>r.d===next).length;
+  return `<div class="continue review"><span class="ic">✅</span><div class="txt"><div class="eyebrow">Bugünün tekrarı</div><h3>Bugünlük tekrar bitti!</h3>
+    <span class="tr">${next===addDays(1) ? "Yarın" : fmtDate(next+"T12:00")} ${tm} kelime seni bekliyor. İstersen yine de çalışabilirsin.</span></div><a class="btn ghost" href="#review">Serbest tekrar ▶</a></div>`;
+}
+function startReview(){
+  rv = null;
+  if(!S || !Object.keys(S.rev).length) return;
+  const due = revDue().sort(()=>Math.random()-.5).sort(revRank), free = !due.length;
+  const list = (free ? Object.keys(S.rev).filter(w=>WORDS[w]).sort((a,b)=>S.rev[a].b - S.rev[b].b || S.rev[b].x - S.rev[a].x || Math.random()-.5) : due).slice(0, REV_SIZE);
+  rv = {free, queue:list.map(w=>({w, again:false})), pos:0, first:0, total:list.length, pts:0, again:new Set(), done:false};
+  revQuestion();
+}
+function revQuestion(){
+  const q = rv.queue[rv.pos], {i, c} = WORDS[q.w], r = S.rev[q.w];
+  const types = r.b >= 2 ? ["pic","ear","tr"] : ["pic","ear"];
+  q.type = q.again ? "tr" : types[(rv.pos + r.b) % types.length];
+  if(q.type === "tr" && r.b < 2 && !q.again) q.type = "pic";
+  if(q.type !== "tr"){
+    let pool = LEVELS[i].cards.filter(x=>x.w!==c.w);
+    if(pool.length < 3) pool = pool.concat(Object.values(WORDS).map(x=>x.c).filter(x=>x.w!==c.w && !pool.includes(x)));
+    q.opts = pool.sort(()=>Math.random()-.5).slice(0,3).concat(c).sort(()=>Math.random()-.5);
+  }
+  q.solved = false; q.tries = 0;
+}
+function reviewHTML(){
+  if(!rv) return `<section class="panel"><div class="eyebrow">Bugünün tekrarı</div><h1>Henüz tekrar edilecek kelime yok</h1>
+    <p class="muted">Bir ünitenin 🃏 Kelime Kartları dersini bitirince kelimeler buraya gelir. Ollie hangisini unutmaya başladığını takip eder ve doğru günde sana sorar.</p>
+    <div class="row"><a class="btn" href="#home">Ana sayfa</a></div></section>`;
+  const top = `<div class="row between"><a class="link" href="#home">← Ana Sayfa</a><span class="chip">🔁 ${rv.free ? "Serbest tekrar" : "Bugünün tekrarı"}</span></div>`;
+  if(rv.done){
+    const left = revDue().length;
+    return `${top}<section class="panel" style="text-align:center">
+      <div style="font-size:3.5rem">${rv.first===rv.total ? "🌟" : "🦉"}</div>
+      <h1>Tekrar bitti!</h1>
+      <p><b>${rv.total}</b> kelimeden <b>${rv.first}</b> tanesini ilk denemede bildin.${rv.pts ? ` ⭐ +${rv.pts}` : ""}</p>
+      ${rv.again.size ? `<p class="tr">Bunları yarın yine soracağım: ${[...rv.again].map(w=>`<span class="chip">${WORDS[w].c.e} ${esc(w)}</span>`).join(" ")}</p>` : `<p class="tr">Hepsini hatırladın! Bu kelimeler birkaç gün sonra yeniden gelecek.</p>`}
+      <div class="row center">${left ? `<button class="btn" data-act="rvMore">${left} kelime daha ▶</button>` : ""}<a class="btn ${left?"ghost":""}" href="#home">Ana sayfa</a></div></section>`;
+  }
+  const q = rv.queue[rv.pos], {i, c} = WORDS[q.w];
+  const prog = rv.queue.map((x,k)=>`<span class="${k<rv.pos?"done":k===rv.pos?"now":""}"></span>`).join("");
+  let body;
+  if(q.type==="pic") body = `<div class="q">What is it in English? <span class="tr">Bu ne? İngilizcesini seç.</span></div>
+      <div class="bigemo">${c.e}</div>
+      <div class="opts">${q.opts.map(o=>`<button class="btn ghost rvopt" data-act="rvAns" data-arg="${esc(o.w)}">${esc(o.w)}</button>`).join("")}</div>`;
+  else if(q.type==="ear") body = `<div class="q">Listen and pick! <span class="tr">Dinle ve resmini seç.</span></div>
+      <div class="row center"><button class="btn" data-act="rvPlay">🔊 Listen</button><button class="btn ghost small" data-act="rvSlow">🐢 Slow</button></div>
+      <div class="opts">${q.opts.map(o=>`<button class="btn ghost rvopt" data-act="rvAns" data-arg="${esc(o.w)}" aria-label="${esc(o.w)}"><span class="emo">${o.e}</span></button>`).join("")}</div>`;
+  else body = `<div class="q">Write it in English! <span class="tr">İngilizcesini yaz.</span></div>
+      <div class="bigemo">${c.e}</div><div class="say" style="font-size:1.3rem">🇹🇷 ${esc(c.tr)}</div>
+      <form class="row center" id="rvForm"><input class="write" id="rvIn" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type here…" aria-label="Cevabın"><button class="btn" type="submit">Check ✓</button></form>`;
+  return `${top}<section class="panel">
+    <div class="eyebrow">Kelime ${rv.pos+1}/${rv.queue.length} · Ünite ${i+1}: ${LEVELS[i].theme}${q.again ? " · İkinci şans" : ""}</div>
+    <div class="progress">${prog}</div>
+    ${body}
+    <div id="fb"></div>
+  </section>`;
+}
+function revShow(){ $("#screen").innerHTML = reviewHTML(); const q = rv.queue[rv.pos];
+  if(!rv.done && q.type==="ear") setTimeout(()=>speak(q.w), 300);
+  const inp = $("#rvIn"); if(inp) setTimeout(()=>inp.focus(), 50); }
+function revAnswer(v, btn){
+  const q = rv.queue[rv.pos]; if(q.solved) return;
+  const {c} = WORDS[q.w], r = S.rev[q.w];
+  if(norm(v) === norm(c.w)){
+    q.solved = true;
+    if(btn) btn.classList.add("right");
+    let pts = 0, note;
+    if(q.again){ pts = 1; note = "Bu sefer bildin! Yarın yine soracağım."; }
+    else if(q.tries===0){ pts = 2; rv.first++;
+      if(!rv.free){ r.b = Math.min(r.b+1, 5); r.d = addDays(REV_GAP[r.b]); note = `${REV_GAP[r.b]} gün sonra yeniden soracağım.`; }
+      else note = "Harika, bu kelimeyi hatırlıyorsun!"; }
+    else { pts = 1; note = "Yarın bir kez daha soracağım."; }
+    rv.pts += pts; addPts(pts);
+    const p = PRAISE[Math.floor(Math.random()*PRAISE.length)];
+    say(`${p[0]} ⭐ +${pts}`, note);
+    speak(c.w);
+    $("#fb").innerHTML = `<div class="fb good"><div class="en">${p[0]} ⭐ +${pts}</div><div>${c.e} <b>${esc(c.w)}</b> · ${esc(c.tr)}</div><div class="tr">“${esc(c.ex)}”</div></div>
+      <div class="row center" style="margin-top:12px"><button class="btn" data-act="rvNext">${rv.pos+1 >= rv.queue.length ? "🏁 Bitir" : "Sonraki ▶"}</button></div>`;
+    $('[data-act="rvNext"]').focus();
+    return;
+  }
+  if(btn){ btn.classList.add("wrong"); setTimeout(()=>btn.classList.remove("wrong"), 600); }
+  q.tries++;
+  if(q.tries===1 && !q.again){
+    r.b = 0; r.d = addDays(1); r.x++; rv.again.add(q.w); save();
+    rv.queue.push({w:q.w, again:true});
+  }
+  if(q.tries===1){ say("Almost! Try again.", `İpucu: “${c.w[0]}” harfiyle başlıyor, ${c.w.replace(/ /g,"").length} harf.`);
+    $("#fb").innerHTML = `<div class="fb try"><div class="en">Almost! 🤔</div><div class="tr">İpucu: <b>${esc(c.w[0].toUpperCase())}</b> ile başlıyor, ${c.w.replace(/ /g,"").length} harf. Bu kelimeyi sonra bir kez daha soracağım.</div></div>`;
+    return; }
+  q.solved = true;
+  say("That's OK!", "Sorun değil, doğru cevap bu. Birazdan yine soracağım.");
+  speak(c.w);
+  document.querySelectorAll(".rvopt").forEach(x=>{ if(x.dataset.arg===c.w) x.classList.add("right"); });
+  $("#fb").innerHTML = `<div class="fb try"><div class="en">${c.e} <b>${esc(c.w)}</b> · ${esc(c.tr)}</div><div class="tr">“${esc(c.ex)}”</div></div>
+    <div class="row center" style="margin-top:12px"><button class="btn" data-act="rvNext">${rv.pos+1 >= rv.queue.length ? "🏁 Bitir" : "Sonraki ▶"}</button></div>`;
+}
+function revNext(){
+  stopSpeech();
+  if(rv.pos+1 < rv.queue.length){ rv.pos++; revQuestion(); revShow(); window.scrollTo({top:0}); return; }
+  rv.done = true;
+  if(!rv.free){ S.revN++; const bonus = rv.first===rv.total ? 5 : 3; rv.pts += bonus; addPts(bonus); }
+  else save();
+  confetti(); say("Review complete! 🎉", rv.first===rv.total ? "Hepsini ilk denemede bildin, hafızan çok güçlü!" : "Unuttuğun kelimeleri tekrar ettin, artık daha iyi hatırlayacaksın.");
+  revShow(); window.scrollTo({top:0});
+}
 
 /* ---------- Reading · Listening · Speaking bölümleri ---------- */
 const SKILL = {
@@ -2222,13 +2364,18 @@ document.addEventListener("click", e => {
       { const n = LEVELS[play.unit].cards.length; play.cardIdx = (play.cardIdx + (act==="nextCard"?1:n-1)) % n; } play.seen.add(play.cardIdx); render(); return;
     case "finishCards": {
       const i = play.unit;
-      if(!S.lessons["c"+i]){ S.lessons["c"+i] = true; addPts(5); }
+      if(!S.lessons["c"+i]){ S.lessons["c"+i] = true; revAddUnit(i); addPts(5); }
       return startStep(i, easyDone(i) ? "hard" : "easy");
     }
     case "reset": $("#resetRow").innerHTML = `<div class="confirm"><span>Bu hesabın bütün yıldızları, dersleri ve rozetleri silinsin mi?</span><button class="btn small" data-act="resetYes">Evet, sil</button><button class="btn ghost small" data-act="resetNo">Vazgeç</button></div>`; return;
     case "resetYes": S = Object.assign(blankData(), {name:S.name, avatar:S.avatar}); save(); go("home"); toast("İlerleme sıfırlandı."); return;
     case "resetNo": render(); return;
     case "nextTask": return nextTask();
+    case "rvAns": return revAnswer(arg, b);
+    case "rvNext": return revNext();
+    case "rvMore": startReview(); return revShow();
+    case "rvPlay": return speak(rv.queue[rv.pos].w);
+    case "rvSlow": return speak(rv.queue[rv.pos].w, null, .5);
     case "readAll": return readStory();
     case "readSlow": return readStory(.55);
     case "readLine": { stopSpeech(); document.querySelectorAll("#story .line").forEach((p,n)=>p.classList.toggle("on", n === +arg)); return speak(READING[sk.unit].lines[+arg][0], ()=>{ const l = document.querySelectorAll("#story .line")[+arg]; if(l) l.classList.remove("on"); }); }
@@ -2278,6 +2425,7 @@ document.addEventListener("submit", e => {
   e.preventDefault();
   const f = {loginForm:onLogin, regForm:onRegister, forgotForm:onForgot, resetForm:onReset, childForm:onAddChild, pwForm:onChangePw, delForm:onDeleteAccount}[e.target.id];
   if(f){ const btn = e.target.querySelector('[type="submit"]'); btn.disabled = true; f().finally(()=>{ btn.disabled = false; }); return; }
+  if(e.target.id==="rvForm"){ const v = $("#rvIn").value; if(!norm(v)){ say("Type the word first!","Önce kelimeyi yaz!"); return; } return revAnswer(v); }
   if(!play || play.solved) return;
   const L = LEVELS[play.unit], t = tasksOf()[play.task], inp = $("input.write");
   const v = norm(inp.value);
