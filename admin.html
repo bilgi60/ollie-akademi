@@ -86,7 +86,8 @@ const API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? "http://local
 const AKEY = "ollie-akademi-auth";
 const UNITS = ["Animals","Colors","School Things","Family","Daily Routines","Food","Weather","My Body","Clothes","Hobbies",
   "Jobs","My Town","Feelings","Health","Wild Animals","Nature","My Home","Food and Drinks","Sports","Last Weekend",
-  "Holidays","Space","Materials","Seasons and Dates","Shopping","Technology","Our Planet","Fairy Tales","Hobbies and Talents","Celebrations"];
+  "Holidays","Space","Materials","Seasons and Dates","Shopping","Technology","Our Planet","Fairy Tales","Hobbies and Talents","Celebrations",
+  "School Life","Journeys","People and Personality","Housework","City Life","Cooking","Films and Media","Wild Weather","Future Me","Keeping in Touch"];
 let auth = (()=>{ try{ const a = JSON.parse(localStorage.getItem(AKEY)); return a && a.token ? a : null; }catch(e){ return null; } })();
 const $ = s => document.querySelector(s);
 const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
