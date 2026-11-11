@@ -18,6 +18,17 @@
 
 > - **Madde 8, 4. kısım BİTTİ: A2 Key (KET) 10 ünite (dal `claude/tender-maxwell-3t7i17`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA; Worker da yeniden yayınlandı.** Sıradaki: **Madde 8, 5. kısım — B1 Preliminary (PET) 10 ünite (Ünite 41–50, `units-pet.js`, aynı yöntem)**, sonra **deneme sınavları + sertifika benzeri seviye rozeti**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
 
+> - **Madde 8, 5. kısım BİTTİ: B1 Preliminary (PET) 10 ünite (dal `claude/new-session-ymk9cm`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Main'e alınınca Worker'ı yeniden yayınla (rapordaki ünite/rozet adları için). Sıradaki: **Madde 8, 6. kısım — deneme sınavları + sertifika benzeri seviye rozeti**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
+
+> **Son durum (2026-11-11, 19. oturum): B1 Preliminary for Schools üniteleri (Ünite 41–50).**
+> - Yeni dosya `units-pet.js` (`const UNITS_PET`), biçim `units-key.js` ile aynı; `index.html` yükler. 🏆 "B1 Preliminary" bölümü artık "Yakında" değil.
+> - Üniteler (dilbilgisi): 41 Teen Life (present perfect + for/since/ever) · 42 Inventions (edilgen yapı) · 43 Childhood Memories (used to) · 44 Dreams and Wishes (2. tip koşul) · 45 Mysteries (must/might/can't be) · 46 Friendship (dolaylı anlatım) · 47 Places to Visit (who/which/where/whose) · 48 Music and Concerts (-ed/-ing sıfatlar) · 49 Healthy Habits (fiil + -ing / to) · 50 Adventure Stories (past perfect, hikâye yazma). Yazma model metinleri 95–110 kelime (PET e-posta / makale / hikâye).
+> - Yeni rozetler: 🏆 B1'e Merhaba, 🎖️ Preliminary Mezunu. `admin.html` ünite adları; `content.js` yeniden üretildi (50 ünite, 31 rozet).
+> - Denetim: `node api/tools/check-units.js units-a1.js units-a2.js units-key.js units-pet.js` → ✓.
+> - İçerik alt ajanlarla yazıldı; kartlar ve okuma başları göz gezdirildi, tamamı bir insan gözüyle okunmadı. İp kartı 🪢.
+> - Tarayıcıda (sahte API, 390 px) 10 ünitenin hepsi: 5 şarkı, kartlar, kolay+zor testlerin 5'er sorusu (doğru cevap işleviyle), 3 kule, yazma (model metin 45–50 puan), Reading/Listening/Speaking, çalışma kâğıdı; B1 rozetleri açılıyor, ilerleme sunucuya kaydediliyor; hata yok, yatay kayma yok.
+> - Not: seviye testi artık 50 üniteye kadar gidebilir (her şeyi bilen çocuk ~100 soru) — deneme sınavı işinde kısaltmak düşünülebilir.
+
 > **Son durum (2026-11-11, 18. oturum): A2 Key for Schools üniteleri (Ünite 31–40).**
 > - Yeni dosya `units-key.js` (`const UNITS_KEY`), biçim `units-a2.js` ile aynı; `index.html` yükler. Yeni seviye bölümü 🔑 "A2 Key" (A2+), altında 🏆 "B1 Preliminary" "Yakında" (from:40,to:50, boş).
 > - Üniteler (dilbilgisi): 31 School Life (geniş zaman ↔ şimdiki zaman) · 32 Journeys (düzensiz geçmiş zaman, ago) · 33 People and Personality (who/which/that) · 34 Housework (have to/must) · 35 City Life (as…as, too/enough) · 36 Cooking (a few/a little, tarif) · 37 Films and Media (just/already/yet) · 38 Wild Weather (if + will) · 39 Future Me (will/might/want to be) · 40 Keeping in Touch (Key sınavı gibi e-posta yazma). Yazma model metinleri 60–90 kelime, bağlaçlı.
