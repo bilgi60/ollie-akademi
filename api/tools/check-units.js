@@ -1,4 +1,5 @@
-// Kullanım: node api/tools/check-units.js units-a1.js  — ek ünite dosyalarını (UNITS_A1) denetler.
+// Kullanım: node api/tools/check-units.js units-a1.js units-a2.js  — ek ünite dosyalarını (UNITS_A1, UNITS_A2…) denetler.
+// Dosyaları seviye sırasıyla ver: kelime tekrarı önceki dosyalara karşı da denetlenir.
 const fs = require("fs"), path = require("path");
 const STARTERS = "elephant,turtle,monkey,eagle,giraffe,dolphin,parrot,rabbit,horse,snake,red,blue,yellow,green,pink,pen,book,bag,ruler,pencil,mother,father,sister,brother,baby,wake up,brush teeth,eat breakfast,go to school,sleep,apple,bread,cheese,milk,egg,sunny,rainy,windy,snowy,cloudy,eye,nose,ear,hand,leg,shirt,hat,shoes,coat,socks,swim,run,dance,sing,draw".split(",");
 const plain = s => s.replace(/<[^>]+>/g, "");
@@ -7,9 +8,11 @@ let errs = 0, seen = {};
 const bad = (f, m) => { errs++; console.log(`✗ ${f}: ${m}`); };
 const pair = (f, h, w) => { if (!Array.isArray(h) || h.length !== 2 || !h.every(x => typeof x === "string" && x.length)) bad(f, `${w}: hint [en, tr] olmalı`); };
 for (const file of process.argv.slice(2)) {
-  const UNITS_A1 = [];
-  try { new Function("UNITS_A1", fs.readFileSync(file, "utf8").replace(/^const UNITS_A1 = \[\];$/m, ""))(UNITS_A1); } catch (e) { bad(file, "JS hatası: " + e.message); continue; }
-  for (const u of UNITS_A1) {
+  const src = fs.readFileSync(file, "utf8"), name = (src.match(/^const (UNITS_A\d) = \[\];$/m) || [])[1];
+  if (!name) { bad(file, "\"const UNITS_Ax = [];\" satırı yok"); continue; }
+  const UNITS = [], minWords = name === "UNITS_A1" ? 35 : 45;
+  try { new Function(name, src.replace(/^const UNITS_A\d = \[\];$/m, ""))(UNITS); } catch (e) { bad(file, "JS hatası: " + e.message); continue; }
+  for (const u of UNITS) {
     const f = path.basename(file) + (u.L ? " " + u.L.theme : "");
     const L = u.L || {};
     for (const k of ["rank", "theme", "tr", "icon", "song", "cards", "tasks", "hard"]) if (!L[k]) bad(f, "L." + k + " eksik");
@@ -75,7 +78,7 @@ for (const file of process.argv.slice(2)) {
       W.checks.forEach(c => { if (!(c.re instanceof RegExp)) bad(f, "write.checks re RegExp olmalı"); else if (!c.re.test(low)) bad(f, `write: örnek metin ${c.re} kontrolünü geçmiyor`); });
       const used = words.filter(w => new RegExp(`\\b${w}(s|es)?\\b`).test(low));
       if (used.length < 3) bad(f, `write.model ünite kelimelerinden en az 3 tane kullanmalı (${used})`);
-      if ((W.model.match(/[A-Za-z][A-Za-z'’]*/g) || []).length < 35) bad(f, "write.model en az 35 kelime");
+      if ((W.model.match(/[A-Za-z][A-Za-z'’]*/g) || []).length < minWords) bad(f, `write.model en az ${minWords} kelime`);
     }
     const TW = u.towers;
     if (!TW || TW.length !== 3) bad(f, "3 kule olmalı");

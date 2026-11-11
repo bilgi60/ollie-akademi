@@ -412,6 +412,7 @@ body.sheeton #sheet{display:block;max-width:232mm;margin:0 auto;padding:16px}
 <div id="toastBox" aria-live="polite"></div>
 
 <script src="units-a1.js"></script>
+<script src="units-a2.js"></script>
 <script>
 const LEVELS = [
  { rank:"Novice Explorer", theme:"Animals", tr:"Hayvanlar ve yetenekleri", icon:"🐾",
@@ -1116,14 +1117,14 @@ function evalWriting(i, text){
   return {n, used, checks, pts};
 }
 /* ---------- Seviyeler (Cambridge YLE) ----------
-   Ünite 1–10 Starters (Pre-A1) index.html'de; Ünite 11–20 Movers (A1) units-a1.js'te (UNITS_A1).
+   Ünite 1–10 Starters (Pre-A1) index.html'de; Ünite 11–20 Movers (A1) units-a1.js'te (UNITS_A1); Ünite 21–30 Flyers (A2) units-a2.js'te (UNITS_A2).
    Her ek ünite {L, songs, reading, listening, speaking, write, towers}; burada ortak dizilere eklenir. */
 const STAGES = [
   {id:"starters", n:"Starters", lv:"Pre-A1", e:"🌱", tr:"Başlangıç: kelimeler, kısa cümleler", from:0, to:10},
   {id:"movers", n:"Movers", lv:"A1", e:"🚀", tr:"Daha uzun cümleler, karşılaştırma, geçmiş zaman", from:10, to:20},
-  {id:"flyers", n:"Flyers", lv:"A2", e:"🪁", tr:"Yakında: hikâye anlatma, zamanlar, paragraf yazma", from:20, to:30}
+  {id:"flyers", n:"Flyers", lv:"A2", e:"🪁", tr:"Zamanlar (going to, will, present perfect), hikâye anlatma, paragraf yazma", from:20, to:30}
 ];
-(typeof UNITS_A1 !== "undefined" ? UNITS_A1 : []).forEach(u=>{
+[].concat(typeof UNITS_A1 !== "undefined" ? UNITS_A1 : [], typeof UNITS_A2 !== "undefined" ? UNITS_A2 : []).forEach(u=>{
   const i = LEVELS.length;
   u.L.songs = [u.L.song].concat(u.songs || []);
   LEVELS.push(u.L); READING.push(u.reading); LISTENING.push(u.listening); SPEAKING.push(u.speaking); WRITE.push(u.write);
@@ -1298,7 +1299,9 @@ const BADGES = [
   {id:"combo10", e:"⚡", n:"Durdurulamaz", d:"10 soruyu üst üste ilk denemede bil.", ok:()=>S.ad.m>=10},
   {id:"legend", e:"👑", n:"Efsane", d:"10 ünitenin zor testlerini bitir.", ok:()=>hardCount()>=10},
   {id:"movers1", e:"🚀", n:"Movers'a Merhaba", d:"İlk Movers (A1) ünitesinin kolay testini bitir.", ok:()=>LEVELS.some((_,i)=>i>=10 && i<20 && easyDone(i))},
-  {id:"movers", e:"🎓", n:"Movers Mezunu", d:"Movers (A1) ünitelerinin hepsinin kolay testini bitir.", ok:()=>LEVELS.length>=20 && LEVELS.every((_,i)=>i<10 || i>=20 || easyDone(i))}
+  {id:"movers", e:"🎓", n:"Movers Mezunu", d:"Movers (A1) ünitelerinin hepsinin kolay testini bitir.", ok:()=>LEVELS.length>=20 && LEVELS.every((_,i)=>i<10 || i>=20 || easyDone(i))},
+  {id:"flyers1", e:"🪁", n:"Flyers'a Merhaba", d:"İlk Flyers (A2) ünitesinin kolay testini bitir.", ok:()=>LEVELS.some((_,i)=>i>=20 && i<30 && easyDone(i))},
+  {id:"flyers", e:"🏆", n:"Flyers Mezunu", d:"Flyers (A2) ünitelerinin hepsinin kolay testini bitir.", ok:()=>LEVELS.length>=30 && LEVELS.every((_,i)=>i<20 || i>=30 || easyDone(i))}
 ];
 function checkBadges(silent){
   const fresh = BADGES.filter(b=>!S.badges.includes(b.id) && b.ok());
