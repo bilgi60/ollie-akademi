@@ -1171,7 +1171,7 @@ const todayKey = () => dayKey(new Date());
 
 const easyDone = i => S.p.easy.done[i].length >= 5;
 const hardDone = i => S.p.hard.done[i].length >= 5;
-const unitOpen = i => i === 0 || easyDone(i-1);
+const unitOpen = i => i <= startU() || easyDone(i-1);
 const easyCount = () => LEVELS.filter((_,i)=>easyDone(i)).length;
 const hardCount = () => LEVELS.filter((_,i)=>hardDone(i)).length;
 const lessonCount = k => LEVELS.filter((_,i)=>S.lessons[k+i]).length;
@@ -1196,7 +1196,7 @@ function addPts(n){
   save(); updateTop(true); checkBadges();
 }
 function nextStep(){
-  for(let i=0;i<LEVELS.length;i++){
+  for(let i=startU();i<LEVELS.length;i++){
     if(!S.lessons["s"+i]) return {i, kind:"song"};
     if(!S.lessons["c"+i]) return {i, kind:"cards"};
     if(!easyDone(i)) return {i, kind:"easy"};
@@ -1277,7 +1277,7 @@ function stopSpeech(){ singing = false; try{ speechSynthesis.cancel(); }catch(e)
 /* ---------- Router ---------- */
 let page = "home", unitArg = 0, play = null;
 function route(){
-  stopSpeech(); stopRec(); play = null; sk = null; rv = null;
+  stopSpeech(); stopRec(); play = null; sk = null; rv = null; pl = null;
   const h = location.hash.slice(1) || "home";
   const tk = h.match(/^(reset|verify)-([0-9a-f]{64})$/);
   const un = h.match(/^unsub-(\d+)-([0-9a-f]{32})$/);
@@ -1303,21 +1303,23 @@ function route(){
   if(m && +m[1]>=1 && +m[1]<=LEVELS.length){ page = "unit"; unitArg = +m[1]-1; }
   else if(sm){ page = sm[1]; if(sm[2] && +sm[2]>=1 && +sm[2]<=LEVELS.length) startSkill(sm[1], +sm[2]-1); }
   else if(h === "review"){ page = "review"; startReview(); }
+  else if(h === "placement"){ page = "placement"; startPlacement(); }
   else page = ["home","units","words","badges","profile"].includes(h) ? h : "home";
   render(true);
 }
 function render(greet){
   updateTop();
-  const nav = play || page==="unit" ? "units" : page==="review" ? "home" : page;
+  const nav = play || page==="unit" ? "units" : page==="review" || page==="placement" ? "home" : page;
   document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("on", a.dataset.nav===nav));
   const el = $("#screen");
   if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML, reset:resetHTML, profiles:profilesHTML, parent:parentHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
   if(play) el.innerHTML = play.kind==="song" ? songHTML() : play.kind==="cards" ? cardsHTML() : play.kind==="write" ? writeHTML() : play.kind==="tower" ? towerHTML() : quizHTML();
   else el.innerHTML = ({home:homeHTML, units:unitsHTML, unit:unitHTML, words:wordsHTML, badges:badgesHTML, profile:profileHTML,
-    review:reviewHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
+    review:reviewHTML, placement:placementHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
   if(play && play.order) renderOrder();
   if(!play && page==="words") renderWords();
   if(!play && page==="review" && rv && !rv.done && rv.queue[rv.pos].type==="ear") setTimeout(()=>speak(rv.queue[rv.pos].w), 300);
+  if(!play && page==="placement" && pl && !pl.done && pl.qs[pl.k].type==="ear") setTimeout(()=>speak(pl.qs[pl.k].c.w), 300);
   window.scrollTo({top:0});
   if(greet && !play) greetPage();
 }
@@ -1338,6 +1340,7 @@ function greetPage(){
     reading: sk ? [`Let's read: ${READING[sk.unit].title}`, "Hikâyeyi oku, sonra soruları cevapla. 🔊 ile Ollie sana okur."] : ["Reading time! 📕","Bir hikâye seç. Her ünitenin kendi hikâyesi var."],
     listening: sk ? ["Listen carefully! 🎧","🔊 düğmesine bas, Ollie'yi dinle, doğru resmi seç."] : ["Listening time! 🎧","Bir ünite seç, Ollie'yi dinle ve doğru resmi bul."],
     speaking: sk ? ["Your turn to talk! 🗣️","Önce 🔊 ile dinle, sonra sen söyle."] : ["Speaking time! 🗣️","Bir ünite seç, cümleleri yüksek sesle söyle."],
+    placement: ["Placement test! 🎯","Bildiğin kadarını seç. Bilmiyorsan 🤷 Bilmiyorum'a bas, tahmin etme!"],
     review: rv ? ["Review time! 🔁", rv.free ? "Bugünlük tekrar bitti, bu serbest tur. En zayıf kelimelerini çalışalım." : "Unutmaya başladığın kelimeleri birlikte hatırlayalım."] : ["Review time! 🔁","Önce kelime kartlarını bitir."],
     profile:["This is you!","Adını ve hayvan avatarını buradan değiştirebilirsin."]
   }[page];
@@ -1635,7 +1638,7 @@ function homeHTML(){
       </div>
       ${ringHTML()}
     </div>
-    ${cont}
+    ${plWants() ? placeHomeHTML() : cont}
     ${reviewCardHTML()}
   </section>
   <div class="stats">
@@ -1659,7 +1662,7 @@ function homeHTML(){
 }
 function unitCard(L,i){
   const open = unitOpen(i), pct = unitPct(i);
-  const status = !open ? `<span class="chip">🔒 Kilitli</span>` : hardDone(i) ? `<span class="chip ok">👑 Tamam</span>` : easyDone(i) ? `<span class="chip ok">✓ Kolay bitti</span>` : unitSteps(i) ? `<span class="chip">Devam ediyor</span>` : `<span class="chip">Yeni</span>`;
+  const status = !open ? `<span class="chip">🔒 Kilitli</span>` : hardDone(i) ? `<span class="chip ok">👑 Tamam</span>` : easyDone(i) ? `<span class="chip ok">✓ Kolay bitti</span>` : !unitSteps(i) && i < startU() ? `<span class="chip ok">🎯 Testle açıldı</span>` : unitSteps(i) ? `<span class="chip">Devam ediyor</span>` : `<span class="chip">Yeni</span>`;
   return `<a class="unit ${open?"":"locked"}" href="#unit-${i+1}" ${open?"":'aria-disabled="true"'}>
     <div class="top"><span class="ic">${L.icon}</span><div style="min-width:0"><div class="no">Ünite ${i+1} · ${L.rank}</div><div class="nm">${L.theme}</div><div class="tr">${L.tr}</div></div></div>
     <div class="bar"><i style="width:${pct}%"></i></div>
@@ -1852,6 +1855,7 @@ function profileHTML(){
       <div class="stat"><b>${towerCount()}/${towerTotal()}</b><span>🧱 Cümle Kulesi</span></div>
     </div>
     <p class="tr">İlerlemen veli hesabına kaydedilir. Aynı hesapla giriş yapılan her cihazdan kaldığın yerden devam edebilirsin.</p>
+    <div class="row"><a class="btn ghost small" href="#placement">🎯 ${S.place && !S.place.skip ? "Seviye testini yeniden yap" : "Seviye testi yap"}</a><span class="tr">${S.place && !S.place.skip ? `Son test: Ünite ${S.place.u+1}'den başla (${S.place.n}/${S.place.of} doğru).` : "Bildiğin üniteleri atla."}</span></div>
     <div class="row" id="resetRow"><button class="btn ghost small" data-act="reset">↺ İlerlemeyi sıfırla</button></div>
   </section>
   <div><button class="btn ghost" data-act="childOut">🔄 Profil değiştir</button></div>`;
@@ -2354,6 +2358,107 @@ function revNext(){
   revShow(); window.scrollTo({top:0});
 }
 
+/* ---------- Seviye tespit testi (#placement) ----------
+   Ünite ünite ilerler: her ünitede 2 soru (dinle-resmi seç, cümlede boşluğu doldur). İkisi de doğruysa sonraki üniteye geçer,
+   biri yanlışsa 3. soru (resme bak-kelimeyi seç) karar verir. Geçemediği ilk ünite başlangıç ünitesi olur.
+   Sonuç S.place = {u: başlangıç ünitesi, d: gün, n: doğru, of: soru}; u'dan önceki üniteler kilitsiz açılır. */
+let pl = null;
+const startU = () => Math.min((S.place && S.place.u) || 0, LEVELS.length-1);
+const plWants = () => !S.place && !S.score && !Object.keys(S.lessons).length;
+function placeHomeHTML(){
+  return `<div class="continue place"><span class="ic">🎯</span><div class="txt"><div class="eyebrow">Yeni misin? Seviyeni ölçelim</div><h3>Biraz İngilizce biliyor musun?</h3>
+    <span class="tr">Ollie birkaç kısa soru sorsun, sana uygun üniteden başla. Bildiğin üniteleri baştan yapmak zorunda kalmazsın. (5 dakikadan kısa)</span></div>
+    <div class="row"><a class="btn" href="#placement">Seviye testi ▶</a><button class="btn ghost" data-act="plSkip">Baştan başla</button></div></div>`;
+}
+function startPlacement(){
+  pl = {unit:0, k:0, qs:[], right:0, asked:0, tries:[], prev:(S.place && S.place.u) || 0, retake:!!S.place, done:false};
+  plNewUnit();
+}
+function plNewUnit(){
+  const cs = LEVELS[pl.unit].cards.slice().sort(()=>Math.random()-.5);
+  pl.qs = [{type:"ear", c:cs[0]}, {type:"cloze", c:cs[1]}, {type:"pic", c:cs[2]}];
+  pl.k = 0; pl.ok = 0; plQuestion();
+}
+function plQuestion(){
+  const q = pl.qs[pl.k], c = q.c, re = new RegExp(`\\b${reEsc(c.w)}\\w*`, "i");
+  if(q.type==="cloze"){ if(re.test(c.ex)) q.text = c.ex.replace(re, "_____"); else q.type = "tr"; }
+  q.opts = LEVELS[pl.unit].cards.filter(x=>x.w!==c.w).sort(()=>Math.random()-.5).slice(0,3).concat(c).sort(()=>Math.random()-.5);
+  q.answered = false;
+}
+function placementHTML(){
+  if(!pl) return "";
+  const top = `<div class="row between"><a class="link" href="#home">← ${pl.done ? "Ana Sayfa" : "Testi bırak"}</a><span class="chip">🎯 Seviye testi</span></div>`;
+  if(pl.done){
+    const u = S.place.u, L = LEVELS[u], all = pl.unit >= LEVELS.length;
+    const passed = LEVELS.slice(0, all ? LEVELS.length : pl.unit);
+    return `${top}<section class="panel" style="text-align:center">
+      <div style="font-size:3.5rem">${pl.unit ? "🎉" : "🦉"}</div>
+      <h1>${all ? "Vay canına, hepsini bildin!" : pl.unit ? `Ünite ${u+1}'den başlıyorsun!` : "Hadi en baştan başlayalım!"}</h1>
+      <p><b>${pl.asked}</b> sorudan <b>${pl.right}</b> tanesini bildin. ⭐ +10</p>
+      ${passed.length ? `<p class="tr">Bu ünitelerdeki kelimeleri biliyorsun, kilitleri açıldı:</p><div class="row center">${passed.map(x=>`<span class="chip">${x.icon} ${x.theme}</span>`).join(" ")}</div>
+        <p class="tr">İstersen onlara da dönebilirsin. Kelimeleri birkaç gün sonra 🔁 Bugünün tekrarı'nda soracağım.</p>`
+        : `<p class="tr">Hiç sorun değil! Ünite 1'de şarkılarla, kelime kartlarıyla adım adım öğreneceksin.</p>`}
+      ${pl.retake && pl.prev > pl.unit ? `<p class="tr">Daha önce açılan üniteler açık kalmaya devam ediyor.</p>` : ""}
+      <div class="row center"><a class="btn" href="#unit-${u+1}">${all ? "Derslerime git" : `Ünite ${u+1}: ${L.theme}`} ▶</a>
+        ${pl.unit && !pl.retake ? `<button class="btn ghost" data-act="plBase">Hayır, baştan başlamak istiyorum</button>` : ""}</div></section>`;
+  }
+  const q = pl.qs[pl.k], c = q.c, L = LEVELS[pl.unit];
+  const prog = LEVELS.map((_,i)=>`<span class="${i<pl.unit?"done":i===pl.unit?"now":""}"></span>`).join("");
+  const word = o => `<button class="btn ghost rvopt plopt" data-act="plAns" data-arg="${esc(o.w)}">${esc(o.w)}</button>`;
+  const idk = `<div class="row center"><button class="btn ghost small" data-act="plAns" data-arg="">🤷 Bilmiyorum</button></div>`;
+  let body;
+  if(q.type==="ear") body = `<div class="q">Listen and pick! <span class="tr">Dinle ve resmini seç.</span></div>
+      <div class="row center"><button class="btn" data-act="plPlay">🔊 Listen</button><button class="btn ghost small" data-act="plSlow">🐢 Slow</button></div>
+      <div class="opts">${q.opts.map(o=>`<button class="btn ghost rvopt plopt" data-act="plAns" data-arg="${esc(o.w)}" aria-label="${esc(o.w)}"><span class="emo">${o.e}</span></button>`).join("")}</div>`;
+  else if(q.type==="cloze") body = `<div class="q">Fill the gap! <span class="tr">Boşluğa hangi kelime gelir?</span></div>
+      <div class="say" style="font-size:1.4rem;text-align:center">${c.e} ${esc(q.text)}</div>
+      <div class="opts">${q.opts.map(word).join("")}</div>`;
+  else if(q.type==="tr") body = `<div class="q">Which one is it? <span class="tr">İngilizcesi hangisi?</span></div>
+      <div class="bigemo">${c.e}</div><div class="say" style="font-size:1.3rem;text-align:center">🇹🇷 ${esc(c.tr)}</div>
+      <div class="opts">${q.opts.map(word).join("")}</div>`;
+  else body = `<div class="q">What is it in English? <span class="tr">Bu ne? İngilizcesini seç.</span></div>
+      <div class="bigemo">${c.e}</div>
+      <div class="opts">${q.opts.map(word).join("")}</div>`;
+  return `${top}<section class="panel">
+    <div class="eyebrow">Seviye ${pl.unit+1}/${LEVELS.length} · ${L.icon} ${L.theme}</div>
+    <div class="progress">${prog}</div>
+    ${body}
+    ${idk}
+    <div id="fb"></div>
+  </section>`;
+}
+function plShow(){ $("#screen").innerHTML = placementHTML(); const q = pl.qs[pl.k];
+  if(!pl.done && q.type==="ear") setTimeout(()=>speak(q.c.w), 300); }
+function plAnswer(v, btn){
+  const q = pl.qs[pl.k]; if(q.answered) return; q.answered = true;
+  const ok = !!v && norm(v) === norm(q.c.w);
+  pl.asked++; if(ok){ pl.right++; pl.ok++; }
+  document.querySelectorAll(".plopt").forEach(x=>{ x.disabled = true; if(x.dataset.arg===q.c.w) x.classList.add("right"); });
+  if(btn && v && !ok) btn.classList.add("wrong");
+  // Karar: 2 doğru → geçti; 2 yanlış → kaldı; 1/2 → 3. soru karar verir.
+  const k = pl.k, wrongN = k+1 - pl.ok;
+  const pass = pl.ok >= 2, fail = wrongN >= 2;
+  say(ok ? "Good! 👍" : "OK, next one!", ok ? "Bildin!" : `Doğrusu: ${q.c.w}. Sorun değil, devam!`);
+  setTimeout(()=>{
+    if(!pl || pl.qs[pl.k] !== q) return;
+    if(pass){ pl.unit++; if(pl.unit >= LEVELS.length) return plFinish(); plNewUnit(); say(`Level ${pl.unit+1}! ⬆`, "Harika, bir üst seviyeye geçtik."); }
+    else if(fail) return plFinish();
+    else { pl.k++; plQuestion(); }
+    plShow(); window.scrollTo({top:0});
+  }, ok ? 700 : 1300);
+}
+function plFinish(){
+  const u = Math.min(pl.unit, LEVELS.length-1), first = !S.place;
+  // Geçilen ünitelerin kelimeleri tekrar listesine eklenir (3 gün sonra sorulur).
+  for(let i=0;i<Math.min(pl.unit, LEVELS.length);i++) LEVELS[i].cards.forEach(c=>{ if(!S.rev[c.w]) S.rev[c.w] = {b:2, d:addDays(3), x:0}; });
+  S.place = {u:Math.max(u, pl.prev), d:todayKey(), n:pl.right, of:pl.asked};
+  pl.done = true;
+  if(first) addPts(10); else save();
+  confetti();
+  say(pl.unit ? "Test complete! 🎉" : "Let's start! 🎉", pl.unit ? `Ünite ${S.place.u+1}'den başlayabilirsin. Önceki üniteler de açık.` : "Ünite 1'den başlıyoruz. Ollie sana adım adım öğretecek!");
+  plShow(); window.scrollTo({top:0});
+}
+
 /* ---------- Reading · Listening · Speaking bölümleri ---------- */
 const SKILL = {
   reading:{e:"📕", n:"Reading", tr:"Okuma", key:"r", unitName:"hikâye", total:i=>READING[i].qs.length},
@@ -2649,6 +2754,10 @@ document.addEventListener("click", e => {
     case "resetNo": render(); return;
     case "nextTask": return nextTask();
     case "rvAns": return revAnswer(arg, b);
+    case "plAns": return plAnswer(arg, b);
+    case "plPlay": case "plSlow": return speak(pl.qs[pl.k].c.w, null, act==="plSlow" ? .5 : null);
+    case "plSkip": S.place = {u:0, skip:true, d:todayKey()}; save(); render(); say("Let's start! 🎵", "Ünite 1'in şarkısıyla başlayalım."); return;
+    case "plBase": S.place = {u:0, skip:true, d:todayKey()}; save(); go("unit-1"); return;
     case "rvNext": return revNext();
     case "rvMore": startReview(); return revShow();
     case "rvPlay": return speak(rv.queue[rv.pos].w);

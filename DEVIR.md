@@ -7,6 +7,14 @@
 > - **Madde 2 BİTTİ (dal `claude/cool-thompson-cddezq`, 2026-11-11). main'e alındı 2026-11-11, YAYINDA.**
 > - **Madde 3 BİTTİ (dal `claude/eloquent-davinci-bm11d7`), 2026-11-11 YAYINDA:** canlı veritabanına göç yapıldı, Worker güncellendi (zamanlayıcı: `0,20,40 15-17 * * SUN`), main'e alındı. Kullanıcı Veli paneli → "✉️ Bana şimdi gönder" ile gerçek e-postayı deneyebilir. Sıradaki: **Madde 4 — Yazdırılabilir çalışma kâğıdı.**
 > - **Madde 4 BİTTİ (dal `claude/quirky-cori-yc21ft`, 2026-11-11), main'e alındı 2026-11-11, YAYINDA.** Sıradaki: **Madde 5 — Seviye tespit testi.**
+> - **Madde 5 BİTTİ (dal `claude/gracious-hypatia-03x4vb`, 2026-11-11), henüz main'e ALINMADI — kullanıcı onayı bekleniyor.** Main'e alınınca `api/src/report.js` değiştiği için Worker da yeniden yayınlanmalı (`npx wrangler deploy`, göç yok). Sıradaki: **Madde 6 — Uyarlanabilir zorluk.**
+
+> **Son durum (2026-11-11, 13. oturum): Seviye tespit testi (`#placement`).**
+> - Yeni çocuk (yıldızı ve dersi yok, `S.place` yok) ana sayfada "Kaldığın yerden devam et" yerine 🎯 kart görür: "Seviye testi" ya da "Baştan başla". Profil sayfasında "Seviye testini yeniden yap".
+> - Test ünite ünite ilerler: her ünitede 2 soru (dinle-resmi seç, kelime kartı örnek cümlesinde boşluk doldur; örnek cümlede kelime yoksa Türkçeden seç). 2/2 → sonraki ünite; 0/2 → test biter; 1/2 → 3. soru (resme bak-kelimeyi seç) karar verir. "🤷 Bilmiyorum" düğmesi var (tahmini azaltır). Puan yok, ilk testte bitişte ⭐+10.
+> - Sonuç `S.place = {u, d, n, of}` (`skip:true` = baştan başla seçti). `unitOpen(i) = i <= startU() || easyDone(i-1)`; `nextStep` `startU()`'dan başlar. Geçilen ünitelerin kelimeleri tekrar listesine kutu 2, 3 gün sonra olarak eklenir. Yeniden testte başlangıç ünitesi düşmez (açık üniteler kilitlenmesin diye `max`). Ünite kartında "🎯 Testle açıldı" etiketi.
+> - Sunucu: haftalık rapordaki "şu anki ünite" `place.u`'dan başlar (`api/src/report.js`). Yönetici panelinde çocuk kartında "🎯 Seviye testi" kutusu.
+> - Tarayıcıda (sahte API) denendi: 0, 4 ve 10 ünite bilen senaryolar, masaüstü + telefon; hata yok, yatay kayma yok, `place` sunucuya kaydediliyor.
 
 > **Son durum (2026-11-11, 12. oturum): Yazdırılabilir çalışma kâğıdı.**
 > - Adres: `#sheet-1` … `#sheet-10`. Hesap gerekmez (öğretmenler için). Giriş: giriş sayfasında "Öğretmen misin? Ücretsiz çalışma kâğıtları", ünite sayfasında "🖨️ Çalışma kâğıdı" düğmesi, Veli panelinde "🖨️ Çalışma kâğıtları" bölümü.

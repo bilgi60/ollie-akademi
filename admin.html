@@ -129,7 +129,7 @@ function childStats(d){
   const units = UNITS.map((n,i)=>{ const steps = (L["s"+i]?1:0) + (L["c"+i]?1:0) + (easy[i]||[]).length + (hard[i]||[]).length; return {n, pct: Math.round(steps/12*100), easy:(easy[i]||[]).length>=5, hard:(hard[i]||[]).length>=5, write: !!(d.writings && d.writings[i] && d.writings[i].best)}; });
   const days = (d.days || []).slice().sort();
   return {score:d.score||0, easy:units.filter(u=>u.easy).length, hard:units.filter(u=>u.hard).length, writes:units.filter(u=>u.write).length,
-    badges:(d.badges||[]).length, days:days.length, lastDay:days[days.length-1], units};
+    badges:(d.badges||[]).length, days:days.length, lastDay:days[days.length-1], units, place:d.place && !d.place.skip ? d.place : null};
 }
 
 function listView(){
@@ -177,6 +177,7 @@ function detailView(){
       <div class="tile"><b>${s.writes}/10</b><span>✍️ Yazma</span></div>
       <div class="tile"><b>${s.badges}</b><span>🏅 Rozet</span></div>
       <div class="tile"><b>${s.days}</b><span>📅 Çalıştığı gün</span></div>
+      ${s.place ? `<div class="tile"><b>Ünite ${s.place.u+1}</b><span>🎯 Seviye testi (${s.place.n}/${s.place.of})</span></div>` : ""}
     </div>
     <div class="units">${s.units.map((u,i)=>`<div class="unit"><b>${i+1}. ${u.n}</b> <span class="muted">%${u.pct}</span><div class="meter"><i style="width:${u.pct}%"></i></div></div>`).join("")}</div>
   </div>`; }).join("") : `<p class="muted">Bu velinin henüz çocuk profili yok.</p>`}

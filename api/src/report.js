@@ -69,9 +69,10 @@ export function childReport(child, data, act, prev, wk) {
     .map(([w, x]) => [w, prev ? x - ((prev.x || {})[w] || 0) : x])
     .filter(([w, n]) => n > 0 && WORDS[w]).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([w]) => w);
   const due = Object.entries(d.rev || {}).filter(([w, r]) => WORDS[w] && r && r.d <= wk.today).length;
-  // Şu an çalıştığı ünite: kolay testi bitmemiş ilk ünite
+  // Şu an çalıştığı ünite: seviye testindeki başlangıç ünitesinden sonra kolay testi bitmemiş ilk ünite
   const easy = (d.p && d.p.easy && d.p.easy.done) || [];
-  let cur = UNITS.findIndex((_, i) => len(easy[i]) < 5);
+  const from = Math.min(Math.max(0, (d.place && d.place.u) || 0), UNITS.length - 1);
+  let cur = UNITS.findIndex((_, i) => i >= from && len(easy[i]) < 5);
   if (cur < 0) cur = UNITS.length - 1;
   const L = d.lessons || {};
   const steps = (L["s" + cur] ? 1 : 0) + (L["c" + cur] ? 1 : 0) + len(easy[cur]) + len(d.p && d.p.hard && d.p.hard.done && d.p.hard.done[cur]);
