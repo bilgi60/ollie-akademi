@@ -20,7 +20,7 @@
 
 > - **Madde 8, 5. kısım BİTTİ: B1 Preliminary (PET) 10 ünite (dal `claude/new-session-ymk9cm`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA; Worker da yeniden yayınlandı.** Sıradaki: **Madde 8, 6. kısım — deneme sınavları + sertifika benzeri seviye rozeti**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
 
-> - **Madde 8, 6. kısım BİTTİ: deneme sınavları + seviye sertifikası (dal `claude/admiring-babbage-w6c5pw`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** main'e alınınca Worker'ı yeniden yayınla (content.js'te 7 yeni rozet adı var). Sıradaki: **Madde 9 — MEB müfredatı eşleştirme.**
+> - **Madde 8, 6. kısım BİTTİ: deneme sınavları + seviye sertifikası (dal `claude/admiring-babbage-w6c5pw`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA; Worker da yeniden yayınlandı.** Sıradaki: **Madde 9 — MEB müfredatı eşleştirme.**
 
 > **Son durum (2026-11-11, 20. oturum): Deneme sınavları + seviye sertifikası.**
 > - Adresler: `#exams` (5 seviyenin listesi), `#exam-starters|movers|flyers|key|pet` (sınav), `#cert-<seviye>` (yazdırılabilir sertifika, `#sheet` kabını kullanır; sadece geçilen seviyede açılır).
