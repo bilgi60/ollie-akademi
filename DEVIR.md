@@ -16,6 +16,18 @@
 
 > - **Madde 8, 3. kısım BİTTİ: Movers/Flyers kütüphane kitapları (dal `claude/charming-goldberg-k7icw1`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA.** Worker değişmedi (yayın gerekmez; Flyers için Worker başka oturumda yayınlandı). Sıradaki: **Madde 8, 4. kısım — KET/PET hazırlık**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
 
+> - **Madde 8, 4. kısım BİTTİ: A2 Key (KET) 10 ünite (dal `claude/tender-maxwell-3t7i17`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Main'e alınınca Worker'ı yeniden yayınla (rapordaki ünite/rozet adları). Sıradaki: **Madde 8, 5. kısım — B1 Preliminary (PET) 10 ünite (Ünite 41–50, `units-pet.js`, aynı yöntem)**, sonra **deneme sınavları + sertifika benzeri seviye rozeti**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
+
+> **Son durum (2026-11-11, 18. oturum): A2 Key for Schools üniteleri (Ünite 31–40).**
+> - Yeni dosya `units-key.js` (`const UNITS_KEY`), biçim `units-a2.js` ile aynı; `index.html` yükler. Yeni seviye bölümü 🔑 "A2 Key" (A2+), altında 🏆 "B1 Preliminary" "Yakında" (from:40,to:50, boş).
+> - Üniteler (dilbilgisi): 31 School Life (geniş zaman ↔ şimdiki zaman) · 32 Journeys (düzensiz geçmiş zaman, ago) · 33 People and Personality (who/which/that) · 34 Housework (have to/must) · 35 City Life (as…as, too/enough) · 36 Cooking (a few/a little, tarif) · 37 Films and Media (just/already/yet) · 38 Wild Weather (if + will) · 39 Future Me (will/might/want to be) · 40 Keeping in Touch (Key sınavı gibi e-posta yazma). Yazma model metinleri 60–90 kelime, bağlaçlı.
+> - Yeni rozetler: 🔑 Key'e Merhaba, 🏅 Key Mezunu. `admin.html` ünite adları, `gen-content.mjs` units-key.js'i de okur; `content.js` yeniden üretildi (40 ünite, 29 rozet).
+> - Denetim: `node api/tools/check-units.js units-a1.js units-a2.js units-key.js` → ✓.
+> - İçerik alt ajanlarla yazıldı; birkaç okuma/yazma örneği okundu, iyi. Tamamı bir insan gözüyle okunmadı. "vacuum cleaner" kartı 🔌 (süpürge emojisi yok), butter 🧈.
+> - Tarayıcıda (sahte API, 390 px) 10 ünitenin hepsi: şarkı/kart/yazma ekranları, kolay+zor testlerin 5'er sorusu, 3 kule, Reading/Listening/Speaking, çalışma kâğıdı; yazma model metinleri ≥40 puan; Key rozetleri açılıyor, ilerleme sunucuya kaydediliyor; hata yok, yatay kayma yok. Sorular ekranda tek tek tıklanarak değil, doğru cevap işlevi çağrılarak geçildi.
+> - Not: seviye testi artık 40 üniteye kadar gidebilir (her şeyi bilen çocuk ~80 soru). Uzun gelirse ileride Key bölümünde üniteleri atlayarak sormak düşünülebilir.
+> - Kütüphane kitabı Key üniteleri için YOK.
+
 > **Son durum (2026-11-11, 17. oturum): Movers/Flyers kütüphane kitapları.**
 > - Yeni dosya `books-mf.js` (`const BOOKS_MF`, b21–b60): Ünite 11–30'un her birine 2 kitap. 🍎 Seviye 4 "Meraklı okur" (Movers, 8 sayfa, 4 soru), 🌟 Seviye 5 "Kitap kurdu" (Flyers, 10 sayfa, 5 soru, "Why" sorusu). Kitaplar ünitenin kelimelerini ve dilbilgisini kullanır.
 > - `index.html`: `BOOKS.push(...BOOKS_MF)`, `BOOK_LV` 5 seviye, `bookLevels()`; kütüphane sayfası, okuma seviyesi ve Reading kartı seviye sayısına göre. 🏛️ Kütüphane Ustası rozeti artık 60 kitabın hepsini ister.
