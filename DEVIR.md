@@ -1,9 +1,14 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **YENİ İŞ (2026-11-11): `ARASTIRMA.md`'deki 12 öneri SIRAYLA yapılacak (kullanıcı onayladı).**
+> - Sıra: 1) Akıllı tekrar ("Bugünün tekrarı") → 2) Yanlış cevabı Türkçe açıklama → 3) Veliye haftalık e-posta raporu (Resend kurulu) → 4) Yazdırılabilir çalışma kâğıdı → 5) Seviye tespit testi → 6) Uyarlanabilir zorluk → 7) Seviyeli okuma kütüphanesi → 8) Movers (A1) + Flyers (A2) üniteleri, sonra KET/PET hazırlık → 9) MEB müfredatı eşleştirme → 10) Ollie ile yapay zekâ sohbeti → 11) Hece düzeyinde telaffuz puanı → 12) Öğretmen/sınıf hesabı.
+> - Her madde (ya da birkaç küçük madde) ayrı sohbette. Her biri bitince: tarayıcıda dene, main'e almadan önce kullanıcıya sor, bu nota "biten/sıradaki" yaz.
+> - **Sıradaki adım: Madde 1 — Akıllı tekrar.** Henüz hiçbiri başlamadı.
+
 > **Son durum (2026-11-11, 8. oturum): Cümle Kulesi 10 ünitenin hepsinde (her ünitede 3 kule, toplam 30). Dal: `claude/optimistic-pasteur-hkgycq` — main'e alındı (2026-11-11, YAYINDA).**
 > - Yeni kuleler (Ünite 2–10): Colors 🌞🐸🎈 · School Things 📖✏️🎒 · Family 👩👨👶 · Daily Routines 🪥🚶🍳 · Food 🍎🐱🐭 · Weather 🌧️⛄🪁 · My Body ✋🦉🐶 · Clothes 🧥👒🧦 · Hobbies 🏊🎨🎤. Hepsi aynı kalıp: 1. kat fiil, 2. kat + Kim, 3. kat + Nerede, 4. kat + Ne zaman; bazılarında 5. kat (Kim büyür: "The big red balloon").
 > - Tarayıcıda 27 yeni kule baştan sona otomatik oynandı: hata yok, ilerleme ve "k" dersleri doğru işaretleniyor.
-> - Yurt dışı rakip araştırması ve öneri listesi: `ARASTIRMA.md` (yalnızca bu dalda). Kullanıcı hangi maddeyi seçerse yeni sohbette o yapılacak.
+> - Yurt dışı rakip araştırması ve öneri listesi: `ARASTIRMA.md`.
 > - **Sıradaki adım:** Kulenin sonunda mikrofonla söyleme, kulelerden kısa hikâye (Reading). Bekleyen: KVKK sayfası.
 
 > **Son durum (2026-11-11, 7. oturum): Cümle Kulesi Animals ünitesine eklendi (2026-11-11 main'e alındı, YAYINDA).**
