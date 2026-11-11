@@ -9,7 +9,18 @@
 > - **Madde 4 BİTTİ (dal `claude/quirky-cori-yc21ft`, 2026-11-11), main'e alındı 2026-11-11, YAYINDA.** Sıradaki: **Madde 5 — Seviye tespit testi.**
 > - **Madde 6 BİTTİ (dal `claude/blissful-curie-oeo7li`), main'e alındı 2026-11-11, YAYINDA.** Worker da yeniden yayınlandı (2026-11-11).
 > - **Madde 5 BİTTİ (aynı dal), main'e alındı 2026-11-11, YAYINDA.** Sıradaki: **Madde 7 — Seviyeli okuma kütüphanesi.**
+> - **Madde 7 BİTTİ (dal `claude/friendly-dijkstra-r4vmx7`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Sıradaki: **Madde 8 — Movers (A1) + Flyers (A2) üniteleri.**
 
+
+> **Son durum (2026-11-11, 14. oturum): Seviyeli okuma kütüphanesi.**
+> - Adres `#library` (liste) ve `#book-b1` … `#book-b20` (okuyucu). Menüde Reading sekmesi altında; giriş: Reading sayfasındaki "📚 Kütüphane" kartı, ana sayfadaki "Kütüphane · sıradaki kitabın" kartı.
+> - 20 kitap (`BOOKS` dizisi, her ünite için 2): 🌱 Seviye 1 (Ünite 1–3, 5 sayfa, tek kısa cümle), 🌿 Seviye 2 (Ünite 4–7, 6 sayfa), 🌳 Seviye 3 (Ünite 8–10, 8 sayfa, konuşmalı). Kitap, ünitesi açılınca okunur (`unitOpen`).
+> - Okuyucu: sayfa sayfa, büyük emoji resim; 🔊 Read to me, 🐢 Slow, ▶ Bütün kitabı oku (sayfaları kendisi çevirir), 🇹🇷 Türkçesi. Her kelimeye dokununca Ollie okur ve Türkçesini gösterir (kitabın `g` sözlüğü → kelime kartları → `EXTRA_TR` → `BASIC_TR`).
+> - Sonunda 3–4 soru. İlk okumada ilk denemede doğru ⭐+2, kitabı bitirmek ⭐+5; tekrar okuma günde ⭐+1. İki yanlışta seçenek soluklaşır.
+> - Veri: `S.books[id] = {n: bitirme sayısı, q: en iyi ilk denemede doğru, d: gün}`. Okuma seviyesi: bir seviyeden 4 kitap okuyan o seviyenin okuru olur (`readerLevel`). Yeni rozetler: 📚 Küçük Kütüphaneci (5 kitap), 🏛️ Kütüphane Ustası (hepsi). Profilde "📚 Kütüphane kitabı".
+> - Tarayıcıda (sahte API ile) denendi: okuma, kelime sözlüğü, test, yıldız, sunucuya kayıt, kilitli kitap, 20 kitabın hepsi, seviye atlama, rozetler; hata yok, telefonda yatay kayma yok.
+> - Yeni rozet adlarının e-posta raporunda görünmesi için: `node api/tools/gen-content.mjs` (yapıldı) ve Worker'ı yeniden yayınlamak.
+> - İleride: haftalık raporda/veli panelinde okunan kitaplar, daha çok kitap (Movers/Flyers seviyeleriyle).
 > **Son durum (2026-11-11, 13. oturum, 2. iş): Seviye tespit testi.**
 > - Adres `#placement`. Giriş: yeni çocuğun ana sayfasında (hiç yıldızı/dersi yokken) "🎯 İngilizceyi biraz biliyor musun?" kartı (Seviye testi / Baştan başlayacağım), Derslerim sayfasında her zaman "🎯 Seviye testi" düğmesi ve son sonuç.
 > - Akış: Ünite 1'den başlar, her üniteden 2 soru: kelime (resme bak-seç ya da dinle-resmi seç, ünitenin kartlarından) + ünitenin kolay testindeki bilmece/dinleme sorusu. 2/2 → sonraki ünite; 1/2 → bir kelime sorusu daha, 2/3 ise geçer; yoksa test biter. "🤷 Bilmiyorum" düğmesi var; doğru/yanlış gösterilmez (çocuk üzülmesin). En fazla ~20–30 soru.
