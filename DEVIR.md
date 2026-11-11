@@ -3,7 +3,14 @@
 > **YENİ İŞ (2026-11-11): `ARASTIRMA.md`'deki 12 öneri SIRAYLA yapılacak (kullanıcı onayladı).**
 > - Sıra: 1) Akıllı tekrar ("Bugünün tekrarı") → 2) Yanlış cevabı Türkçe açıklama → 3) Veliye haftalık e-posta raporu (Resend kurulu) → 4) Yazdırılabilir çalışma kâğıdı → 5) Seviye tespit testi → 6) Uyarlanabilir zorluk → 7) Seviyeli okuma kütüphanesi → 8) Movers (A1) + Flyers (A2) üniteleri, sonra KET/PET hazırlık → 9) MEB müfredatı eşleştirme → 10) Ollie ile yapay zekâ sohbeti → 11) Hece düzeyinde telaffuz puanı → 12) Öğretmen/sınıf hesabı.
 > - Her madde (ya da birkaç küçük madde) ayrı sohbette. Her biri bitince: tarayıcıda dene, main'e almadan önce kullanıcıya sor, bu nota "biten/sıradaki" yaz.
-> - **Sıradaki adım: Madde 1 — Akıllı tekrar.** Henüz hiçbiri başlamadı.
+> - **Madde 1 BİTTİ (2026-11-11, 9. oturum, dal `claude/dreamy-sagan-avjamd`, main'e ALINMADI — kullanıcı onayı bekleniyor): 🔁 Bugünün tekrarı.**
+>   - Ana sayfada "Bugünün tekrarı: N kelime" kartı → `#review` sayfası. Oturum başına en fazla 10 kelime; önce yanlış yapılanlar, sonra günü gelmiş olanlar (en eskisi önce), sonra hiç tekrar edilmemişler.
+>   - Aralıklı tekrar: `S.mem[kelime] = {b: kutu 0–6, due: "YYYY-AA-GG", miss}`. Doğru → kutu +1, `BOXDAYS = [0,1,2,4,7,14,30]` gün sonra tekrar. Yanlış → kutu 0, aynı oturumda kelime bir kez daha gelir.
+>   - Soru türü kutuya göre: Türkçeden İngilizce seçme, dinleyip resim seçme, yazma (ilk harf ipuçlu).
+>   - Kelime Kartları dersi bitince ünitenin kelimeleri ertesi güne planlanır. Kolay/zor testte yanlış yapılan kelime (cevabı bir kart kelimesiyse) hemen tekrara düşer.
+>   - Puan: ilk seferde doğru ⭐+3, oturum sonu +5. Tekrar edecek kelime yoksa "Pratik yap" (⭐+1, günleri değiştirmez). Yeni rozet 🧠 Hafıza Ustası (20 kelime kutu ≥4), profilde "Kalıcı kelime" sayacı.
+>   - Tarayıcıda (masaüstü + telefon genişliği) otomatik denendi, hata yok.
+> - **Sıradaki adım:** kullanıcı onaylarsa dalı main'e al; sonra **Madde 2 — Yanlış cevabı Türkçe açıklama** (yeni sohbette).
 
 > **Son durum (2026-11-11, 8. oturum): Cümle Kulesi 10 ünitenin hepsinde (her ünitede 3 kule, toplam 30). Dal: `claude/optimistic-pasteur-hkgycq` — main'e alındı (2026-11-11, YAYINDA).**
 > - Yeni kuleler (Ünite 2–10): Colors 🌞🐸🎈 · School Things 📖✏️🎒 · Family 👩👨👶 · Daily Routines 🪥🚶🍳 · Food 🍎🐱🐭 · Weather 🌧️⛄🪁 · My Body ✋🦉🐶 · Clothes 🧥👒🧦 · Hobbies 🏊🎨🎤. Hepsi aynı kalıp: 1. kat fiil, 2. kat + Kim, 3. kat + Nerede, 4. kat + Ne zaman; bazılarında 5. kat (Kim büyür: "The big red balloon").
