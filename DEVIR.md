@@ -14,6 +14,15 @@
 
 > - **Madde 8, 2. kısım BİTTİ: Flyers (A2) 10 ünite (dal `claude/laughing-allen-n2i5qa`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** main'e alınınca Worker'ı yeniden yayınla (rapordaki ünite/rozet adları için). Sıradaki: **Madde 8, 3. kısım — KET/PET hazırlık** (ya da önce Movers/Flyers kütüphane kitapları), sonra **Madde 9 — MEB müfredatı eşleştirme.**
 
+> - **Madde 8, 3. kısım BİTTİ: Movers/Flyers kütüphane kitapları (dal `claude/charming-goldberg-k7icw1`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Worker değişmedi (yayın gerekmez). **Ama Flyers main'e alındıktan sonra Worker henüz yeniden yayınlanmadı** (bu oturumda izin reddedildi; kullanıcı kendisi yayınlayacak ya da izin verecek). Sıradaki: **Madde 8, 4. kısım — KET/PET hazırlık**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
+
+> **Son durum (2026-11-11, 17. oturum): Movers/Flyers kütüphane kitapları.**
+> - Yeni dosya `books-mf.js` (`const BOOKS_MF`, b21–b60): Ünite 11–30'un her birine 2 kitap. 🍎 Seviye 4 "Meraklı okur" (Movers, 8 sayfa, 4 soru), 🌟 Seviye 5 "Kitap kurdu" (Flyers, 10 sayfa, 5 soru, "Why" sorusu). Kitaplar ünitenin kelimelerini ve dilbilgisini kullanır.
+> - `index.html`: `BOOKS.push(...BOOKS_MF)`, `BOOK_LV` 5 seviye, `bookLevels()`; kütüphane sayfası, okuma seviyesi ve Reading kartı seviye sayısına göre. 🏛️ Kütüphane Ustası rozeti artık 60 kitabın hepsini ister.
+> - Denetim: `node api/tools/check-books.js books-mf.js` (sayfa/soru sayısı, cevap seçeneklerde mi, düz tırnak, ünite başına 2 kitap).
+> - İçerik alt ajanlarla yazıldı; 3 kitap okundu, iyi. Sayfalar brief'teki hedeften biraz kısa (Flyers sayfa başına ~14–20 kelime). "Oscar the Night Owl" (Ünite 13) eski "Olly the Night Owl"a benziyor olabilir, bir insan gözüyle bakılmalı.
+> - Tarayıcıda (sahte S, 390 px): 60 kitabın hepsi okuyucu ve soru sayfasında hatasız açılıyor, her kelimenin Türkçesi bulunuyor ("Ayşe" gibi Türkçe harfli adlar eskiden olduğu gibi düz metin), yatay kayma yok. Uçtan uca giriş yapılmış oturumla tek tek oynanmadı.
+
 > **Son durum (2026-11-11, 16. oturum): Flyers (A2) üniteleri (Ünite 21–30).**
 > - Yeni dosya `units-a2.js` (`const UNITS_A2 = [...]`), biçim `units-a1.js` ile aynı; `index.html` iki dosyayı sırayla ekler. Flyers bölümü artık "Yakında" değil.
 > - Üniteler (dilbilgisi): 21 Holidays (be going to) · 22 Space (will/won't) · 23 Materials (made of) · 24 Seasons and Dates (in/on, sıra sayıları) · 25 Shopping (how much/many, too, -er than; lira) · 26 Technology (present perfect: Have you ever) · 27 Our Planet (should/must) · 28 Fairy Tales (past continuous) · 29 Hobbies and Talents (good at + -ing, zarflar) · 30 Celebrations (because/so/when; 23 Nisan, Cumhuriyet Bayramı).
