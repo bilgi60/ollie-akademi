@@ -16,7 +16,7 @@
 
 > - **Madde 8, 3. kısım BİTTİ: Movers/Flyers kütüphane kitapları (dal `claude/charming-goldberg-k7icw1`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA.** Worker değişmedi (yayın gerekmez; Flyers için Worker başka oturumda yayınlandı). Sıradaki: **Madde 8, 4. kısım — KET/PET hazırlık**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
 
-> - **Madde 8, 4. kısım BİTTİ: A2 Key (KET) 10 ünite (dal `claude/tender-maxwell-3t7i17`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Main'e alınınca Worker'ı yeniden yayınla (rapordaki ünite/rozet adları). Sıradaki: **Madde 8, 5. kısım — B1 Preliminary (PET) 10 ünite (Ünite 41–50, `units-pet.js`, aynı yöntem)**, sonra **deneme sınavları + sertifika benzeri seviye rozeti**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
+> - **Madde 8, 4. kısım BİTTİ: A2 Key (KET) 10 ünite (dal `claude/tender-maxwell-3t7i17`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA; Worker da yeniden yayınlandı.** Sıradaki: **Madde 8, 5. kısım — B1 Preliminary (PET) 10 ünite (Ünite 41–50, `units-pet.js`, aynı yöntem)**, sonra **deneme sınavları + sertifika benzeri seviye rozeti**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
 
 > **Son durum (2026-11-11, 18. oturum): A2 Key for Schools üniteleri (Ünite 31–40).**
 > - Yeni dosya `units-key.js` (`const UNITS_KEY`), biçim `units-a2.js` ile aynı; `index.html` yükler. Yeni seviye bölümü 🔑 "A2 Key" (A2+), altında 🏆 "B1 Preliminary" "Yakında" (from:40,to:50, boş).
