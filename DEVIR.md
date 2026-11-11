@@ -1,5 +1,11 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **Son durum (2026-11-11, 7. oturum): Cümle Kulesi Animals ünitesine eklendi (dal: `claude/loving-hamilton-l2m4rk`, henüz main'e alınmadı).**
+> - Yeni ders: 🧱 Cümle Kulesi (ünite sayfasında Kelime Kartları ile Kolay Test arasında, yalnızca `TOWERS[i]` dolu ünitelerde görünür). Animals'ta 3 kule var: 🐒 monkey, 🐬 dolphin, 🐰 rabbit. Her katta cümleye bir parça eklenir, çocuk renkli kartları sıraya dizer. Renkler: 🔵 Kim? 🟠 Ne yapıyor? 🟢 Nerede? 🟣 Ne zaman?
+> - Puan: her kat ilk denemede ⭐+3, hatalıysa +2, tekrar oynarken +1. Her kule ilk bitişte +5 bonus. İlerleme `S.towers[ünite] = [biten kule no'ları]`, hepsi bitince `S.lessons["k"+ünite]`. "Kule Ustası" rozeti ve profilde istatistik eklendi. Ünite yüzdesine ve kilit açmaya etkisi yok.
+> - Fikir kaynağı: Grammatica Project kanalının "adım adım cümle kurma" yöntemi (bkz. 6. oturumun araştırması).
+> - **Sıradaki adım:** Kullanıcı beğenirse (1) dalı main'e al, (2) diğer 9 üniteye 3'er kule yaz (`TOWERS` dizisine eleman ekle). Sonra: kulenin sonunda mikrofonla söyleme, kulelerden kısa hikâye (Reading). Bekleyen: KVKK sayfası.
+
 > **Son durum (2026-11-09, 5. oturum): Reading/Listening/Speaking + e-postayla şifre sıfırlama/doğrulama YAYINDA (göç yapıldı, sunucu güncellendi, main'e alındı). Resend kuruldu (2026-11-10): ollieakademi.com Resend'de Verified, RESEND_API_KEY Worker'a gizli değişken olarak eklendi, /api/forgot artık çalışıyor. Kullanıcı gerçek e-postayla şifre sıfırlamayı uçtan uca denedi: e-posta geldi, yeni şifre kaydedildi. BU İŞ BİTTİ. Sıradaki fikirler: KVKK aydınlatma metni sayfası, API'yi api.ollieakademi.com'a taşımak.**
 > **Bitenler (dal: `claude/blissful-cori-ulhk0b`):**
 > - Menüye 3 yeni bölüm: 📕 Reading (her ünite için kısa hikâye + 3 soru, sesli okuma, Türkçe çeviri), 🎧 Listening (ünite başına 5 resimli dinleme), 🗣️ Speaking (ünite başına 5 cümle; Chrome/Edge/Safari'de mikrofonla kelime kelime kontrol, diğerlerinde "I said it!"). İçerikler `READING`, `LISTENING`, `SPEAKING` dizilerinde. İlerleme `S.skills.{r,l,s}[ünite]` içinde. 3 yeni rozet, profilde istatistik. Telefonda menü kısa etiketlerle (Read/Listen/Speak) sığıyor.

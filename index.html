@@ -211,6 +211,16 @@ input.write:focus{border-color:var(--accent);outline:none}
 .bank{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .tile{background:var(--surface);border:2px solid var(--ink);border-radius:12px;padding:8px 14px;font-family:var(--display);font-weight:600;font-size:1.15rem;box-shadow:0 3px 0 var(--line)}
 .build .tile{background:var(--sun);color:#22304A;border-color:#22304A}
+.chunk{border:2px solid;border-radius:12px;padding:8px 14px;font-family:var(--display);font-weight:600;font-size:1.15rem;color:#22304A;box-shadow:0 3px 0 rgba(0,0,0,.18)}
+span.chunk{display:inline-block;box-shadow:none}
+.chunk.who{background:#CFE3FF;border-color:#2A66C8}.chunk.does{background:#FFD9B8;border-color:#D0661C}
+.chunk.where{background:#CDEFD3;border-color:#2E8B47}.chunk.when{background:#E6D6FA;border-color:#7A4CC2}
+.chunk.small{font-size:.95rem;padding:4px 10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px}
+.tower{display:flex;flex-direction:column-reverse;gap:6px;align-items:center}
+.floor{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:8px 10px;border:2px solid var(--line);border-radius:14px;background:var(--soft);max-width:100%}
+.floor .n{font-family:var(--display);font-weight:700;color:var(--muted);align-self:center;margin-right:2px}
+.trs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center}
 .fb{border-radius:16px;padding:14px 16px;font-weight:600}
 .fb.good{background:var(--leaf-soft);border:2px solid var(--leaf)}
 .fb.try{background:var(--berry-soft);border:2px solid var(--berry)}
@@ -759,6 +769,31 @@ const SPEAKING = [
  [ {e:"🏊",en:"I can swim.",tr:"Yüzebilirim."}, {e:"🏃",en:"I can run fast.",tr:"Hızlı koşabilirim."}, {e:"💃",en:"I like dancing.",tr:"Dans etmeyi severim."}, {e:"🎤",en:"Can you sing?",tr:"Şarkı söyleyebilir misin?"}, {e:"🎨",en:"My hobby is drawing.",tr:"Benim hobim resim yapmak."} ]
 ];
 
+/* Cümle Kulesi: her katta cümleye tek bir parça eklenir. Renk = cümledeki görev. */
+const ROLE = {who:{e:"🔵",q:"Kim?"}, does:{e:"🟠",q:"Ne yapıyor?"}, where:{e:"🟢",q:"Nerede?"}, when:{e:"🟣",q:"Ne zaman?"}};
+const TOWERS = [
+ [ {e:"🐒", title:"The Sleepy Monkey", steps:[
+    {tr:[["Uyur.","does"]], en:[["sleeps","does"]]},
+    {tr:[["Maymun","who"],["uyur.","does"]], en:[["The monkey","who"],["sleeps","does"]]},
+    {tr:[["Maymun","who"],["ağaçta","where"],["uyur.","does"]], en:[["The monkey","who"],["sleeps","does"],["in a tree","where"]]},
+    {tr:[["Maymun","who"],["her gece","when"],["ağaçta","where"],["uyur.","does"]], en:[["The monkey","who"],["sleeps","does"],["in a tree","where"],["every night","when"]]} ]},
+   {e:"🐬", title:"The Happy Dolphin", steps:[
+    {tr:[["Yüzer.","does"]], en:[["swims","does"]]},
+    {tr:[["Yunus","who"],["yüzer.","does"]], en:[["The dolphin","who"],["swims","does"]]},
+    {tr:[["Yunus","who"],["denizde","where"],["yüzer.","does"]], en:[["The dolphin","who"],["swims","does"],["in the sea","where"]]},
+    {tr:[["Yunus","who"],["her sabah","when"],["denizde","where"],["yüzer.","does"]], en:[["The dolphin","who"],["swims","does"],["in the sea","where"],["every morning","when"]]} ]},
+   {e:"🐰", title:"The Little Rabbit", steps:[
+    {tr:[["Zıplar.","does"]], en:[["jumps","does"]]},
+    {tr:[["Tavşan","who"],["zıplar.","does"]], en:[["The rabbit","who"],["jumps","does"]]},
+    {tr:[["Tavşan","who"],["bahçede","where"],["zıplar.","does"]], en:[["The rabbit","who"],["jumps","does"],["in the garden","where"]]},
+    {tr:[["Tavşan","who"],["her gün","when"],["bahçede","where"],["zıplar.","does"]], en:[["The rabbit","who"],["jumps","does"],["in the garden","where"],["every day","when"]]},
+    {tr:[["Küçük tavşan","who"],["her gün","when"],["bahçede","where"],["zıplar.","does"]], en:[["The little rabbit","who"],["jumps","does"],["in the garden","where"],["every day","when"]]} ]} ]
+];
+const towersOf = i => TOWERS[i] || [];
+const towersDone = i => (S.towers[i] || []).length;
+const towerTotal = () => TOWERS.reduce((a,x)=>a+(x?x.length:0),0);
+const towerCount = () => Object.values(S.towers).reduce((a,x)=>a+x.length,0);
+
 const KIND = {song:["🎵","Song"], pick:["👀","Look & Pick"], listen:["👂","Listen"], write:["✍️","Write"], speak:["🗣️","Speak"],
   songtype:["🎵","Song: type it"], dictation:["👂","Listen & Write"], order:["🧩","Build the Sentence"], story:["📖","Story Time"], speakTr:["🗣️","Say it in English"]};
 const INTRO = {song:["Sing and fill the gap!","Şarkıyı söyle, boşluğu doldur!"], pick:["Look carefully!","Dikkatlice bak!"],
@@ -767,7 +802,7 @@ const INTRO = {song:["Sing and fill the gap!","Şarkıyı söyle, boşluğu dold
   order:["Build the sentence!","Kelimeleri doğru sıraya koy. Bir kelime fazla, dikkat!"], story:["Story time! Listen carefully.","Hikâyeyi dinle ve soruyu cevapla."],
   speakTr:["Translate and speak!","Türkçe cümleyi İngilizce söyle!"]};
 const PRAISE = [["Awesome!","Harika!"],["Super job!","Süper iş!"],["Fantastic!","Fantastik!"],["You're a star!","Sen bir yıldızsın!"],["Brilliant!","Muhteşem!"]];
-const LESSON = {song:{e:"🎵",n:"Şarkı Dersi"}, cards:{e:"🃏",n:"Kelime Kartları"}, easy:{e:"🐣",n:"Kolay Test"}, hard:{e:"🦅",n:"Zor Test"}, write:{e:"✍️",n:"Yazma Görevi"}};
+const LESSON = {song:{e:"🎵",n:"Şarkı Dersi"}, cards:{e:"🃏",n:"Kelime Kartları"}, easy:{e:"🐣",n:"Kolay Test"}, hard:{e:"🦅",n:"Zor Test"}, write:{e:"✍️",n:"Yazma Görevi"}, tower:{e:"🧱",n:"Cümle Kulesi"}};
 const WMIN = 20, WLONG = 40;
 const WRITE = [
  {title:"My Favorite Animal", en:"Write about your favorite animal. What does it look like? What can it do? What can't it do?", tr:"En sevdiğin hayvanı anlat: Neye benziyor? Ne yapabilir, ne yapamaz?",
@@ -837,7 +872,7 @@ const fresh = () => ({unlocked:0, done:LEVELS.map(()=>[]), finished:false});
 
 /* ---------- Accounts & state ---------- */
 const UKEY = "ollie-akademi-accounts";
-const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}, skills:{r:{},l:{},s:{}}});
+const blankData = () => ({score:0, p:{easy:fresh(), hard:fresh()}, lessons:{}, days:[], today:{d:"",pts:0}, badges:[], name:"", avatar:"🦊", writings:{}, sung:{}, skills:{r:{},l:{},s:{}}, towers:{}});
 function normalize(s){
   s = s || {};
   if(!(s.p && s.p.easy && s.p.hard)){
@@ -846,7 +881,7 @@ function normalize(s){
   for(const m of ["easy","hard"]){ const p = s.p[m]; while(p.done.length < LEVELS.length) p.done.push([]); }
   s.score = s.score||0; s.lessons = s.lessons||{}; s.days = s.days||[]; s.today = s.today||{d:"",pts:0};
   s.name = s.name||""; s.avatar = s.avatar||"🦊"; s.writings = s.writings||{}; s.sung = s.sung||{};
-  s.skills = s.skills||{}; for(const k of ["r","l","s"]) s.skills[k] = s.skills[k]||{};
+  s.towers = s.towers||{}; s.skills = s.skills||{}; for(const k of ["r","l","s"]) s.skills[k] = s.skills[k]||{};
   if(!s.badges){ s.badges = []; s.needBadgeInit = true; }
   return s;
 }
@@ -983,6 +1018,7 @@ const BADGES = [
   {id:"reader3", e:"📕", n:"Kitap Kurdu", d:"3 Reading hikâyesini bitir.", ok:()=>skCount("reading")>=3},
   {id:"listen3", e:"🎧", n:"Dikkatli Kulak", d:"3 ünitenin Listening bölümünü bitir.", ok:()=>skCount("listening")>=3},
   {id:"speak3", e:"🗣️", n:"Konuşkan Baykuş", d:"3 ünitenin Speaking bölümünü bitir.", ok:()=>skCount("speaking")>=3},
+  {id:"tower1", e:"🧱", n:"Kule Ustası", d:"İlk Cümle Kulesini bitir.", ok:()=>towerCount()>=1},
   {id:"legend", e:"👑", n:"Efsane", d:"10 ünitenin zor testlerini bitir.", ok:()=>hardCount()>=10}
 ];
 function checkBadges(silent){
@@ -1062,7 +1098,7 @@ function render(greet){
   document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("on", a.dataset.nav===nav));
   const el = $("#screen");
   if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML, reset:resetHTML, profiles:profilesHTML, parent:parentHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
-  if(play) el.innerHTML = play.kind==="song" ? songHTML() : play.kind==="cards" ? cardsHTML() : play.kind==="write" ? writeHTML() : quizHTML();
+  if(play) el.innerHTML = play.kind==="song" ? songHTML() : play.kind==="cards" ? cardsHTML() : play.kind==="write" ? writeHTML() : play.kind==="tower" ? towerHTML() : quizHTML();
   else el.innerHTML = ({home:homeHTML, units:unitsHTML, unit:unitHTML, words:wordsHTML, badges:badgesHTML, profile:profileHTML,
     reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
   if(play && play.order) renderOrder();
@@ -1388,6 +1424,8 @@ function lessonRow(i, kind){
   let done, locked = !unitOpen(i), sub, prog = "";
   if(kind==="song"){ done = !!S.lessons["s"+i]; const n = (S.sung[i]||[]).length; prog = `${done?5:n}/5`; sub = `5 şarkı: ${L.songs.map(x=>x.title).join(" · ")}`; }
   else if(kind==="cards"){ done = !!S.lessons["c"+i]; sub = `${L.cards.length} yeni kelime: ${L.cards.map(c=>c.w).join(", ")}.`; }
+  else if(kind==="tower"){ const n = towersOf(i).length, d = towersDone(i); done = d>=n; prog = `${d}/${n}`;
+    sub = `Renkli kartlarla kat kat cümle kur: ${towersOf(i).map(x=>x.e).join(" ")} · Her kat ⭐+3, her kule ⭐+5.`; }
   else if(kind==="write"){ const w = S.writings[i]; done = !!(w && w.best); if(!easyDone(i)) locked = true;
     sub = locked && unitOpen(i) ? "Kolay testi bitirince açılır. Ek puan fırsatı! ⭐" : `“${WRITE[i].title}” · ${done ? `En iyi puanın ⭐ ${w.best}/50. Geliştir, farkı kazan!` : "BONUS: 50 ⭐'a kadar ek puan!"}`; }
   else { const d = S.p[kind].done[i].length; done = d>=5; prog = `${d}/5`;
@@ -1407,7 +1445,7 @@ function unitHTML(){
       <div class="bar" style="margin-top:10px"><i style="width:${unitPct(i)}%"></i></div></div></div>
     <div class="row">${L.cards.map(c=>`<span class="chip">${c.e} ${esc(c.w)}</span>`).join("")}</div>
   </section>
-  <section class="panel"><h2>Dersler</h2><div class="lessons">${["song","cards","easy","write","hard"].map(k=>lessonRow(i,k)).join("")}</div></section>
+  <section class="panel"><h2>Dersler</h2><div class="lessons">${["song","cards"].concat(towersOf(i).length?["tower"]:[],["easy","write","hard"]).map(k=>lessonRow(i,k)).join("")}</div></section>
   <div class="row between">${i>0?`<a class="link" href="#unit-${i}">← Ünite ${i}</a>`:"<span></span>"}${i<LEVELS.length-1?`<a class="link" href="#unit-${i+2}">Ünite ${i+2} →</a>`:""}</div>`;
 }
 let wq = "", wu = "all";
@@ -1454,6 +1492,7 @@ function profileHTML(){
       <div class="stat"><b>${skCount("reading")}/10</b><span>📕 Reading</span></div>
       <div class="stat"><b>${skCount("listening")}/10</b><span>🎧 Listening</span></div>
       <div class="stat"><b>${skCount("speaking")}/10</b><span>🗣️ Speaking</span></div>
+      <div class="stat"><b>${towerCount()}/${towerTotal()}</b><span>🧱 Cümle Kulesi</span></div>
     </div>
     <p class="tr">İlerlemen veli hesabına kaydedilir. Aynı hesapla giriş yapılan her cihazdan kaldığın yerden devam edebilirsin.</p>
     <div class="row" id="resetRow"><button class="btn ghost small" data-act="reset">↺ İlerlemeyi sıfırla</button></div>
@@ -1540,6 +1579,79 @@ function submitWrite(){
     <div class="row" style="margin-top:12px"><button class="btn" data-act="readMine">🔊 Ollie metnini okusun</button>${i < LEVELS.length-1 ? `<a class="btn ghost" href="#unit-${i+2}" data-act="leave">Ünite ${i+2} ▶</a>` : ""}<a class="btn ghost" href="#unit-${i+1}" data-act="leave">Ünite sayfası</a></div>`;
 }
 
+/* ---------- Cümle Kulesi ---------- */
+function startTower(i, k){
+  const replay = (S.towers[i]||[]).includes(k);
+  play = {kind:"tower", unit:i, tw:k, step:0, replay};
+  startFloor(); render();
+  say("Let's build a sentence tower! 🧱", "Her katta cümleye yeni bir parça ekleniyor. Renkli kartları doğru sıraya diz!");
+}
+function startFloor(){
+  const n = TOWERS[play.unit][play.tw].steps[play.step].en.length, idx = [...Array(n).keys()];
+  let cards; do{ cards = idx.slice().sort(()=>Math.random()-.5); }while(n>1 && cards.every((x,j)=>x===j));
+  Object.assign(play, {cards, picked:[], tries:0, solved:false, msg:""});
+}
+const enText = st => st.en.map(x=>x[0]).join(" ") + ".";
+const chunk = (c, role, attrs="", small) => `<${attrs?"button":"span"} class="chunk ${role}${small?" small":""}" ${attrs}>${esc(c)}</${attrs?"button":"span"}>`;
+function towerHTML(){
+  const i = play.unit, T = TOWERS[i][play.tw], st = T.steps[play.step], last = play.step === T.steps.length-1, done = S.towers[i]||[];
+  const floors = T.steps.slice(0, play.step + (play.solved?1:0)).map((x,n)=>`<div class="floor"><span class="n">${n+1}</span>${x.en.map(c=>chunk(c[0],c[1],"",true)).join("")}</div>`).join("");
+  const build = play.solved ? "" : `<div class="build" id="twBuild" aria-label="Senin cümlen">${play.picked.map(j=>chunk(st.en[j][0], st.en[j][1], `data-act="twPick" data-arg="${j}"`)).join("")}</div>
+    <div class="bank">${play.cards.filter(j=>!play.picked.includes(j)).map(j=>chunk(st.en[j][0], st.en[j][1], `data-act="twPick" data-arg="${j}"`)).join("")}</div>
+    <div class="row center"><button class="btn ghost small" data-act="twClear">↺ Clear</button><button class="btn" data-act="twCheck">Check ✓</button></div>`;
+  const after = !play.solved ? "" : last
+    ? `<div class="fb good"><div class="en">Tower complete! 🏆 “${esc(enText(st))}”</div><div class="tr">Şimdi bütün cümleyi Ollie ile birlikte yüksek sesle söyle!</div></div>
+       <div class="row center"><button class="btn ghost" data-act="twSay">🔊 Listen</button><button class="btn ghost" data-act="twSlow">🐢 Slow</button>
+       ${towersOf(i).length > 1 ? `<button class="btn" data-act="twGo" data-arg="${(play.tw+1)%towersOf(i).length}">Sıradaki kule ▶</button>` : ""}
+       <a class="btn ${towersOf(i).length>1?"ghost":""}" href="#unit-${i+1}" data-act="twLeave">Ünite sayfası</a></div>`
+    : `<div class="fb good"><div class="en">${play.msg}</div><div class="tr">“${esc(enText(st))}”</div></div>
+       <div class="row center"><button class="btn ghost" data-act="twSay">🔊 Listen</button><button class="btn" data-act="twNext">Bir kat yukarı ⬆</button></div>`;
+  return `${backBar()}<section class="panel">
+    <div class="eyebrow">Ünite ${i+1} · Cümle Kulesi · Kule ${play.tw+1}/${towersOf(i).length} · Kat ${play.step+1}/${T.steps.length}${play.replay?" · Tekrar (⭐+1)":""}</div>
+    <div class="row">${towersOf(i).map((x,n)=>`<button class="chip ${done.includes(n)?"ok":""}" type="button" data-act="twGo" data-arg="${n}" ${n===play.tw?'aria-current="true" style="border-color:var(--accent)"':""}>${done.includes(n)?"✓":x.e} ${esc(x.title)}</button>`).join("")}</div>
+    <div class="legend">${Object.entries(ROLE).map(([r,o])=>`<span class="chunk small ${r}">${o.e} ${o.q}</span>`).join("")}</div>
+    <div class="tower">${floors}</div>
+    ${play.solved ? "" : `<div class="q">Build floor ${play.step+1}! <span class="tr">Bu katı İngilizce kur!</span></div>
+    <div class="say trs">🇹🇷 ${st.tr.map(c=>chunk(c[0],c[1])).join("")}</div>
+    ${play.step===1 ? `<div class="tr" style="text-align:center">İpucu: Türkçede 🟠 sonda durur, İngilizcede 🔵'nin hemen arkasına gelir!</div>` : ""}`}
+    ${build}
+    <div id="fb">${play.solved ? after : play.msg}</div>
+  </section>`;
+}
+function twRefresh(){ $("#screen").innerHTML = towerHTML(); }
+function twCheck(){
+  if(play.solved) return;
+  const st = TOWERS[play.unit][play.tw].steps[play.step];
+  if(!play.picked.length){ say("Tap the cards first!","Önce renkli kartlara dokun!"); return; }
+  if(play.picked.length < st.en.length){ say("Use all the cards!","Bütün kartları kullan!"); play.msg = `<div class="fb try"><div class="en">Use all the cards! 🧱</div><div class="tr">Aşağıda hâlâ kart var. Hepsini cümleye ekle.</div></div>`; return twRefresh(); }
+  const bad = play.picked.findIndex((j,n)=>j!==n);
+  if(bad < 0){
+    play.solved = true;
+    const fresh = !play.replay, pts = fresh ? (play.tries===0 ? 3 : 2) : 1;
+    addPts(pts);
+    const p = PRAISE[Math.floor(Math.random()*PRAISE.length)];
+    play.msg = `${p[0]} ⭐ +${pts}`;
+    const T = TOWERS[play.unit][play.tw];
+    if(play.step === T.steps.length-1) return finishTower();
+    say(`${p[0]} ⭐ +${pts}`, `${p[1]} Kat tamam, bir kat daha yukarı!`);
+    speak(enText(st)); twRefresh(); return;
+  }
+  play.tries++;
+  const r = ROLE[st.en[bad][1]];
+  say("Great try! Look at the colors.", "Güzel deneme! Renklere bak.");
+  play.msg = `<div class="fb try"><div class="en">Almost! Look at the colors. 🤔</div><div class="tr">${bad+1}. sıraya ${r.e} <b>${r.q}</b> kartı gelir.${st.en[bad][1]==="does" && bad>0 ? " İngilizcede 🟠, 🔵'nin hemen arkasında durur." : ""}</div></div>`;
+  twRefresh();
+}
+function finishTower(){
+  const i = play.unit, d = S.towers[i] = S.towers[i]||[], first = !d.includes(play.tw);
+  if(first){ d.push(play.tw); addPts(5); }
+  if(towersDone(i) >= towersOf(i).length && !S.lessons["k"+i]){ S.lessons["k"+i] = true; save(); toast("🧱 Cümle Kulesi dersi tamam!"); }
+  confetti();
+  const st = TOWERS[i][play.tw].steps.slice(-1)[0];
+  say(first ? "Tower complete! ⭐ +5 bonus!" : "Tower complete!", first ? "Kuleyi bitirdin! 5 bonus yıldız kazandın. Şimdi bütün cümleyi yüksek sesle söyle." : "Kuleyi yine bitirdin! Cümleyi yüksek sesle söyle.");
+  speak(enText(st)); twRefresh();
+}
+
 const tasksOf = () => LEVELS[play.unit][play.mode==="hard"?"hard":"tasks"];
 const blankLine = (L,t) => L.song.lines[t.line].replace(new RegExp(`(<b>)?\\b${t.blank}\\b(</b>)?`,"i"), '<span class="blank">?</span>');
 const formHTML = () => `<form class="row center" id="wform"><input class="write" id="w-${play.mode}-${play.unit}-${play.task}" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="type here…" aria-label="Cevabın"><button class="btn" type="submit">Check ✓</button></form>`;
@@ -1617,6 +1729,7 @@ function startStep(i, kind){
   page = "unit"; unitArg = i;
   if(kind==="song"){ const sg = S.sung[i]||[]; play = {kind, unit:i, songIdx: Math.max(0,[0,1,2,3,4].findIndex(n=>!sg.includes(n)))}; render(); say("Let's sing! 🎤", "Önce 🔊 Sing along düğmesine bas, sonra sen de söyle."); return; }
   if(kind==="write"){ play = {kind, unit:i}; render(); liveWrite(); say("Writing time! ✍️", "Küçük bir metin yaz, ek yıldız kazan! Yazarken kontrol listesindeki kutular dolacak."); return; }
+  if(kind==="tower"){ const d = S.towers[i]||[]; const k = towersOf(i).findIndex((_,n)=>!d.includes(n)); return startTower(i, k<0 ? 0 : k); }
   if(kind==="cards"){ play = {kind, unit:i, cardIdx:0, seen:new Set([0])}; render(); say("New words! 🃏", "Karta dokun ve çevir. Kelimeyi dinle, sonra sen de söyle."); return; }
   const done = S.p[kind].done[i], replay = done.length >= 5;
   play = {kind:"quiz", mode:kind, unit:i, replay, local:new Set(replay ? [] : done), task:0};
@@ -1933,6 +2046,15 @@ document.addEventListener("click", e => {
     case "delAccount": $("#delAcc").innerHTML = `<form id="delForm" class="stack" novalidate><div class="fb try">Veli hesabın ve bütün çocuk profilleri kalıcı olarak silinir. Bu işlem geri alınamaz.</div><label for="dp">Onaylamak için şifreni yaz</label><input class="field" id="dp" type="password" autocomplete="current-password"><div id="delMsg" role="alert"></div><div class="row"><button class="btn small" type="submit">Hesabımı kalıcı olarak sil</button><button class="btn ghost small" type="button" data-act="delNo">Vazgeç</button></div></form>`; return;
     case "avatar": if(!S){ regAvatar = arg; document.querySelectorAll(".avas button").forEach(x=>x.classList.toggle("on", x.dataset.arg===arg)); return; } S.avatar = arg; save(); updateTop(); document.querySelectorAll(".avas button").forEach(x=>x.classList.toggle("on", x.dataset.arg===arg)); if(page==="profile") render(); say("Nice choice!", `${arg} çok yakıştı!`); return;
     case "startStep": { const [i,k] = arg.split(":"); return startStep(+i, k); }
+    case "twPick": { if(play.solved) return; const j = +arg; play.msg = "";
+      play.picked = play.picked.includes(j) ? play.picked.filter(x=>x!==j) : play.picked.concat(j);
+      speak(TOWERS[play.unit][play.tw].steps[play.step].en[j][0]); return twRefresh(); }
+    case "twClear": if(!play.solved){ play.picked = []; play.msg = ""; twRefresh(); } return;
+    case "twCheck": return twCheck();
+    case "twNext": play.step++; startFloor(); twRefresh(); window.scrollTo({top:0}); say("Next floor! ⬆", "Yeni katta cümleye bir parça daha eklendi. Hangisi?"); return;
+    case "twGo": stopSpeech(); return startTower(play.unit, +arg);
+    case "twSay": case "twSlow": { const T = TOWERS[play.unit][play.tw]; return speak(enText(T.steps[play.step]), null, act==="twSlow" ? .5 : null); }
+    case "twLeave": stopSpeech(); return;
     case "sayText": return speak(arg);
     case "insert": { const ta = $("#wt"); if(!ta) return; const a = ta.selectionStart ?? ta.value.length, b2 = ta.selectionEnd ?? a;
       const before = ta.value.slice(0,a), sp = before && !/\s$/.test(before) ? " " : "";
