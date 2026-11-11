@@ -1,9 +1,9 @@
 # DEVİR NOTU — Ollie Akademi
 
-> **Son durum (2026-11-11, 8. oturum): Cümle Kulesi 10 ünitenin hepsinde (her ünitede 3 kule, toplam 30). Dal: `claude/optimistic-pasteur-hkgycq` — HENÜZ main'e alınmadı.**
+> **Son durum (2026-11-11, 8. oturum): Cümle Kulesi 10 ünitenin hepsinde (her ünitede 3 kule, toplam 30). Dal: `claude/optimistic-pasteur-hkgycq` — main'e alındı (2026-11-11, YAYINDA).**
 > - Yeni kuleler (Ünite 2–10): Colors 🌞🐸🎈 · School Things 📖✏️🎒 · Family 👩👨👶 · Daily Routines 🪥🚶🍳 · Food 🍎🐱🐭 · Weather 🌧️⛄🪁 · My Body ✋🦉🐶 · Clothes 🧥👒🧦 · Hobbies 🏊🎨🎤. Hepsi aynı kalıp: 1. kat fiil, 2. kat + Kim, 3. kat + Nerede, 4. kat + Ne zaman; bazılarında 5. kat (Kim büyür: "The big red balloon").
 > - Tarayıcıda 27 yeni kule baştan sona otomatik oynandı: hata yok, ilerleme ve "k" dersleri doğru işaretleniyor.
-> - **Sıradaki adım:** Kullanıcı onaylarsa dalı main'e al (yayın). Sonra: kulenin sonunda mikrofonla söyleme, kulelerden kısa hikâye (Reading). Bekleyen: KVKK sayfası.
+> - **Sıradaki adım:** Kulenin sonunda mikrofonla söyleme, kulelerden kısa hikâye (Reading). Bekleyen: KVKK sayfası.
 
 > **Son durum (2026-11-11, 7. oturum): Cümle Kulesi Animals ünitesine eklendi (2026-11-11 main'e alındı, YAYINDA).**
 > - Yeni ders: 🧱 Cümle Kulesi (ünite sayfasında Kelime Kartları ile Kolay Test arasında, yalnızca `TOWERS[i]` dolu ünitelerde görünür). Animals'ta 3 kule var: 🐒 monkey, 🐬 dolphin, 🐰 rabbit. Her katta cümleye bir parça eklenir, çocuk renkli kartları sıraya dizer. Renkler: 🔵 Kim? 🟠 Ne yapıyor? 🟢 Nerede? 🟣 Ne zaman?
