@@ -22,6 +22,16 @@
 
 > - **Madde 8, 6. kısım BİTTİ: deneme sınavları + seviye sertifikası (dal `claude/admiring-babbage-w6c5pw`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA; Worker da yeniden yayınlandı.** Sıradaki: **Madde 9 — MEB müfredatı eşleştirme.**
 
+> - **Madde 9 BİTTİ: MEB müfredatı eşleştirme (dal `claude/nifty-sagan-pd8qg3`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Worker değişmedi (yayın gerekmez). Sıradaki: **Madde 10 — Ollie ile yapay zekâ sohbeti** (maliyet + çocuk güvenliği önce konuşulmalı).
+
+> **Son durum (2026-11-11, 21. oturum): MEB müfredatı eşleştirme.**
+> - Yeni dosya `meb.js` (`const MEB`): 2–8. sınıfın İngilizce temaları/üniteleri, alt konuları ve her biri için uygun Ollie üniteleri (en uygun önce). 2., 3., 5., 6. sınıf Maarif Modeli temaları; 4., 7., 8. sınıf 2026-2027'de hâlâ 2018 programı (7. sınıf için kaynaklar çelişkili, sayfada not var).
+> - Yeni sayfa `#meb` / `#meb-<sınıf>`: sınıf seç, temaları ve Ollie ünitelerini gör (durum: ✓ / 👑 / 🔒). "🏫 Benim sınıfım" → `S.grade` (sunucuya kaydedilir). Seçilince Derslerim'deki ünite kartlarında "🏫 Tema N", ünite sayfasında "3. sınıf · Tema 3: …" çipi, Profil'de sınıf bilgisi.
+> - Giriş: Derslerim üstünde "🏫 Okuldaki derse göre" düğmesi, Profil'de bağlantı.
+> - Araştırma: tymm.meb.gov.tr ve derslig bu oturumun ağından açılamadı; tema adları ve alt konular arama sonuçlarından (MEB tema sayfaları + yıllık plan siteleri) derlendi. Alt konular yaklaşık; bir öğretmen gözüyle kontrol edilmeli. Sayfada "resmî eşleştirme değildir" notu var. 4. sınıf 2027-2028'de Maarif'e geçince `meb.js` güncellenmeli.
+> - Tarayıcıda (sahte API, 390 px + 1100 px): 7 sınıfın sayfası, sınıf seçme/kaldırma, kart etiketleri, ünite çipi, profil, sunucuya kayıt; hata yok, yatay kayma yok.
+> - Yapılmadı: veli e-posta raporunda / veli panelinde sınıf bilgisi, ana sayfada "bu hafta okulda hangi tema" kartı.
+
 > **Son durum (2026-11-11, 20. oturum): Deneme sınavları + seviye sertifikası.**
 > - Adresler: `#exams` (5 seviyenin listesi), `#exam-starters|movers|flyers|key|pet` (sınav), `#cert-<seviye>` (yazdırılabilir sertifika, `#sheet` kabını kullanır; sadece geçilen seviyede açılır).
 > - Sınav, seviyenin ünitelerinden her seferinde rastgele kurulur (`buildExam`): 👂 Listening 5 soru (3 LISTENING + 2 "story" görevi), 📖 Reading 7 soru (4 resim-kelime + 1 READING hikâyesi, 3 soru), ✍️ Writing 5 soru (3 boşluk doldurma + 2 dinle-yaz) ve Flyers/Key/PET'te ek kısa yazı (WRITE görevi, `evalWriting` puanı 5 puana ölçeklenir). İpucu yok, her soruya tek cevap, 🤷 Bilmiyorum var; doğru/yanlış sonda gösterilir.

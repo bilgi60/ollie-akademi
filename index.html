@@ -139,6 +139,18 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,.c
 .unit .meta{display:flex;justify-content:space-between;font-weight:700;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
 .chip{display:inline-flex;align-items:center;gap:4px;background:var(--soft);border-radius:99px;padding:3px 12px;font-weight:700;font-size:.9rem}
 .chip.ok{background:var(--leaf-soft);color:var(--leaf)}
+a.chip{text-decoration:none;color:var(--ink);border:2px solid transparent}
+a.chip.on{background:var(--accent);color:var(--on-accent)}
+a.chip.mebchip,.mebtag{background:var(--sky-soft);color:var(--sky)}
+.mebtag{align-self:flex-start;border-radius:99px;padding:2px 10px;font-weight:700;font-size:.8rem}
+.mebus{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:10px}
+.mebu{display:flex;align-items:center;gap:10px;padding:10px 12px;border:2px solid var(--line);border-radius:16px;background:var(--surface);text-decoration:none;color:var(--ink);min-width:0}
+.mebu:hover{border-color:var(--accent)}
+.mebu.locked{opacity:.6}
+.mebu .ic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:1.4rem;background:var(--soft);flex:none}
+.mebu b{display:block;overflow-wrap:anywhere}
+.mebu .tr{display:block}
+.mebu .chip{margin-left:auto;flex:none}
 .lessons{display:flex;flex-direction:column;gap:10px}
 .lesson{display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px solid var(--line);border-radius:18px;flex-wrap:wrap}
 .lesson .ic{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font-size:1.5rem;background:var(--soft);flex:none}
@@ -438,6 +450,7 @@ body.sheeton #sheet{display:block;max-width:232mm;margin:0 auto;padding:16px}
 <script src="units-key.js"></script>
 <script src="units-pet.js"></script>
 <script src="books-mf.js"></script>
+<script src="meb.js"></script>
 <script>
 const LEVELS = [
  { rank:"Novice Explorer", theme:"Animals", tr:"Hayvanlar ve yetenekleri", icon:"🐾",
@@ -1185,6 +1198,7 @@ function normalize(s){
   s.place = s.place || null;
   s.books = s.books || {};
   s.exams = s.exams || {};
+  s.grade = MEB.some(x=>x.g === s.grade) ? s.grade : null;
   if(!s.rev){ s.rev = {}; LEVELS.forEach((L,i)=>{ if(s.lessons["c"+i]) L.cards.forEach(c=>{ s.rev[c.w] = {b:1, d:todayKey(), x:0}; }); }); }
   if(!s.badges){ s.badges = []; s.needBadgeInit = true; }
   return s;
@@ -1426,19 +1440,20 @@ function route(){
   else if(h === "review"){ page = "review"; startReview(); }
   else if(h === "placement"){ page = "placement"; pt = null; }
   else if(h === "exams") page = "exam";
+  else if(/^meb(-\d)?$/.test(h)){ page = "meb"; mebView = h.length > 3 ? +h.slice(4) : S.grade; if(!MEB.some(x=>x.g === mebView)) mebView = null; }
   else if(em && exStage(em[1]) && exOpen(exStage(em[1]))){ page = "exam"; startExam(em[1]); }
   else page = ["home","units","words","badges","profile"].includes(h) ? h : "home";
   render(true);
 }
 function render(greet){
   updateTop();
-  const nav = play || page==="unit" || page==="placement" || page==="exam" ? "units" : page==="review" ? "home" : page==="library" || page==="book" ? "reading" : page;
+  const nav = play || page==="unit" || page==="placement" || page==="exam" || page==="meb" ? "units" : page==="review" ? "home" : page==="library" || page==="book" ? "reading" : page;
   document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("on", a.dataset.nav===nav));
   const el = $("#screen");
   if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML, reset:resetHTML, profiles:profilesHTML, parent:parentHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
   if(play) el.innerHTML = play.kind==="song" ? songHTML() : play.kind==="cards" ? cardsHTML() : play.kind==="write" ? writeHTML() : play.kind==="tower" ? towerHTML() : quizHTML();
   else el.innerHTML = ({home:homeHTML, units:unitsHTML, unit:unitHTML, words:wordsHTML, badges:badgesHTML, profile:profileHTML,
-    review:reviewHTML, placement:placementHTML, exam:examHTML, library:libraryHTML, book:bookHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
+    review:reviewHTML, placement:placementHTML, exam:examHTML, meb:mebHTML, library:libraryHTML, book:bookHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
   if(play && play.order) renderOrder();
   if(!play && page==="words") renderWords();
   if(!play && page==="review" && rv && !rv.done && rv.queue[rv.pos].type==="ear") setTimeout(()=>speak(rv.queue[rv.pos].w), 300);
@@ -1456,6 +1471,7 @@ function greetPage(){
     parent:["Parent panel","Çocuklarının ilerlemesini buradan görebilirsin."],
     home:[`Hello${n}! 👋`, `Bugünkü hedefin ${DAILY} yıldız. Hadi başlayalım!`],
     placement:["Let's find your level! 🎯","Birkaç kısa soruyla sana en uygun üniteyi bulalım."],
+    meb:["Your school lessons! 🏫","Okulda hangi sınıftasın? Okuldaki temaya uygun Ollie ünitelerini bul."],
     exam: ex ? [`${ex.g.n} mock exam 📝`, "Sakin ol, soruları dikkatle oku. Sen yaparsın!"] : ["Mock exams! 📝","Bir seviye seç, sınavı geç, sertifikanı al."],
     units:["Here are your units!","Her ünitede 4 ders var: şarkı, kelime kartları, kolay test ve zor test."],
     unit:[`Unit ${unitArg+1}: ${LEVELS[unitArg]?.theme}`, "Dersleri sırayla yap. Kolay testi bitirince sonraki ünite açılır."],
@@ -1793,6 +1809,7 @@ function unitCard(L,i){
   const status = !open ? `<span class="chip">🔒 Kilitli</span>` : hardDone(i) ? `<span class="chip ok">👑 Tamam</span>` : easyDone(i) ? `<span class="chip ok">✓ Kolay bitti</span>` : unitSteps(i) ? `<span class="chip">Devam ediyor</span>` : `<span class="chip">Yeni</span>`;
   return `<a class="unit ${open?"":"locked"}" href="#unit-${i+1}" ${open?"":'aria-disabled="true"'}>
     <div class="top"><span class="ic">${L.icon}</span><div style="min-width:0"><div class="no">${stageOf(i).e} Ünite ${i+1} · ${L.rank}</div><div class="nm">${L.theme}</div><div class="tr">${L.tr}</div></div></div>
+    ${mebTags(i).length ? `<div class="mebtag">🏫 ${mebTags(i).map(t=>`Tema ${t.k+1}`).join(", ")}</div>` : ""}
     <div class="bar"><i style="width:${pct}%"></i></div>
     <div class="meta"><span>${status}</span><span>%${pct}</span></div></a>`;
 }
@@ -1801,7 +1818,7 @@ function unitsHTML(){
     <div class="eyebrow">Derslerim · My Units</div>
     <h1>${N()} ünite, ${N()*4} ders</h1>
     <p class="muted">Her ünitede sırayla: 🎵 Şarkı · 🃏 Kelime Kartları · 🐣 Kolay Test · 🦅 Zor Test. Kolay testi bitirdiğinde sonraki ünite açılır. Seviyeler Cambridge sınavlarının sırasını izler: 🌱 Starters → 🚀 Movers → 🪁 Flyers → 🔑 A2 Key → 🏆 B1 Preliminary.</p>
-    <div class="row"><a class="btn ghost small" href="#placement">🎯 Seviye testi</a><a class="btn ghost small" href="#exams">📝 Deneme sınavları</a><span class="tr">${S.place && !S.place.skip ? `Son sonuç: Ünite ${den(S.place.u+1)} başla (${fmtDate(S.place.d+"T12:00")}).` : "İngilizceyi biraz biliyorsan, kısa testle uygun üniteye atla."}</span></div>
+    <div class="row"><a class="btn ghost small" href="#placement">🎯 Seviye testi</a><a class="btn ghost small" href="#exams">📝 Deneme sınavları</a><a class="btn ghost small" href="#meb">🏫 ${S.grade ? `${S.grade}. sınıf temaları` : "Okuldaki derse göre"}</a><span class="tr">${S.place && !S.place.skip ? `Son sonuç: Ünite ${den(S.place.u+1)} başla (${fmtDate(S.place.d+"T12:00")}).` : "İngilizceyi biraz biliyorsan, kısa testle uygun üniteye atla."}</span></div>
   </section>
   ${STAGES.map(stageHTML).join("")}`;
 }
@@ -1840,10 +1857,37 @@ function unitHTML(){
     <div class="uhead"><span class="ic">${L.icon}</span><div style="flex:1;min-width:200px"><div class="eyebrow">Ünite ${i+1} · ${L.rank}</div><h1>${L.theme} <span class="tr">${L.tr}</span></h1>
       <div class="bar" style="margin-top:10px"><i style="width:${unitPct(i)}%"></i></div></div></div>
     <div class="row">${L.cards.map(c=>`<span class="chip">${c.e} ${esc(c.w)}</span>`).join("")}</div>
+    ${mebTags(i).length ? `<div class="row">${mebTags(i).map(t=>`<a class="chip mebchip" href="#meb">🏫 ${S.grade}. sınıf · Tema ${t.k+1}: ${t.t.n}</a>`).join("")}</div>` : ""}
   </section>
   <section class="panel"><h2>Dersler</h2><div class="lessons">${["song","cards"].concat(towersOf(i).length?["tower"]:[],["easy","write","hard"]).map(k=>lessonRow(i,k)).join("")}</div>
     <div class="row" style="margin-top:12px"><a class="btn ghost small" href="#sheet-${i+1}">🖨️ Çalışma kâğıdı</a><span class="tr">Bu ünitenin kâğıt alıştırmasını yazdır.</span></div></section>
   <div class="row between">${i>0?`<a class="link" href="#unit-${i}">← Ünite ${i}</a>`:"<span></span>"}${i<LEVELS.length-1?`<a class="link" href="#unit-${i+2}">Ünite ${i+2} →</a>`:""}</div>`;
+}
+/* ---------- MEB müfredatı eşleştirme (#meb, #meb-N) ----------
+   Veri meb.js'te (MEB). S.grade: çocuğun okuldaki sınıfı (2–8) ya da null. Seçilince ünite kartlarında "🏫 Tema N" görünür. */
+let mebView = null;
+const mebGrade = g => MEB.find(x=>x.g === g) || null;
+const mebTags = i => { const G = S && mebGrade(S.grade); return G ? G.themes.map((t,k)=>({t,k})).filter(x=>x.t.u.includes(i+1)) : []; };
+function mebUnit(n){
+  const i = n-1, L = LEVELS[i]; if(!L) return "";
+  const st = !unitOpen(i) ? "🔒" : hardDone(i) ? "👑" : easyDone(i) ? "✓" : "";
+  return `<a class="mebu ${unitOpen(i)?"":"locked"}" href="#unit-${n}"><span class="ic">${L.icon}</span><span style="min-width:0"><b>Ünite ${n} · ${L.theme}</b><span class="tr">${stageOf(i).e} ${stageOf(i).n} · ${L.tr}</span></span>${st ? `<span class="chip ${st==="🔒"?"":"ok"}">${st}</span>` : ""}</a>`;
+}
+function mebHTML(){
+  const G = mebGrade(mebView);
+  const pick = `<div class="row">${MEB.map(x=>`<a class="chip ${x.g===mebView?"on":""}" href="#meb-${x.g}">${x.g}. sınıf${x.g===S.grade?" 🏫":""}</a>`).join("")}</div>`;
+  const head = `<div class="row between"><a class="link" href="#units">← Derslerim</a><span class="chip">🏫 Okuldaki derse göre</span></div>
+  <section class="panel"><div class="eyebrow">MEB İngilizce · Okulla birlikte</div><h1>🏫 Okulda hangi temadasın?</h1>
+    <p class="muted">Sınıfını seç: okuldaki İngilizce dersinin her teması için Ollie'de çalışabileceğin üniteleri gösteriyoruz. Okulda işlediğin konuyu burada şarkı, oyun ve testlerle pekiştir.</p>${pick}</section>`;
+  if(!G) return head;
+  const mine = G.g === S.grade;
+  return head + `<section class="panel"><div class="row between"><div><div class="eyebrow">${G.prog==="maarif" ? "Türkiye Yüzyılı Maarif Modeli" : "2018 İngilizce programı"} · ${G.lv}</div><h2 style="margin:2px 0">${G.g}. sınıf İngilizce · ${G.themes.length} ${G.prog==="maarif" ? "tema" : "ünite"}</h2></div>
+      ${mine ? `<button class="btn ghost small" data-act="setGrade" data-arg="0">Seçimi kaldır</button>` : `<button class="btn small" data-act="setGrade" data-arg="${G.g}">🏫 Benim sınıfım</button>`}</div>
+    ${mine ? `<p class="tr">✓ Ünite kartlarında okuldaki tema numarası görünür.</p>` : `<p class="tr">“Benim sınıfım” dersen Derslerim'deki ünite kartlarında okuldaki tema numarası da görünür.</p>`}
+    ${G.note ? `<p class="tr">ℹ️ ${G.note}</p>` : ""}</section>
+  ${G.themes.map((t,k)=>`<section class="panel mebtheme"><div class="eyebrow">${G.prog==="maarif" ? "Tema" : "Ünite"} ${k+1}</div><h2 style="margin:2px 0">${t.n} <span class="tr">${t.tr}</span></h2>
+    <p class="tr">Okulda: ${t.top}</p><div class="mebus">${t.u.map(mebUnit).join("")}</div></section>`).join("")}
+  <p class="tr">Bu eşleştirme Ollie'nin önerisidir, MEB'in resmî eşleştirmesi değildir. Tema adları MEB'in İngilizce öğretim programlarından alınmıştır (2026-2027). Okulunuzdaki kitabın konuları biraz farklı olabilir.</p>`;
 }
 /* ---------- Yazdırılabilir çalışma kâğıdı (#sheet-N) ---------- */
 let sheetSeed = 0, sheetKey = true, sheetUnit = 0;
@@ -1997,6 +2041,7 @@ function profileHTML(){
       <div class="stat"><b>${STAGES.filter(g=>exPassed(g.id)).length}/${STAGES.length}</b><span>📜 Sertifika</span></div>
     </div>
     ${STAGES.some(g=>exPassed(g.id)) ? `<div class="row">${STAGES.filter(g=>exPassed(g.id)).map(g=>`<a class="chip ok" href="#cert-${g.id}">${EX_BADGE[g.id]} ${g.n} sertifikası</a>`).join("")}</div>` : `<p class="tr">📝 <a class="link" href="#exams">Deneme sınavlarını</a> geçince sertifikaların burada görünür.</p>`}
+    <p class="tr">🏫 ${S.grade ? `Okulda <b>${S.grade}. sınıf</b>. <a class="link" href="#meb">Okuldaki temalara uygun üniteler →</a>` : `<a class="link" href="#meb">Okulda kaçıncı sınıfsın? Okuldaki derse uygun üniteleri bul →</a>`}</p>
     <p class="tr">İlerlemen veli hesabına kaydedilir. Aynı hesapla giriş yapılan her cihazdan kaldığın yerden devam edebilirsin.</p>
     <div class="row" id="resetRow"><button class="btn ghost small" data-act="reset">↺ İlerlemeyi sıfırla</button></div>
   </section>
@@ -3297,6 +3342,7 @@ document.addEventListener("click", e => {
     case "delNo": render(); return;
     case "delAccount": $("#delAcc").innerHTML = `<form id="delForm" class="stack" novalidate><div class="fb try">Veli hesabın ve bütün çocuk profilleri kalıcı olarak silinir. Bu işlem geri alınamaz.</div><label for="dp">Onaylamak için şifreni yaz</label><input class="field" id="dp" type="password" autocomplete="current-password"><div id="delMsg" role="alert"></div><div class="row"><button class="btn small" type="submit">Hesabımı kalıcı olarak sil</button><button class="btn ghost small" type="button" data-act="delNo">Vazgeç</button></div></form>`; return;
     case "avatar": if(!S){ regAvatar = arg; document.querySelectorAll(".avas button").forEach(x=>x.classList.toggle("on", x.dataset.arg===arg)); return; } S.avatar = arg; save(); updateTop(); document.querySelectorAll(".avas button").forEach(x=>x.classList.toggle("on", x.dataset.arg===arg)); if(page==="profile") render(); say("Nice choice!", `${arg} çok yakıştı!`); return;
+    case "setGrade": S.grade = +arg || null; save(); toast(S.grade ? `Okuldaki sınıfın: ${S.grade}. sınıf 🏫` : "Sınıf seçimi kaldırıldı."); if(S.grade) history.replaceState(null, "", "#meb-"+S.grade); mebView = S.grade || mebView; render(); return;
     case "startStep": { const [i,k] = arg.split(":"); return startStep(+i, k); }
     case "twPick": { if(play.solved) return; const j = +arg; play.msg = "";
       play.picked = play.picked.includes(j) ? play.picked.filter(x=>x!==j) : play.picked.concat(j);
