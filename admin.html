@@ -84,7 +84,8 @@ tr.click{cursor:pointer} tr.click:hover td{background:var(--soft)}
 <script>
 const API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? "http://localhost:8787/api" : "https://ollie-akademi-api.ollieakademi.workers.dev/api";
 const AKEY = "ollie-akademi-auth";
-const UNITS = ["Animals","Colors","School Things","Family","Daily Routines","Food","Weather","My Body","Clothes","Hobbies"];
+const UNITS = ["Animals","Colors","School Things","Family","Daily Routines","Food","Weather","My Body","Clothes","Hobbies",
+  "Jobs","My Town","Feelings","Health","Wild Animals","Nature","My Home","Food and Drinks","Sports","Last Weekend"];
 let auth = (()=>{ try{ const a = JSON.parse(localStorage.getItem(AKEY)); return a && a.token ? a : null; }catch(e){ return null; } })();
 const $ = s => document.querySelector(s);
 const esc = t => String(t ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));

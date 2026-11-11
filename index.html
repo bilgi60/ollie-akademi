@@ -235,7 +235,8 @@ span.chunk{display:inline-block;box-shadow:none}
 .helpmask{font-family:var(--display);font-weight:700;font-size:1.4rem;letter-spacing:.25em;white-space:nowrap}
 :is(.opt,.ans).gone{opacity:.25;pointer-events:none;filter:grayscale(1)}
 .build .tile.lock{background:var(--leaf-soft);color:var(--ink);border-color:var(--leaf);box-shadow:none;cursor:default}
-.ptbar{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}.ptbar span{height:8px;border-radius:99px;background:var(--line)}.ptbar span.ok{background:var(--leaf)}.ptbar span.now{background:var(--sun)}.ptbar span.no{background:var(--berry)}
+.ptbar{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.stage{margin-top:18px}.stage.soon{opacity:.75}.stagehead{display:flex;align-items:center;gap:12px;margin:0 2px 10px;flex-wrap:wrap}.stagehead .ic{font-size:2rem}.stagehead h2{margin:2px 0}.stagehead>div{flex:1}.ptbar span{height:8px;border-radius:99px;background:var(--line)}.ptbar span.ok{background:var(--leaf)}.ptbar span.now{background:var(--sun)}.ptbar span.no{background:var(--berry)}
 .opt.pick{border-color:var(--ink);background:var(--soft)}
 .chal{background:var(--sky-soft);border:2px solid var(--sky);border-radius:16px;padding:10px 14px;font-weight:600}
 :is(.kind,.chip).hot{background:var(--sun);color:#22304A}
@@ -410,6 +411,7 @@ body.sheeton #sheet{display:block;max-width:232mm;margin:0 auto;padding:16px}
 <div id="sheet"></div>
 <div id="toastBox" aria-live="polite"></div>
 
+<script src="units-a1.js"></script>
 <script>
 const LEVELS = [
  { rank:"Novice Explorer", theme:"Animals", tr:"Hayvanlar ve yetenekleri", icon:"🐾",
@@ -1113,6 +1115,23 @@ function evalWriting(i, text){
   const pts = n < WMIN ? 0 : 20 + Math.min(used.length*2, 10) + pat.filter(Boolean).length*5 + (tidy?5:0) + (n>=WLONG?5:0);
   return {n, used, checks, pts};
 }
+/* ---------- Seviyeler (Cambridge YLE) ----------
+   Ünite 1–10 Starters (Pre-A1) index.html'de; Ünite 11–20 Movers (A1) units-a1.js'te (UNITS_A1).
+   Her ek ünite {L, songs, reading, listening, speaking, write, towers}; burada ortak dizilere eklenir. */
+const STAGES = [
+  {id:"starters", n:"Starters", lv:"Pre-A1", e:"🌱", tr:"Başlangıç: kelimeler, kısa cümleler", from:0, to:10},
+  {id:"movers", n:"Movers", lv:"A1", e:"🚀", tr:"Daha uzun cümleler, karşılaştırma, geçmiş zaman", from:10, to:20},
+  {id:"flyers", n:"Flyers", lv:"A2", e:"🪁", tr:"Yakında: hikâye anlatma, zamanlar, paragraf yazma", from:20, to:30}
+];
+(typeof UNITS_A1 !== "undefined" ? UNITS_A1 : []).forEach(u=>{
+  const i = LEVELS.length;
+  u.L.songs = [u.L.song].concat(u.songs || []);
+  LEVELS.push(u.L); READING.push(u.reading); LISTENING.push(u.listening); SPEAKING.push(u.speaking); WRITE.push(u.write);
+  TOWERS[i] = u.towers || [];
+});
+const stageOf = i => STAGES.find(g => i >= g.from && i < g.to) || STAGES[0];
+const stageUnits = g => LEVELS.map((L,i)=>({L,i})).filter(x => x.i >= g.from && x.i < g.to);
+const N = () => LEVELS.length;
 const AVAS = ["🦊","🐼","🐯","🐸","🐰","🦁","🐨","🐙"];
 const DAILY = 50;
 const KEY = "ollie-english-v1";
@@ -1277,7 +1296,9 @@ const BADGES = [
   {id:"review5", e:"🔁", n:"Unutmayan Baykuş", d:"5 kez Bugünün Tekrarı'nı bitir.", ok:()=>S.revN>=5},
   {id:"tower1", e:"🧱", n:"Kule Ustası", d:"İlk Cümle Kulesini bitir.", ok:()=>towerCount()>=1},
   {id:"combo10", e:"⚡", n:"Durdurulamaz", d:"10 soruyu üst üste ilk denemede bil.", ok:()=>S.ad.m>=10},
-  {id:"legend", e:"👑", n:"Efsane", d:"10 ünitenin zor testlerini bitir.", ok:()=>hardCount()>=10}
+  {id:"legend", e:"👑", n:"Efsane", d:"10 ünitenin zor testlerini bitir.", ok:()=>hardCount()>=10},
+  {id:"movers1", e:"🚀", n:"Movers'a Merhaba", d:"İlk Movers (A1) ünitesinin kolay testini bitir.", ok:()=>LEVELS.some((_,i)=>i>=10 && i<20 && easyDone(i))},
+  {id:"movers", e:"🎓", n:"Movers Mezunu", d:"Movers (A1) ünitelerinin hepsinin kolay testini bitir.", ok:()=>LEVELS.length>=20 && LEVELS.every((_,i)=>i<10 || i>=20 || easyDone(i))}
 ];
 function checkBadges(silent){
   const fresh = BADGES.filter(b=>!S.badges.includes(b.id) && b.ok());
@@ -1719,18 +1740,27 @@ function unitCard(L,i){
   const open = unitOpen(i), pct = unitPct(i);
   const status = !open ? `<span class="chip">🔒 Kilitli</span>` : hardDone(i) ? `<span class="chip ok">👑 Tamam</span>` : easyDone(i) ? `<span class="chip ok">✓ Kolay bitti</span>` : unitSteps(i) ? `<span class="chip">Devam ediyor</span>` : `<span class="chip">Yeni</span>`;
   return `<a class="unit ${open?"":"locked"}" href="#unit-${i+1}" ${open?"":'aria-disabled="true"'}>
-    <div class="top"><span class="ic">${L.icon}</span><div style="min-width:0"><div class="no">Ünite ${i+1} · ${L.rank}</div><div class="nm">${L.theme}</div><div class="tr">${L.tr}</div></div></div>
+    <div class="top"><span class="ic">${L.icon}</span><div style="min-width:0"><div class="no">${stageOf(i).e} Ünite ${i+1} · ${L.rank}</div><div class="nm">${L.theme}</div><div class="tr">${L.tr}</div></div></div>
     <div class="bar"><i style="width:${pct}%"></i></div>
     <div class="meta"><span>${status}</span><span>%${pct}</span></div></a>`;
 }
 function unitsHTML(){
   return `<section class="panel">
     <div class="eyebrow">Derslerim · My Units</div>
-    <h1>10 ünite, 40 ders</h1>
-    <p class="muted">Her ünitede sırayla: 🎵 Şarkı · 🃏 Kelime Kartları · 🐣 Kolay Test · 🦅 Zor Test. Kolay testi bitirdiğinde sonraki ünite açılır.</p>
+    <h1>${N()} ünite, ${N()*4} ders</h1>
+    <p class="muted">Her ünitede sırayla: 🎵 Şarkı · 🃏 Kelime Kartları · 🐣 Kolay Test · 🦅 Zor Test. Kolay testi bitirdiğinde sonraki ünite açılır. Seviyeler Cambridge sınavlarının sırasını izler: 🌱 Starters → 🚀 Movers → 🪁 Flyers.</p>
     <div class="row"><a class="btn ghost small" href="#placement">🎯 Seviye testi</a><span class="tr">${S.place && !S.place.skip ? `Son sonuç: Ünite ${den(S.place.u+1)} başla (${fmtDate(S.place.d+"T12:00")}).` : "İngilizceyi biraz biliyorsan, kısa testle uygun üniteye atla."}</span></div>
   </section>
-  <div class="grid g3">${LEVELS.map(unitCard).join("")}</div>`;
+  ${STAGES.map(stageHTML).join("")}`;
+}
+function stageHTML(g){
+  const us = stageUnits(g), done = us.filter(x=>easyDone(x.i)).length, open = us.some(x=>unitOpen(x.i));
+  const head = `<div class="stagehead"><span class="ic">${g.e}</span><div style="min-width:0"><div class="eyebrow">${g.n} · ${g.lv}${us.length ? ` · Ünite ${g.from+1}–${g.from+us.length}` : ""}</div>
+    <h2>${g.n} <span class="chip">${g.lv}</span></h2><div class="tr">${g.tr}</div></div>
+    ${us.length ? `<span class="chip ${done===us.length?"ok":""}">${done===us.length ? "✓ " : open ? "" : "🔒 "}${done}/${us.length} ünite</span>` : `<span class="chip">⏳ Yakında</span>`}</div>`;
+  if(!us.length) return `<section class="stage soon">${head}</section>`;
+  return `<section class="stage">${head}${!open ? `<p class="tr">${STAGES[STAGES.indexOf(g)-1].n} seviyesinin son ünitesini bitirince açılır. İngilizcen iyiyse <a class="link" href="#placement">🎯 seviye testi</a> seni buraya da atlatabilir.</p>` : ""}
+    <div class="grid g3">${us.map(x=>unitCard(x.L, x.i)).join("")}</div></section>`;
 }
 function lessonRow(i, kind){
   const l = LESSON[kind], L = LEVELS[i];
@@ -1901,14 +1931,14 @@ function profileHTML(){
   </section>
   <section class="panel"><h2>İlerleme</h2>
     <div class="stats">
-      <div class="stat"><b>${lessonCount("s")}/10</b><span>🎵 Şarkı dersi</span></div>
-      <div class="stat"><b>${lessonCount("c")}/10</b><span>🃏 Kelime dersi</span></div>
-      <div class="stat"><b>${easyCount()}/10</b><span>🐣 Kolay test</span></div>
-      <div class="stat"><b>${hardCount()}/10</b><span>🦅 Zor test</span></div>
-      <div class="stat"><b>${skCount("reading")}/10</b><span>📕 Reading</span></div>
+      <div class="stat"><b>${lessonCount("s")}/${N()}</b><span>🎵 Şarkı dersi</span></div>
+      <div class="stat"><b>${lessonCount("c")}/${N()}</b><span>🃏 Kelime dersi</span></div>
+      <div class="stat"><b>${easyCount()}/${N()}</b><span>🐣 Kolay test</span></div>
+      <div class="stat"><b>${hardCount()}/${N()}</b><span>🦅 Zor test</span></div>
+      <div class="stat"><b>${skCount("reading")}/${N()}</b><span>📕 Reading</span></div>
       <div class="stat"><b>${bookCount()}/${BOOKS.length}</b><span>📚 Kütüphane kitabı</span></div>
-      <div class="stat"><b>${skCount("listening")}/10</b><span>🎧 Listening</span></div>
-      <div class="stat"><b>${skCount("speaking")}/10</b><span>🗣️ Speaking</span></div>
+      <div class="stat"><b>${skCount("listening")}/${N()}</b><span>🎧 Listening</span></div>
+      <div class="stat"><b>${skCount("speaking")}/${N()}</b><span>🗣️ Speaking</span></div>
       <div class="stat"><b>${towerCount()}/${towerTotal()}</b><span>🧱 Cümle Kulesi</span></div>
       <div class="stat"><b>${S.ad.m}</b><span>⚡ En uzun doğru serisi</span></div>
     </div>
@@ -2502,7 +2532,7 @@ function revNext(){
    Sonuç S.place = {u: başlangıç ünitesi, d: tarih, r: doğru, n: soru}. 0..u ünitelerinin hepsi açılır (unitOpen), "Kaldığın yerden devam"
    u'dan başlar. Geçilen ünitelerin kelimeleri birkaç gün sonra Bugünün tekrarı'na gelir. Testte doğru/yanlış gösterilmez (çocuk üzülmesin). */
 let pt = null;
-const den = n => n + ({3:"'ten",4:"'ten",5:"'ten",6:"'dan",9:"'dan",10:"'dan"}[n] || "'den");   // Türkçe ayrılma eki: 4'ten, 6'dan
+const den = n => n + (n % 10 ? {3:"'ten",4:"'ten",5:"'ten",6:"'dan",9:"'dan"}[n % 10] || "'den" : {1:"'dan",2:"'den",3:"'dan",4:"'tan"}[n / 10] || "'den");   // Türkçe ayrılma eki: 4'ten, 6'dan, 10'dan, 20'den
 function ptVocab(u, type, not){
   const cards = LEVELS[u].cards.filter(c=>c.w !== not), c = cards[Math.floor(Math.random()*cards.length)];
   const opts = LEVELS[u].cards.filter(x=>x.w!==c.w).sort(()=>Math.random()-.5).slice(0,2).concat(c).sort(()=>Math.random()-.5);
@@ -2631,7 +2661,7 @@ function skillListHTML(type){
   }[type];
   const note = type==="speaking" && !SR ? `<div class="fb try">Bu tarayıcı konuşmayı dinleyemiyor. Chrome, Edge ya da Safari'de Ollie sesini kontrol eder. Burada da çalışabilirsin: cümleyi yüksek sesle söyleyip "I said it!" düğmesine bas.</div>` : "";
   return `<section class="panel"><div class="eyebrow">${K.n} · ${K.tr}</div><h1>${K.e} ${K.n}</h1><p class="muted">${desc}</p>${note}
-    <div class="row"><span class="chip ok">✓ ${skCount(type)}/10 ünite tamam</span></div>
+    <div class="row"><span class="chip ok">✓ ${skCount(type)}/${N()} ünite tamam</span></div>
     ${type==="reading" ? `<div class="continue" style="margin-top:12px"><span class="ic">📚</span><div class="txt"><div class="eyebrow">Yeni · Okuma Kütüphanesi</div><h3>${BOOKS.length} resimli kitap, 3 seviye</h3><span class="tr">${bookCount()} kitap okudun. Ünite hikâyelerinden sonra seviyene uygun kitaplarla devam et.</span></div><a class="btn" href="#library">Kütüphane ▶</a></div>` : ""}</section>
   <div class="grid g3">${LEVELS.map((L,i)=>{ const open = unitOpen(i), n = skDone(type,i).length, tot = K.total(i), done = n >= tot;
     const nm = type==="reading" ? READING[i].title : L.theme;

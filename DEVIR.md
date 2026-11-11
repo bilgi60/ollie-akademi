@@ -10,6 +10,15 @@
 > - **Madde 6 BİTTİ (dal `claude/blissful-curie-oeo7li`), main'e alındı 2026-11-11, YAYINDA.** Worker da yeniden yayınlandı (2026-11-11).
 > - **Madde 5 BİTTİ (aynı dal), main'e alındı 2026-11-11, YAYINDA.** Sıradaki: **Madde 7 — Seviyeli okuma kütüphanesi.**
 > - **Madde 7 BİTTİ (dal `claude/friendly-dijkstra-r4vmx7`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Sıradaki: **Madde 8 — Movers (A1) + Flyers (A2) üniteleri.**
+> - **Madde 8, 1. kısım BİTTİ: Movers (A1) 10 ünite (dal `claude/charming-bohr-98r69d`, 2026-11-11; Madde 7'nin dalı da bu dala birleştirildi) — main'e ALINMADI, kullanıcı onayı bekleniyor.** Sıradaki: **Madde 8, 2. kısım — Flyers (A2) 10 ünite** (aynı yöntemle `units-a2.js`), sonra KET/PET hazırlık.
+
+> **Son durum (2026-11-11, 15. oturum): Movers (A1) üniteleri (Ünite 11–20).**
+> - Yeni dosya `units-a1.js` (`const UNITS_A1 = [...]`), `index.html` bunu ana betikten önce yükler ve "Seviyeler" bölümünde üniteleri `LEVELS/READING/LISTENING/SPEAKING/WRITE/TOWERS`'a ekler. Her ünite: 8 kart, 5 şarkı, kolay + zor test, yazma görevi, okuma, 5 dinleme, 5 konuşma, 3 Cümle Kulesi. Kütüphane kitabı YOK (ileride).
+> - Üniteler: 11 Jobs · 12 My Town · 13 Feelings · 14 Health · 15 Wild Animals (karşılaştırma) · 16 Nature (en üstünlük) · 17 My Home · 18 Food and Drinks (some/any) · 19 Sports (like + -ing) · 20 Last Weekend (geçmiş zaman).
+> - `STAGES` (Starters Pre-A1 / Movers A1 / Flyers A2 "yakında"): Derslerim sayfası seviyelere göre gruplu, ünite kartlarında seviye emojisi. Ünite 11, Ünite 10'un kolay testiyle açılır; seviye testi de 20 üniteye kadar ilerler. Profildeki "/10" sayaçları ünite sayısına göre. Yeni rozetler: 🚀 Movers'a Merhaba, 🎓 Movers Mezunu. `den()` (11'den, 20'den) düzeltildi. `admin.html` ünite adları güncellendi.
+> - İçerik denetimi: `node api/tools/check-units.js units-a1.js` (yapı, cevap seçeneklerde mi, şarkı satırı, yazma örneği kontrolleri geçiyor mu, kelime tekrarı yok mu). İçerik alt ajanlarla yazıldı; Türkçe/İngilizce bir insan gözüyle henüz okunmadı.
+> - `api/tools/gen-content.mjs` artık `units-a1.js`'i de okur; `content.js` yeniden üretildi (20 ünite, 25 rozet). Yayına alırken Worker'ı yeniden yayınla (rapordaki ünite/rozet adları için): `cd api && CLOUDFLARE_API_TOKEN=proxy-injected CLOUDFLARE_ACCOUNT_ID=9a69de8230786ced37e7236b8221b494 npx wrangler deploy`.
+> - Tarayıcıda (sahte API, telefon genişliği) 10 ünitenin hepsi otomatik oynandı: şarkılar, kolay/zor testler, 30 kule, yazma, okuma/dinleme/konuşma sayfaları, çalışma kâğıdı; hata yok, yatay kayma yok, ilerleme sunucuya kaydediliyor.
 
 
 > **Son durum (2026-11-11, 14. oturum): Seviyeli okuma kütüphanesi.**
