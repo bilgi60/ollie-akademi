@@ -10,3 +10,7 @@ database_id = "601b4677-e081-4687-a775-b1cba7108218"
 
 [vars]
 ALLOWED_ORIGINS = "https://ollieakademi.com,https://www.ollieakademi.com,http://ollieakademi.com,http://www.ollieakademi.com,https://bilgi60.github.io,http://localhost:8000"
+
+# Haftalık veli raporu: pazar 18:00–20:40 (Türkiye) arası her 20 dakikada bir parti gönderilir
+[triggers]
+crons = ["0,20,40 15-17 * * SUN"]

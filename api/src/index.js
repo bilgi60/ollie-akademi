@@ -1,5 +1,6 @@
 // Ollie Akademi API — Cloudflare Worker + D1
 // Veli hesapları, çocuk profilleri, ilerleme ve yönetici paneli.
+import { reportWeek, snapshot, childReport, reportMail } from "./report.js";
 
 const SESSION_DAYS = 60;
 const MAX_CHILDREN = 6;
@@ -74,7 +75,7 @@ async function auth(req, env) {
     await env.DB.prepare("UPDATE parents SET last_seen = ? WHERE id = ?").bind(now(), p.id).run();
   return p;
 }
-const publicParent = p => ({ id: p.id, email: p.email, role: p.role, status: p.status, email_verified: !!p.email_verified, created_at: p.created_at });
+const publicParent = p => ({ id: p.id, email: p.email, role: p.role, status: p.status, email_verified: !!p.email_verified, weekly_report: p.weekly_report !== 0, created_at: p.created_at });
 const childSummary = c => ({ id: c.id, name: c.name, avatar: c.avatar, score: c.score, created_at: c.created_at, updated_at: c.updated_at });
 
 async function getChild(env, parent, id) {
@@ -190,7 +191,8 @@ async function updateChild(req, env, p, id) {
   const stmts = [env.DB.prepare("UPDATE children SET name = ?, avatar = ?, score = ?, data = ?, updated_at = ? WHERE id = ?")
     .bind(name, avatar, score, JSON.stringify(data), now(), c.id)];
   if (b.data != null && score !== c.score)
-    stmts.push(env.DB.prepare("INSERT OR IGNORE INTO activity (child_id, day) VALUES (?, ?)").bind(c.id, trDay()));
+    stmts.push(env.DB.prepare("INSERT INTO activity (child_id, day, pts) VALUES (?, ?, ?) ON CONFLICT(child_id, day) DO UPDATE SET pts = pts + excluded.pts")
+      .bind(c.id, trDay(), Math.max(0, Math.min(1000, score - c.score))));
   await env.DB.batch(stmts);
   return json({ ok: true, updated_at: now() });
 }
@@ -199,6 +201,7 @@ async function deleteChild(req, env, p, id) {
   const c = await getChild(env, p, id);
   await env.DB.batch([
     env.DB.prepare("DELETE FROM activity WHERE child_id = ?").bind(c.id),
+    env.DB.prepare("DELETE FROM report_snap WHERE child_id = ?").bind(c.id),
     env.DB.prepare("DELETE FROM children WHERE id = ?").bind(c.id),
   ]);
   return json({ ok: true });
@@ -207,6 +210,7 @@ async function deleteChild(req, env, p, id) {
 async function removeParent(env, id) {
   await env.DB.batch([
     env.DB.prepare("DELETE FROM activity WHERE child_id IN (SELECT id FROM children WHERE parent_id = ?)").bind(id),
+    env.DB.prepare("DELETE FROM report_snap WHERE child_id IN (SELECT id FROM children WHERE parent_id = ?)").bind(id),
     env.DB.prepare("DELETE FROM children WHERE parent_id = ?").bind(id),
     env.DB.prepare("DELETE FROM sessions WHERE parent_id = ?").bind(id),
     env.DB.prepare("DELETE FROM email_tokens WHERE parent_id = ?").bind(id),
@@ -316,13 +320,13 @@ function mailHTML(env, title, intro, button, link, foot) {
 <p style="font-size:13px;color:#5B6779;line-height:1.5">${foot}</p>
 </div><p style="font-size:12px;color:#5B6779;text-align:center">Ollie Akademi · 7–11 yaş için İngilizce · ollieakademi.com</p></div></body></html>`;
 }
-async function sendMail(env, to, subject, html, text) {
+async function sendMail(env, to, subject, html, text, headers) {
   if (!mailReady(env)) { console.log("E-posta gönderilmedi (RESEND_API_KEY yok):", subject, to); return false; }
   try {
-    const r = await fetch("https://api.resend.com/emails", {
+    const r = await fetch(env.RESEND_URL || "https://api.resend.com/emails", {
       method: "POST",
       headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: env.MAIL_FROM || "Ollie Akademi <bilgi@ollieakademi.com>", to: [to], subject, html, text }),
+      body: JSON.stringify({ from: env.MAIL_FROM || "Ollie Akademi <bilgi@ollieakademi.com>", to: [to], subject, html, text, ...(headers ? { headers } : {}) }),
     });
     if (!r.ok) { console.error("Resend hatası", r.status, await r.text()); return false; }
     return true;
@@ -414,6 +418,112 @@ async function resendVerify(req, env, p) {
   return json({ ok: true });
 }
 
+/* ---------------- Haftalık veli raporu ---------------- */
+const REPORT_BATCH = 40;          // bir çalıştırmada en fazla bu kadar veli (Workers alt istek sınırı)
+const REPORT_IDLE_DAYS = 28;      // bu kadar gündür hiç çalışmayan ailelere rapor gönderilmez
+const apiBase = env => (env.API_URL || "https://ollie-akademi-api.ollieakademi.workers.dev").replace(/\/+$/, "");
+
+async function reportKey(env, p) {
+  if (p.report_key) return p.report_key;
+  const k = randHex(16);
+  await env.DB.prepare("UPDATE parents SET report_key = ? WHERE id = ? AND report_key IS NULL").bind(k, p.id).run();
+  const r = await env.DB.prepare("SELECT report_key FROM parents WHERE id = ?").bind(p.id).first();
+  return r.report_key;
+}
+
+/** Velinin bütün çocukları için bu haftanın raporu. */
+async function buildReports(env, parentId, wk) {
+  const { results: kids } = await env.DB.prepare("SELECT * FROM children WHERE parent_id = ? ORDER BY id").bind(parentId).all();
+  if (!kids.length) return { kids, reports: [] };
+  const ids = kids.map(k => k.id), qs = ids.map(() => "?").join(",");
+  const [acts, snaps] = await env.DB.batch([
+    env.DB.prepare(`SELECT child_id, day, pts FROM activity WHERE child_id IN (${qs}) AND day >= ? AND day <= ?`).bind(...ids, wk.days[0], wk.days[6]),
+    env.DB.prepare(`SELECT child_id, week, data FROM report_snap WHERE child_id IN (${qs}) AND week < ? ORDER BY week`).bind(...ids, wk.key),
+  ]);
+  const reports = kids.map(c => {
+    const act = {}; acts.results.filter(a => a.child_id === c.id).forEach(a => { act[a.day] = a.pts || 0; });
+    const s = snaps.results.filter(x => x.child_id === c.id).pop();
+    let data = {}; try { data = JSON.parse(c.data); } catch {}
+    return { child: c, data, report: childReport(c, data, act, s ? JSON.parse(s.data) : null, wk) };
+  });
+  return { kids, reports };
+}
+
+async function reportFor(env, p, wk) {
+  const { reports } = await buildReports(env, p.id, wk);
+  if (!reports.length) return null;
+  const key = await reportKey(env, p);
+  const unsub = `${site(env)}/#unsub-${p.id}-${key}`;
+  const mail = reportMail(reports.map(r => r.report), wk, site(env), unsub);
+  return { reports, mail, oneClick: `${apiBase(env)}/api/unsubscribe?u=${p.id}&k=${key}` };
+}
+
+async function sendReport(env, p, wk, saveSnap) {
+  const r = await reportFor(env, p, wk);
+  if (!r) return "empty";
+  const ok = await sendMail(env, p.email, r.mail.subject, r.mail.html, r.mail.text,
+    { "List-Unsubscribe": `<${r.oneClick}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" });
+  if (ok && saveSnap) {
+    await env.DB.batch(r.reports.map(x => env.DB.prepare("INSERT OR REPLACE INTO report_snap (child_id, week, data) VALUES (?, ?, ?)")
+      .bind(x.child.id, wk.key, JSON.stringify(snapshot(x.child.score, x.data)))));
+  }
+  return ok ? "sent" : "fail";
+}
+
+/** Zamanlanmış görev: pazar akşamı rapor alması gereken velilere parti parti gönderir. */
+export async function runWeeklyReports(env, t = now()) {
+  if (!mailReady(env)) { console.log("Haftalık rapor atlandı: RESEND_API_KEY yok"); return { sent: 0 }; }
+  const wk = reportWeek(t);
+  const { results } = await env.DB.prepare(
+    `SELECT * FROM parents p WHERE p.status = 'active' AND p.email_verified = 1 AND p.weekly_report = 1
+       AND (p.report_week IS NULL OR p.report_week != ?)
+       AND EXISTS (SELECT 1 FROM children c WHERE c.parent_id = p.id AND c.updated_at > ?)
+     ORDER BY p.id LIMIT ?`).bind(wk.key, t - REPORT_IDLE_DAYS * 86400_000, REPORT_BATCH).all();
+  let sent = 0, failed = 0;
+  for (const p of results) {
+    const r = await sendReport(env, p, wk, true);
+    if (r === "fail") { failed++; continue; }          // bir sonraki çalıştırmada yeniden denenir
+    await env.DB.prepare("UPDATE parents SET report_week = ? WHERE id = ?").bind(wk.key, p.id).run();
+    if (r === "sent") sent++;
+    await new Promise(res => setTimeout(res, 600)); // Resend hız sınırı
+  }
+  await env.DB.prepare("DELETE FROM report_snap WHERE week < ?").bind(reportWeek(t - 35 * 86400_000).key).run();
+  console.log(`Haftalık rapor ${wk.key}: ${sent} gönderildi, ${failed} hata, ${results.length} aday`);
+  return { sent, failed, candidates: results.length };
+}
+
+async function reportPreview(req, env, p) {
+  const r = await reportFor(env, p, reportWeek());
+  if (!r) bad("Önce bir çocuk profili ekle.", 404);
+  return new Response(r.mail.html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+}
+
+async function settings(req, env, p) {
+  const b = await body(req);
+  if (b.weekly_report != null) await env.DB.prepare("UPDATE parents SET weekly_report = ? WHERE id = ?").bind(b.weekly_report ? 1 : 0, p.id).run();
+  const fresh = await env.DB.prepare("SELECT * FROM parents WHERE id = ?").bind(p.id).first();
+  return json({ ok: true, parent: publicParent(fresh) });
+}
+
+async function unsubscribe(req, env) {
+  const url = new URL(req.url);
+  let u = url.searchParams.get("u"), k = url.searchParams.get("k");
+  if (!u && (req.headers.get("Content-Type") || "").includes("json")) { const b = await body(req); u = b.u; k = b.k; }
+  if (!/^\d+$/.test(String(u || "")) || !/^[0-9a-f]{32}$/.test(String(k || ""))) bad("Bağlantı geçersiz.");
+  const p = await env.DB.prepare("SELECT id, report_key FROM parents WHERE id = ?").bind(+u).first();
+  if (!p || !p.report_key || !safeEq(p.report_key, k)) bad("Bağlantı geçersiz ya da hesap silinmiş.", 404);
+  await env.DB.prepare("UPDATE parents SET weekly_report = 0 WHERE id = ?").bind(p.id).run();
+  return json({ ok: true });
+}
+
+async function adminReportSendMe(req, env, admin) {
+  if (!mailReady(env)) bad("E-posta gönderimi açık değil (RESEND_API_KEY yok).", 503);
+  const r = await sendReport(env, admin, reportWeek(), false);
+  if (r === "empty") bad("Hesabında çocuk profili yok; rapor boş olur.", 404);
+  if (r === "fail") bad("E-posta gönderilemedi.", 502);
+  return json({ ok: true });
+}
+
 /* ---------------- Yönlendirme ---------------- */
 
 async function handle(req, env, ctx) {
@@ -427,6 +537,7 @@ async function handle(req, env, ctx) {
   if (path === "/api/reset" && M === "POST") return resetPassword(req, env);
   if (path === "/api/verify" && M === "POST") return verifyEmail(req, env);
   if (path === "/api/login" && M === "POST") return login(req, env);
+  if (path === "/api/unsubscribe" && M === "POST") return unsubscribe(req, env);
 
   const p = await auth(req, env);
   if (path === "/api/logout" && M === "POST") return logout(req, env, p);
@@ -434,6 +545,8 @@ async function handle(req, env, ctx) {
   if (path === "/api/me/password" && M === "POST") return changePassword(req, env, p);
   if (path === "/api/me/delete" && M === "POST") return deleteAccount(req, env, p);
   if (path === "/api/me/verify-email" && M === "POST") return resendVerify(req, env, p);
+  if (path === "/api/me/settings" && M === "POST") return settings(req, env, p);
+  if (path === "/api/me/report" && M === "GET") return reportPreview(req, env, p);
   if (path === "/api/children" && M === "POST") return createChild(req, env, p);
   if ((m = path.match(/^\/api\/children\/(\d+)$/))) {
     if (M === "GET") return readChild(req, env, p, +m[1]);
@@ -444,6 +557,7 @@ async function handle(req, env, ctx) {
     needAdmin(p);
     if (path === "/api/admin/stats" && M === "GET") return adminStats(req, env);
     if (path === "/api/admin/parents" && M === "GET") return adminParents(req, env);
+    if (path === "/api/admin/report-send-me" && M === "POST") return adminReportSendMe(req, env, p);
     if ((m = path.match(/^\/api\/admin\/parents\/(\d+)$/))) {
       if (M === "GET") return adminParent(req, env, +m[1]);
       if (M === "DELETE") return adminDelete(req, env, p, +m[1]);
@@ -467,5 +581,8 @@ export default {
       console.error(e);
       return json({ error: "Sunucuda bir sorun oldu. Biraz sonra tekrar dene." }, 500, ch);
     }
+  },
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(runWeeklyReports(env, event.scheduledTime).catch(e => console.error("Haftalık rapor hatası", e)));
   },
 };

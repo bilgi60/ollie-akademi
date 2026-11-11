@@ -4,7 +4,18 @@
 > - Sıra: 1) Akıllı tekrar ("Bugünün tekrarı") → 2) Yanlış cevabı Türkçe açıklama → 3) Veliye haftalık e-posta raporu (Resend kurulu) → 4) Yazdırılabilir çalışma kâğıdı → 5) Seviye tespit testi → 6) Uyarlanabilir zorluk → 7) Seviyeli okuma kütüphanesi → 8) Movers (A1) + Flyers (A2) üniteleri, sonra KET/PET hazırlık → 9) MEB müfredatı eşleştirme → 10) Ollie ile yapay zekâ sohbeti → 11) Hece düzeyinde telaffuz puanı → 12) Öğretmen/sınıf hesabı.
 > - Her madde (ya da birkaç küçük madde) ayrı sohbette. Her biri bitince: tarayıcıda dene, main'e almadan önce kullanıcıya sor, bu nota "biten/sıradaki" yaz.
 > - **Madde 1 BİTTİ (dal `claude/bold-planck-a54j4l`, main'e alındı 2026-11-11, YAYINDA).** 
-> - **Madde 2 BİTTİ (dal `claude/cool-thompson-cddezq`, 2026-11-11). main'e alındı 2026-11-11, YAYINDA.** Sıradaki: **Madde 3 — Veliye haftalık e-posta raporu.**
+> - **Madde 2 BİTTİ (dal `claude/cool-thompson-cddezq`, 2026-11-11). main'e alındı 2026-11-11, YAYINDA.**
+> - **Madde 3 YAZILDI (dal `claude/eloquent-davinci-bm11d7`, 2026-11-11) — HENÜZ YAYINDA DEĞİL.** Yayına almak için kullanıcı onayıyla sırayla: (1) canlı veritabanına göç (BİR KEZ!): `cd api && CLOUDFLARE_API_TOKEN=proxy-injected CLOUDFLARE_ACCOUNT_ID=9a69de8230786ced37e7236b8221b494 npx wrangler d1 execute ollie-akademi-db --remote --yes --file=migrations-0003-report.sql` (2) aynı değişkenlerle `npx wrangler deploy` (3) dalı main'e al. Sonra yönetici hesabıyla Veli paneli → "✉️ Bana şimdi gönder" ile gerçek e-postayı dene. Bitince sıradaki: **Madde 4 — Yazdırılabilir çalışma kâğıdı.**
+
+> **Son durum (2026-11-11, 11. oturum): Veliye haftalık e-posta raporu.**
+> - Her pazar 18:00–20:40 (Türkiye) arası Worker zamanlayıcısı (`wrangler.toml` → `[triggers] crons`) her 20 dakikada bir en fazla 40 veliye rapor gönderir (Workers'ın 50 alt istek sınırı yüzünden parti parti). Koşullar: hesap aktif, e-posta doğrulanmış, rapor açık, son 28 günde çalışan en az bir çocuk var, o haftaya daha önce gönderilmemiş (`parents.report_week`). Gönderilemezse sonraki çalıştırmada yeniden denenir.
+> - Rapor (çocuk başına): bu hafta yıldız, çalıştığı gün (Pt–Pz yuvarlakları), seri, toplam yıldız, şu anki ünite ve yüzdesi, bu hafta bitirdiği dersler, Bugünün tekrarı tur sayısı, yeni rozetler, zorlandığı kelimeler (Türkçesiyle), tekrarı bekleyen kelime sayısı, veliye haftalık ipucu.
+> - "Bu hafta" farkı için her gönderimde çocuğun özeti `report_snap` tablosuna yazılır; ilk raporda fark yerine "Şimdiye kadar" toplamları gösterilir. `activity` tablosuna günlük kazanılan yıldız (`pts`) eklendi.
+> - Kelime/ünite/rozet adları `api/src/content.js`'te; bu dosya `index.html`'den üretilir: içerik değişince `node api/tools/gen-content.mjs` çalıştır.
+> - Veli paneli: "📬 Haftalık rapor" bölümü (aç/kapat, "Bu haftanın raporunu gör" önizlemesi; yöneticiye "Bana şimdi gönder"). E-postada abonelikten çıkma bağlantısı (`#unsub-<id>-<anahtar>`) ve tek tıkla çıkma başlığı (List-Unsubscribe) var.
+> - Yeni uç noktalar: `POST /api/me/settings`, `GET /api/me/report`, `POST /api/unsubscribe`, `POST /api/admin/report-send-me`.
+> - Yerelde (wrangler dev + sahte Resend + tarayıcı) uçtan uca denendi: gönderim, ikinci hafta farkı, aynı haftaya tekrar göndermeme, abonelikten çıkma, panel. Hata yok.
+> - Not: Resend ücretsiz planı günde 100 / ayda 3.000 e-posta. Veli sayısı 100'ü geçince ücretli plana geçmek gerekir.
 
 > **Son durum (2026-11-11, 10. oturum): Yanlış cevaba Türkçe açıklama ("🦉 Neden olmadı?").**
 > - Kolay/Zor testte yanlış cevapta geri bildirim kutusunun altına kısa Türkçe not çıkar; doğru cevabı ele vermez. Zor testte ilk yanlışta da gösterilir.

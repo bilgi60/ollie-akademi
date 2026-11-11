@@ -7,6 +7,9 @@ CREATE TABLE IF NOT EXISTS parents (
   role TEXT NOT NULL DEFAULT 'parent',      -- 'parent' | 'admin'
   status TEXT NOT NULL DEFAULT 'active',    -- 'active' | 'suspended'
   email_verified INTEGER NOT NULL DEFAULT 0,
+  weekly_report INTEGER NOT NULL DEFAULT 1, -- haftalık rapor e-postası açık mı
+  report_key TEXT,                          -- abonelikten çıkma bağlantısı anahtarı
+  report_week TEXT,                         -- son raporun gönderildiği hafta (pazartesi)
   created_at INTEGER NOT NULL,
   last_seen INTEGER
 );
@@ -31,6 +34,7 @@ CREATE INDEX IF NOT EXISTS idx_sessions_parent ON sessions(parent_id);
 CREATE TABLE IF NOT EXISTS activity (
   child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
   day TEXT NOT NULL,
+  pts INTEGER NOT NULL DEFAULT 0,           -- o gün kazanılan yıldız
   PRIMARY KEY (child_id, day)
 );
 CREATE INDEX IF NOT EXISTS idx_activity_day ON activity(day);
@@ -49,3 +53,10 @@ CREATE TABLE IF NOT EXISTS email_tokens (
   created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_email_tokens_parent ON email_tokens(parent_id, kind);
+-- Haftalık rapor: her çocuğun rapor anındaki ilerleme özeti (bir sonraki haftanın farkı için)
+CREATE TABLE IF NOT EXISTS report_snap (
+  child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
+  week TEXT NOT NULL,
+  data TEXT NOT NULL,
+  PRIMARY KEY (child_id, week)
+);
