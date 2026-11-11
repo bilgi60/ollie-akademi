@@ -6,6 +6,13 @@
 > - **Madde 1 BİTTİ (dal `claude/bold-planck-a54j4l`, main'e alındı 2026-11-11, YAYINDA).** 
 > - **Madde 2 BİTTİ (dal `claude/cool-thompson-cddezq`, 2026-11-11). main'e alındı 2026-11-11, YAYINDA.**
 > - **Madde 3 BİTTİ (dal `claude/eloquent-davinci-bm11d7`), 2026-11-11 YAYINDA:** canlı veritabanına göç yapıldı, Worker güncellendi (zamanlayıcı: `0,20,40 15-17 * * SUN`), main'e alındı. Kullanıcı Veli paneli → "✉️ Bana şimdi gönder" ile gerçek e-postayı deneyebilir. Sıradaki: **Madde 4 — Yazdırılabilir çalışma kâğıdı.**
+> - **Madde 4 BİTTİ (dal `claude/quirky-cori-yc21ft`, 2026-11-11), main'e ALINMADI — kullanıcı onayı bekleniyor.** Sıradaki: **Madde 5 — Seviye tespit testi.**
+
+> **Son durum (2026-11-11, 12. oturum): Yazdırılabilir çalışma kâğıdı.**
+> - Adres: `#sheet-1` … `#sheet-10`. Hesap gerekmez (öğretmenler için). Giriş: giriş sayfasında "Öğretmen misin? Ücretsiz çalışma kâğıtları", ünite sayfasında "🖨️ Çalışma kâğıdı" düğmesi, Veli panelinde "🖨️ Çalışma kâğıtları" bölümü.
+> - Kâğıt (A4, 2 sayfa): ad/tarih/yıldız satırı, 1) resim-kelime eşleştirme, 2) Türkçeden kutulara yazma (ilk harf hazır), 3) kelime kutulu boşluk doldurma (kelime kartı örnek cümleleri), 4) kelime avı (soldan sağa / yukarıdan aşağı), 5) cümle sıralama (Cümle Kulesi son katları + zor testteki sıralama sorusu, Türkçesiyle), 6) Reading hikâyesi + 3 soru. İsteğe bağlı ayrı sayfada cevap anahtarı (kelime avı işaretli).
+> - Üstteki araç çubuğu yazdırılmaz: ünite seç, cevap anahtarı aç/kapat, "🔀 Farklı sorular" (karıştırma tohumu değişir), "🖨️ Yazdır / PDF kaydet" (tarayıcının yazdır penceresi). Kod: `index.html` → `buildSheet`, `sheetHTML`, `showSheet`; CSS "Çalışma kâğıdı" bölümü.
+> - Tarayıcıda denendi: 10 ünitenin hepsi hatasız, her biri tam 2 sayfa + cevap anahtarı; telefonda yatay kayma yok.
 
 > **Son durum (2026-11-11, 11. oturum): Veliye haftalık e-posta raporu.**
 > - Her pazar 18:00–20:40 (Türkiye) arası Worker zamanlayıcısı (`wrangler.toml` → `[triggers] crons`) her 20 dakikada bir en fazla 40 veliye rapor gönderir (Workers'ın 50 alt istek sınırı yüzünden parti parti). Koşullar: hesap aktif, e-posta doğrulanmış, rapor açık, son 28 günde çalışan en az bir çocuk var, o haftaya daha önce gönderilmemiş (`parents.report_week`). Gönderilemezse sonraki çalıştırmada yeniden denenir.

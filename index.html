@@ -304,6 +304,58 @@ body.out .shell{grid-template-columns:minmax(0,1fr);max-width:720px}
 }
 @media (max-width:440px){.nav a{font-size:.66rem;min-width:0}.nav{gap:0}.nav .lg{display:none}.nav .sm{display:inline}.q{font-size:1.25rem}.face .emo{font-size:4rem}.owl{width:70px;height:70px}h1{font-size:1.6rem}.pills .pill .lbl{display:none}}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+/* ---------- Çalışma kâğıdı ---------- */
+#sheet{display:none}
+body.sheeton .shell{display:none}
+body.sheeton{padding-bottom:0}
+body.sheeton #sheet{display:block;max-width:232mm;margin:0 auto;padding:16px}
+.wbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:16px}
+.wbar .field{width:auto;flex:0 1 230px}
+.wbar .tr{flex-basis:100%;margin:0}
+.wchk{display:flex;gap:6px;align-items:center;font-weight:700;cursor:pointer}
+.paper{background:#fff;color:#1d1d1f;max-width:210mm;margin:0 auto 22px;padding:12mm 13mm;box-shadow:0 2px 14px rgba(0,0,0,.18);border-radius:6px;font-size:15px;line-height:1.45}
+.paper h3{font-size:1.02rem;margin:0 0 8px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.paper .qn{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#1d1d1f;color:#fff;font-size:.82rem;flex:none}
+.paper .wtr{color:#5b5b60;font-weight:400;font-size:.86rem}
+.whead{display:flex;align-items:center;gap:10px;border-bottom:2.5px solid #1d1d1f;padding-bottom:8px}
+.whead .wt{flex:1;display:flex;flex-direction:column}.whead .wt b{font-size:1.15rem}.whead .wic{font-size:2rem}
+.wname{display:flex;gap:24px;margin:12px 0 4px;font-weight:700}.wname span{flex:1;display:flex;gap:6px}.wname i{flex:1;border-bottom:1.5px solid #1d1d1f}
+.wsec{margin-top:12px;break-inside:avoid}
+.wmatch{display:flex;justify-content:space-between;gap:20px;max-width:430px}
+.wmatch ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.wmatch .ml{counter-reset:m}.wmatch .ml li{counter-increment:m;display:flex;align-items:center;gap:10px}
+.wmatch .ml li::before{content:counter(m) ".";font-weight:700;width:20px}
+.wmatch .em{font-size:1.7rem;line-height:1.2}.wmatch .mr li{display:flex;align-items:center;gap:8px;height:2.1rem}
+.wmatch .dot{color:#9a9aa0;font-size:.8rem}
+.wwrite{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px 18px}
+.wi{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.wi .em{font-size:1.6rem}.wi .wtr{min-width:70px}
+.lbx{display:inline-flex;gap:3px}.lbx i{width:22px;height:26px;border:1.5px solid #1d1d1f;border-radius:4px;display:grid;place-items:center;font-style:normal;font-weight:700}
+.lbx i.gap{border:0;width:10px}
+.wbank{display:flex;flex-wrap:wrap;gap:8px;border:1.5px dashed #1d1d1f;border-radius:8px;padding:6px 10px;margin-bottom:8px}.wbank span{font-weight:700;padding:0 6px}
+.wfill{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:7px}
+.blank{display:inline-block;width:100px;border-bottom:1.5px solid #1d1d1f;margin:0 4px}
+.wsearch{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+.wgrid{border-collapse:collapse}.wgrid td{width:26px;height:26px;text-align:center;font-weight:700;font-family:ui-monospace,Menlo,monospace;font-size:15px;border:1px solid #c9c9ce}
+.wgrid.big td{width:21px;height:21px;font-size:13px}.wgrid.key td{width:18px;height:18px;font-size:11px;color:#9a9aa0}.wgrid.key td.h{background:#ffd84d;color:#1d1d1f}
+.wlist{list-style:none;margin:0;padding:0;columns:2;column-gap:20px}.wlist li{font-weight:700;margin-bottom:4px}
+.word{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px}
+.tiles{display:flex;flex-wrap:wrap;gap:6px}.tiles span{border:1.5px solid #1d1d1f;border-radius:6px;padding:1px 8px;font-weight:700}
+.line{border-bottom:1.5px solid #1d1d1f;height:22px}
+.wread{border:1.5px solid #1d1d1f;border-radius:8px;padding:8px 12px;margin-bottom:8px}.wread h4{margin:0 0 4px}.wread p{margin:0}
+.wqs{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}.wqs .opts{display:flex;gap:22px;flex-wrap:wrap}
+.wname .wst{flex:none;align-items:center}.wst b{font-size:1.2rem;letter-spacing:3px;font-weight:400}
+.wfoot{margin-top:8px;font-size:.75rem;color:#7a7a80;text-align:center}
+.kh{margin-top:12px!important}.wkey{padding-left:20px;display:flex;flex-direction:column;gap:10px}.wkey ol{padding-left:20px;margin:4px 0}.wkey .wgrid{margin-top:6px}
+@media (max-width:600px){.paper{padding:16px 12px;font-size:14px}.wname{flex-direction:column;gap:10px}.wgrid td{width:22px;height:22px;font-size:13px}}
+@media print{
+  @page{size:A4;margin:11mm}
+  body.sheeton{background:#fff!important}
+  body.sheeton #sheet{padding:0;max-width:none}
+  .noprint,#toastBox{display:none!important}
+  .paper{box-shadow:none;border-radius:0;margin:0;padding:0;max-width:none}
+  .keyp{break-before:page}
+  .paper *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 </style>
 
 <div class="shell">
@@ -337,6 +389,7 @@ body.out .shell{grid-template-columns:minmax(0,1fr);max-width:720px}
     <main id="screen"></main>
   </div>
 </div>
+<div id="sheet"></div>
 <div id="toastBox" aria-live="polite"></div>
 
 <script>
@@ -1235,6 +1288,9 @@ function route(){
     if(S){ sync(); S = null; childId = null; }
     page = "reset"; render(true); return;
   }
+  const sh = h.match(/^sheet-(\d+)$/);
+  if(sh && +sh[1]>=1 && +sh[1]<=LEVELS.length){ showSheet(+sh[1]-1); return; }
+  hideSheet();
   if(h === "reset" && !S && resetToken){ page = "reset"; render(true); return; }
   if(!S){
     if(auth){ page = ["profiles","parent"].includes(h) ? h : "profiles"; if(page !== h) history.replaceState(null, "", "#"+page); }
@@ -1311,7 +1367,8 @@ function loginHTML(){
       <div id="authMsg" role="alert"></div>
       <div class="row between"><button class="btn" type="submit">Giriş yap ▶</button><a class="link" href="#forgot">🔑 Şifremi unuttum</a></div>
     </form>
-    <p class="tr">Hesabın yok mu? <a class="link" href="#register">Veli hesabı aç</a></p></section>`;
+    <p class="tr">Hesabın yok mu? <a class="link" href="#register">Veli hesabı aç</a></p>
+    <p class="tr">Öğretmen misin? <a class="link" href="#sheet-1">🖨️ Ücretsiz çalışma kâğıtları</a> (hesap gerekmez)</p></section>`;
 }
 function registerHTML(){
   const locals = localAccounts();
@@ -1384,6 +1441,7 @@ function parentHTML(){
     <p class="tr">İlerleme hesabına kaydedilir. Bu hesapla giriş yaptığın her cihazdan (telefon, tablet, bilgisayar) kaldığın yerden devam edebilirsin.</p>
   </section>
   ${reportHTML()}
+  <section class="panel"><h2>🖨️ Çalışma kâğıtları</h2><p class="tr">Her ünite için yazdırılabilir alıştırma kâğıdı (eşleştirme, yazma, kelime avı, cümle sıralama, okuma) ve cevap anahtarı. Yazdırabilir ya da PDF olarak kaydedebilirsin.</p>${sheetLinksHTML()}</section>
   <section class="panel"><h2>Şifre değiştir</h2>
     <form id="pwForm" class="stack" novalidate>
       <label for="cp0">Şu anki şifre</label><input class="field" id="cp0" type="password" autocomplete="current-password" maxlength="200">
@@ -1641,9 +1699,112 @@ function unitHTML(){
       <div class="bar" style="margin-top:10px"><i style="width:${unitPct(i)}%"></i></div></div></div>
     <div class="row">${L.cards.map(c=>`<span class="chip">${c.e} ${esc(c.w)}</span>`).join("")}</div>
   </section>
-  <section class="panel"><h2>Dersler</h2><div class="lessons">${["song","cards"].concat(towersOf(i).length?["tower"]:[],["easy","write","hard"]).map(k=>lessonRow(i,k)).join("")}</div></section>
+  <section class="panel"><h2>Dersler</h2><div class="lessons">${["song","cards"].concat(towersOf(i).length?["tower"]:[],["easy","write","hard"]).map(k=>lessonRow(i,k)).join("")}</div>
+    <div class="row" style="margin-top:12px"><a class="btn ghost small" href="#sheet-${i+1}">🖨️ Çalışma kâğıdı</a><span class="tr">Bu ünitenin kâğıt alıştırmasını yazdır.</span></div></section>
   <div class="row between">${i>0?`<a class="link" href="#unit-${i}">← Ünite ${i}</a>`:"<span></span>"}${i<LEVELS.length-1?`<a class="link" href="#unit-${i+2}">Ünite ${i+2} →</a>`:""}</div>`;
 }
+/* ---------- Yazdırılabilir çalışma kâğıdı (#sheet-N) ---------- */
+let sheetSeed = 0, sheetKey = true, sheetUnit = 0;
+function sheetRng(seed){ let a = seed >>> 0 || 1; return () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function sheetShuf(arr, r){ const a = arr.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function sheetMix(arr, r){ if(arr.length < 2) return arr.slice(); let a; for(let k = 0; k < 20; k++){ a = sheetShuf(arr, r); if(a.some((x, i) => x !== arr[i])) break; } return a; }
+const reEsc = s => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+function wordSearch(words, r){
+  const W = words.map(w => ({w, up:w.toUpperCase().replace(/[^A-Z]/g, "")})).filter(x => x.up.length >= 2);
+  const N = Math.max(9, ...W.map(x => x.up.length));
+  const g = Array.from({length:N}, () => Array(N).fill("")), hit = new Set(), placed = [];
+  const order = W.slice().sort((a, b) => b.up.length - a.up.length);
+  for(const x of order){
+    let ok = false;
+    for(let t = 0; t < 300 && !ok; t++){
+      const [dr, dc] = r() < 0.5 ? [0, 1] : [1, 0];
+      const L = x.up.length, row = Math.floor(r() * (N - dr * (L - 1))), col = Math.floor(r() * (N - dc * (L - 1)));
+      let fit = true;
+      for(let k = 0; k < L; k++){ const c = g[row + dr*k][col + dc*k]; if(c && c !== x.up[k]){ fit = false; break; } }
+      if(!fit) continue;
+      for(let k = 0; k < L; k++){ g[row + dr*k][col + dc*k] = x.up[k]; hit.add((row + dr*k) * N + col + dc*k); }
+      ok = true; placed.push(x.w);
+    }
+  }
+  const AB = "ABCDEFGHIJKLMNOPRSTUVWY";
+  for(let i = 0; i < N; i++) for(let j = 0; j < N; j++) if(!g[i][j]) g[i][j] = AB[Math.floor(r() * AB.length)];
+  return {g, N, hit, words: words.filter(w => placed.includes(w))};
+}
+function buildSheet(i, seed){
+  const L = LEVELS[i], r = sheetRng((i + 1) * 7919 + seed * 104729), cards = L.cards;
+  const LET = "abcdefgh";
+  const mc = sheetShuf(cards, r).slice(0, 8), mw = sheetMix(mc, r);
+  const match = {left: mc, right: mw, key: mc.map(c => LET[mw.indexOf(c)])};
+  const write = sheetShuf(cards, r).slice(0, 6);
+  const fill = sheetShuf(cards, r).map(c => {
+    const m = c.ex.match(new RegExp("\\b" + reEsc(c.w) + "(s|es)?\\b", "i"));
+    return m ? {c, before: c.ex.slice(0, m.index), after: c.ex.slice(m.index + m[0].length), ans: m[0]} : null;
+  }).filter(Boolean).slice(0, 6);
+  const bank = sheetShuf(fill.map(f => f.ans.toLowerCase()), r);
+  const ws = wordSearch(cards.map(c => c.w), r);
+  const low = s => /^I\b/.test(s) ? s : s[0].toLowerCase() + s.slice(1);
+  const sents = towersOf(i).map(t => { const st = t.steps[t.steps.length - 1]; return {tr: st.tr.map(x => x[0]).join(" "), parts: st.en.map(x => x[0])}; })
+    .concat((L.hard || []).filter(t => t.type === "order").map(t => ({tr: t.tr, parts: t.answer.split(" ")})))
+    .slice(0, 4).map(s => { const parts = s.parts.map((p, k) => k ? p : low(p)); return {tr: s.tr, shown: sheetMix(parts, r), ans: s.parts.join(" ") + "."}; });
+  return {i, L, match, write, fill, bank, ws, sents, read: READING[i]};
+}
+function sheetHTML(i){
+  const D = buildSheet(i, sheetSeed), L = D.L, n = i + 1, LET = "abcdefgh", ABC = "abc";
+  let q = 0; const sec = (en, tr, body, cls = "") => `<section class="wsec ${cls}"><h3><span class="qn">${++q}</span> ${en} <span class="wtr">${tr}</span></h3>${body}</section>`;
+  const head = (sub) => `<header class="whead"><img src="img/ollie-mini-96.png" width="44" height="44" alt=""><div class="wt"><b>Ollie Akademi</b><span>Ünite ${n}: ${esc(L.theme)} · ${esc(L.tr)}${sub ? " · " + sub : ""}</span></div><span class="wic">${L.icon}</span></header>`;
+  const boxes = w => `<span class="lbx">${[...w].map((ch, k) => ch === " " ? `<i class="gap"></i>` : `<i>${k === 0 ? ch : ""}</i>`).join("")}</span>`;
+  const grid = (ws, key) => `<table class="wgrid${key ? " key" : ""}${ws.N > 10 ? " big" : ""}">${ws.g.map((row, a) => `<tr>${row.map((ch, b) => `<td${key && ws.hit.has(a * ws.N + b) ? ' class="h"' : ""}>${ch}</td>`).join("")}</tr>`).join("")}</table>`;
+  const parts = [];
+  parts.push(sec("Match.", "Resmi kelimeyle eşleştir. Çizgiyle birleştir.",
+    `<div class="wmatch"><ol class="ml">${D.match.left.map(c => `<li><span class="em">${c.e}</span><span class="dot">●</span></li>`).join("")}</ol>
+     <ol class="mr">${D.match.right.map((c, k) => `<li><span class="dot">●</span><b>${LET[k]})</b> ${esc(c.w)}</li>`).join("")}</ol></div>`));
+  parts.push(sec("Write the word.", "Resme bak, Türkçesini oku, İngilizcesini kutulara yaz. İlk harf hazır.",
+    `<div class="wwrite">${D.write.map(c => `<div class="wi"><span class="em">${c.e}</span><span class="wtr">${esc(c.tr)}</span>${boxes(c.w)}</div>`).join("")}</div>`));
+  if(D.fill.length) parts.push(sec("Fill in the blanks.", "Kutudaki kelimelerle cümleleri tamamla.",
+    `<div class="wbank">${D.bank.map(w => `<span>${esc(w)}</span>`).join("")}</div>
+     <ol class="wfill">${D.fill.map(f => `<li>${f.c.e} ${esc(f.before)}<span class="blank"></span>${esc(f.after)}</li>`).join("")}</ol>`));
+  parts.push(sec("Word search.", "Kelimeleri bul ve daire içine al. Kelimeler soldan sağa ya da yukarıdan aşağı.",
+    `<div class="wsearch">${grid(D.ws)}<ul class="wlist">${D.ws.words.map(w => `<li>☐ ${esc(w)}</li>`).join("")}</ul></div>`));
+  if(D.sents.length) parts.push(sec("Put the words in order.", "Kelimeleri sıraya koyup cümleyi yaz. Türkçesi yardım eder.",
+    `<ol class="word">${D.sents.map(s => `<li><div class="tiles">${s.shown.map(p => `<span>${esc(p)}</span>`).join("")}</div><div class="wtr">${esc(s.tr)}</div><div class="line"></div></li>`).join("")}</ol>`));
+  if(D.read) parts.push(sec("Read and circle.", "Hikâyeyi oku. Doğru cevabı daire içine al.",
+    `<div class="wread"><h4>${D.read.e} ${esc(D.read.title)}</h4><p>${D.read.lines.map(l => esc(l[0])).join(" ")}</p></div>
+     <ol class="wqs">${D.read.qs.map(x => `<li><b>${esc(x.q)}</b><div class="opts">${x.options.map((o, k) => `<span>${ABC[k]}) ${esc(o)}</span>`).join("")}</div></li>`).join("")}</ol>`, "wr"));
+  const key = [];
+  key.push(`<li><b>Match:</b> ${D.match.key.map((l, k) => `${k + 1}-${l}`).join(", ")}</li>`);
+  key.push(`<li><b>Write the word:</b> ${D.write.map(c => `${c.e} ${esc(c.w)}`).join(", ")}</li>`);
+  if(D.fill.length) key.push(`<li><b>Fill in the blanks:</b> ${D.fill.map((f, k) => `${k + 1}. ${esc(f.ans)}`).join(", ")}</li>`);
+  key.push(`<li><b>Word search:</b>${grid(D.ws, true)}</li>`);
+  if(D.sents.length) key.push(`<li><b>Put the words in order:</b><ol>${D.sents.map(s => `<li>${esc(s.ans)}</li>`).join("")}</ol></li>`);
+  if(D.read) key.push(`<li><b>Read and circle:</b> ${D.read.qs.map((x, k) => `${k + 1}. ${ABC[x.options.indexOf(x.answer)]}) ${esc(x.answer)}`).join(", ")}</li>`);
+  const back = S ? `#unit-${n}` : auth ? "#parent" : "#login";
+  return `<div class="wbar noprint">
+      <a class="link" href="${back}">← Geri</a>
+      <select class="field" id="sheetUnit" aria-label="Ünite seç">${LEVELS.map((X, k) => `<option value="${k + 1}" ${k === i ? "selected" : ""}>Ünite ${k + 1}: ${esc(X.theme)}</option>`).join("")}</select>
+      <label class="wchk"><input type="checkbox" id="sheetKey" ${sheetKey ? "checked" : ""}> Cevap anahtarı</label>
+      <button class="btn ghost small" data-act="sheetNew">🔀 Farklı sorular</button>
+      <button class="btn" data-act="sheetPrint">🖨️ Yazdır / PDF kaydet</button>
+      <p class="tr">Yazdır penceresinde "Hedef: PDF olarak kaydet" seçersen kâğıt PDF olur. Her "Farklı sorular" yeni bir sıra üretir; cevap anahtarı ona göre değişir.</p>
+    </div>
+    <article class="paper">${head("")}
+      <div class="wname"><span>Name / Adım: <i></i></span><span>Date / Tarih: <i></i></span><span class="wst">⭐ <b>☆ ☆ ☆ ☆ ☆</b></span></div>
+      ${parts.join("")}
+      <footer class="wfoot">ollieakademi.com · Ünite ${n} çalışma kâğıdı</footer>
+    </article>
+    ${sheetKey ? `<article class="paper keyp">${head("Cevap anahtarı")}<h3 class="kh">Answer key · Cevap anahtarı</h3><ol class="wkey">${key.join("")}</ol><footer class="wfoot">ollieakademi.com · Ünite ${n} cevap anahtarı</footer></article>` : ""}`;
+}
+function showSheet(i){
+  sheetUnit = i;
+  document.body.classList.add("sheeton");
+  $("#sheet").innerHTML = sheetHTML(i);
+  document.title = `Ollie Akademi – Ünite ${i + 1} ${LEVELS[i].theme} çalışma kâğıdı`;
+  window.scrollTo({top:0});
+}
+function hideSheet(){
+  if(!document.body.classList.contains("sheeton")) return;
+  document.body.classList.remove("sheeton"); $("#sheet").innerHTML = ""; document.title = "Ollie Akademi";
+}
+const sheetLinksHTML = () => `<div class="row">${LEVELS.map((L, k) => `<a class="chip" href="#sheet-${k + 1}">${L.icon} ${k + 1}. ${esc(L.theme)}</a>`).join("")}</div>`;
 let wq = "", wu = "all";
 function wordsHTML(){
   return `<section class="panel">
@@ -2427,6 +2588,8 @@ document.addEventListener("click", e => {
   const t = play && play.kind==="quiz" ? tasksOf()[play.task] : null;
   switch(act){
     case "close": return;
+    case "sheetPrint": return window.print();
+    case "sheetNew": sheetSeed++; return showSheet(sheetUnit);
     case "leave": stopSpeech(); return;
     case "logout": return parentLogout();
     case "resendVerify": return resendVerify();
@@ -2534,7 +2697,11 @@ document.addEventListener("input", e => {
   if(e.target.id==="wq"){ wq = e.target.value; renderWords(); }
   if(e.target.id==="wt" && play){ S.writings[play.unit] = Object.assign({}, S.writings[play.unit], {draft:e.target.value}); save(); liveWrite(); }
 });
-document.addEventListener("change", e => { if(e.target.id==="wu"){ wu = e.target.value; renderWords(); } });
+document.addEventListener("change", e => {
+  if(e.target.id==="wu"){ wu = e.target.value; renderWords(); }
+  if(e.target.id==="sheetUnit"){ sheetSeed = 0; go("sheet-" + e.target.value); }
+  if(e.target.id==="sheetKey"){ sheetKey = e.target.checked; showSheet(sheetUnit); }
+});
 document.addEventListener("submit", e => {
   e.preventDefault();
   const f = {loginForm:onLogin, regForm:onRegister, forgotForm:onForgot, resetForm:onReset, childForm:onAddChild, pwForm:onChangePw, delForm:onDeleteAccount}[e.target.id];
