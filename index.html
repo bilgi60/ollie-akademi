@@ -413,6 +413,7 @@ body.sheeton #sheet{display:block;max-width:232mm;margin:0 auto;padding:16px}
 
 <script src="units-a1.js"></script>
 <script src="units-a2.js"></script>
+<script src="units-key.js"></script>
 <script src="books-mf.js"></script>
 <script>
 const LEVELS = [
@@ -1121,14 +1122,16 @@ function evalWriting(i, text){
   return {n, used, checks, pts};
 }
 /* ---------- Seviyeler (Cambridge YLE) ----------
-   Ünite 1–10 Starters (Pre-A1) index.html'de; Ünite 11–20 Movers (A1) units-a1.js'te (UNITS_A1); Ünite 21–30 Flyers (A2) units-a2.js'te (UNITS_A2).
+   Ünite 1–10 Starters (Pre-A1) index.html'de; Ünite 11–20 Movers (A1) units-a1.js'te (UNITS_A1); Ünite 21–30 Flyers (A2) units-a2.js'te (UNITS_A2); Ünite 31–40 A2 Key for Schools units-key.js'te (UNITS_KEY).
    Her ek ünite {L, songs, reading, listening, speaking, write, towers}; burada ortak dizilere eklenir. */
 const STAGES = [
   {id:"starters", n:"Starters", lv:"Pre-A1", e:"🌱", tr:"Başlangıç: kelimeler, kısa cümleler", from:0, to:10},
   {id:"movers", n:"Movers", lv:"A1", e:"🚀", tr:"Daha uzun cümleler, karşılaştırma, geçmiş zaman", from:10, to:20},
-  {id:"flyers", n:"Flyers", lv:"A2", e:"🪁", tr:"Gelecek planları, deneyimler, masallar, paragraf yazma", from:20, to:30}
+  {id:"flyers", n:"Flyers", lv:"A2", e:"🪁", tr:"Gelecek planları, deneyimler, masallar, paragraf yazma", from:20, to:30},
+  {id:"key", n:"A2 Key", lv:"A2+", e:"🔑", tr:"Cambridge A2 Key hazırlık: zamanlar, koşul cümleleri, e-posta yazma", from:30, to:40},
+  {id:"pet", n:"B1 Preliminary", lv:"B1", e:"🏆", tr:"Yakında: B1 Preliminary hazırlık", from:40, to:50}
 ];
-[typeof UNITS_A1 !== "undefined" ? UNITS_A1 : [], typeof UNITS_A2 !== "undefined" ? UNITS_A2 : []].flat().forEach(u=>{
+[typeof UNITS_A1 !== "undefined" ? UNITS_A1 : [], typeof UNITS_A2 !== "undefined" ? UNITS_A2 : [], typeof UNITS_KEY !== "undefined" ? UNITS_KEY : []].flat().forEach(u=>{
   const i = LEVELS.length;
   u.L.songs = [u.L.song].concat(u.songs || []);
   LEVELS.push(u.L); READING.push(u.reading); LISTENING.push(u.listening); SPEAKING.push(u.speaking); WRITE.push(u.write);
@@ -1305,7 +1308,9 @@ const BADGES = [
   {id:"movers1", e:"🚀", n:"Movers'a Merhaba", d:"İlk Movers (A1) ünitesinin kolay testini bitir.", ok:()=>LEVELS.some((_,i)=>i>=10 && i<20 && easyDone(i))},
   {id:"movers", e:"🎓", n:"Movers Mezunu", d:"Movers (A1) ünitelerinin hepsinin kolay testini bitir.", ok:()=>LEVELS.length>=20 && LEVELS.every((_,i)=>i<10 || i>=20 || easyDone(i))},
   {id:"flyers1", e:"🪁", n:"Flyers'a Merhaba", d:"İlk Flyers (A2) ünitesinin kolay testini bitir.", ok:()=>LEVELS.some((_,i)=>i>=20 && i<30 && easyDone(i))},
-  {id:"flyers", e:"🦉", n:"Flyers Mezunu", d:"Flyers (A2) ünitelerinin hepsinin kolay testini bitir.", ok:()=>LEVELS.length>=30 && LEVELS.every((_,i)=>i<20 || i>=30 || easyDone(i))}
+  {id:"flyers", e:"🦉", n:"Flyers Mezunu", d:"Flyers (A2) ünitelerinin hepsinin kolay testini bitir.", ok:()=>LEVELS.length>=30 && LEVELS.every((_,i)=>i<20 || i>=30 || easyDone(i))},
+  {id:"key1", e:"🔑", n:"Key'e Merhaba", d:"İlk A2 Key ünitesinin kolay testini bitir.", ok:()=>LEVELS.some((_,i)=>i>=30 && i<40 && easyDone(i))},
+  {id:"key", e:"🏅", n:"Key Mezunu", d:"A2 Key ünitelerinin hepsinin kolay testini bitir.", ok:()=>LEVELS.length>=40 && LEVELS.every((_,i)=>i<30 || i>=40 || easyDone(i))}
 ];
 function checkBadges(silent){
   const fresh = BADGES.filter(b=>!S.badges.includes(b.id) && b.ok());
@@ -1755,7 +1760,7 @@ function unitsHTML(){
   return `<section class="panel">
     <div class="eyebrow">Derslerim · My Units</div>
     <h1>${N()} ünite, ${N()*4} ders</h1>
-    <p class="muted">Her ünitede sırayla: 🎵 Şarkı · 🃏 Kelime Kartları · 🐣 Kolay Test · 🦅 Zor Test. Kolay testi bitirdiğinde sonraki ünite açılır. Seviyeler Cambridge sınavlarının sırasını izler: 🌱 Starters → 🚀 Movers → 🪁 Flyers.</p>
+    <p class="muted">Her ünitede sırayla: 🎵 Şarkı · 🃏 Kelime Kartları · 🐣 Kolay Test · 🦅 Zor Test. Kolay testi bitirdiğinde sonraki ünite açılır. Seviyeler Cambridge sınavlarının sırasını izler: 🌱 Starters → 🚀 Movers → 🪁 Flyers → 🔑 A2 Key.</p>
     <div class="row"><a class="btn ghost small" href="#placement">🎯 Seviye testi</a><span class="tr">${S.place && !S.place.skip ? `Son sonuç: Ünite ${den(S.place.u+1)} başla (${fmtDate(S.place.d+"T12:00")}).` : "İngilizceyi biraz biliyorsan, kısa testle uygun üniteye atla."}</span></div>
   </section>
   ${STAGES.map(stageHTML).join("")}`;
