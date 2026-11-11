@@ -20,6 +20,19 @@
 
 > - **Madde 8, 5. kısım BİTTİ: B1 Preliminary (PET) 10 ünite (dal `claude/new-session-ymk9cm`, 2026-11-11) — main'e alındı 2026-11-11, YAYINDA; Worker da yeniden yayınlandı.** Sıradaki: **Madde 8, 6. kısım — deneme sınavları + sertifika benzeri seviye rozeti**, sonra **Madde 9 — MEB müfredatı eşleştirme.**
 
+> - **Madde 8, 6. kısım BİTTİ: deneme sınavları + seviye sertifikası (dal `claude/admiring-babbage-w6c5pw`, 2026-11-11) — main'e ALINMADI, kullanıcı onayı bekleniyor.** main'e alınınca Worker'ı yeniden yayınla (content.js'te 7 yeni rozet adı var). Sıradaki: **Madde 9 — MEB müfredatı eşleştirme.**
+
+> **Son durum (2026-11-11, 20. oturum): Deneme sınavları + seviye sertifikası.**
+> - Adresler: `#exams` (5 seviyenin listesi), `#exam-starters|movers|flyers|key|pet` (sınav), `#cert-<seviye>` (yazdırılabilir sertifika, `#sheet` kabını kullanır; sadece geçilen seviyede açılır).
+> - Sınav, seviyenin ünitelerinden her seferinde rastgele kurulur (`buildExam`): 👂 Listening 5 soru (3 LISTENING + 2 "story" görevi), 📖 Reading 7 soru (4 resim-kelime + 1 READING hikâyesi, 3 soru), ✍️ Writing 5 soru (3 boşluk doldurma + 2 dinle-yaz) ve Flyers/Key/PET'te ek kısa yazı (WRITE görevi, `evalWriting` puanı 5 puana ölçeklenir). İpucu yok, her soruya tek cevap, 🤷 Bilmiyorum var; doğru/yanlış sonda gösterilir.
+> - Puan: her bölüm 1–5 🛡️ kalkan; toplam %60+ → sertifika (%75 "Çok iyi", %90 "Mükemmel"). Yıldız: doğru sayısı (seviye başına günde bir kez) + ilk geçişte +20. Yanlış yapılan kelimeler 🔁 tekrara eklenir.
+> - Veri: `S.exams[seviye] = {b, sec:{l,r,w}, d, n, p, sd}` (en iyi sonuç saklanır). Yeni rozetler: 📝 Sınav Provası, 🥉 Starters / 🥈 Movers / 🥇 Flyers / 🎗️ A2 Key / 🏵️ B1 Preliminary Sertifikası, 🌈 Sertifika Koleksiyoncusu. `content.js` yeniden üretildi (38 rozet).
+> - Giriş noktaları: Derslerim sayfası (üstte "📝 Deneme sınavları" düğmesi, her seviye başında sınav satırı), ana sayfada "sınava hazırsın" kartı (seviyenin bütün kolay testleri bitince), Profil'de 📜 sertifika sayısı ve bağlantıları.
+> - Sertifikada "Cambridge English'in resmi sertifikası değildir" notu var. A4'te tek sayfa basılıyor.
+> - Ek düzeltme: ana sayfadaki "Tamamlanan ders" sayacı `/40` sabitti, artık `ünite sayısı × 4`.
+> - Tarayıcıda (sahte API, 390 px + 1100 px) 5 seviyenin sınavı uçtan uca çözüldü: puanlama, geçme/kalma, rozetler, sunucuya kayıt, sertifika ekranı ve PDF; hata yok, yatay kayma yok.
+> - Yapılmadı: Speaking bölümü (puanlanamıyor), seviye testinin kısaltılması (50 ünitede ~100 soru), veli raporunda/yönetici panelinde sınav sonuçları. İleride eklenebilir.
+
 > **Son durum (2026-11-11, 19. oturum): B1 Preliminary for Schools üniteleri (Ünite 41–50).**
 > - Yeni dosya `units-pet.js` (`const UNITS_PET`), biçim `units-key.js` ile aynı; `index.html` yükler. 🏆 "B1 Preliminary" bölümü artık "Yakında" değil.
 > - Üniteler (dilbilgisi): 41 Teen Life (present perfect + for/since/ever) · 42 Inventions (edilgen yapı) · 43 Childhood Memories (used to) · 44 Dreams and Wishes (2. tip koşul) · 45 Mysteries (must/might/can't be) · 46 Friendship (dolaylı anlatım) · 47 Places to Visit (who/which/where/whose) · 48 Music and Concerts (-ed/-ing sıfatlar) · 49 Healthy Habits (fiil + -ing / to) · 50 Adventure Stories (past perfect, hikâye yazma). Yazma model metinleri 95–110 kelime (PET e-posta / makale / hikâye).
