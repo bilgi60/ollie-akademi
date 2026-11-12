@@ -293,22 +293,6 @@ span.chunk{display:inline-block;box-shadow:none}
 .heard .hw{padding:0 4px;border-radius:8px}
 .heard .hw.ok{color:var(--leaf);background:var(--leaf-soft)}
 .heard .hw.no{color:var(--berry);background:var(--berry-soft);text-decoration:underline wavy}
-.pron{display:grid;gap:12px;margin-top:12px}
-.pscore{text-align:center;font-family:var(--display)}
-.pscore b{font-size:2.4rem;line-height:1}
-.pscore span{font-size:1rem;color:var(--muted)}
-.pscore.ok b{color:var(--leaf)} .pscore.mid b{color:var(--accent-2)} .pscore.no b{color:var(--berry)}
-.pwords{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
-.pw{display:inline-grid;justify-items:center;gap:2px;padding:6px 10px;border-radius:12px;border:2px solid transparent;background:var(--soft);font:inherit;color:inherit;cursor:pointer;min-width:44px}
-.pw .pww{font-family:var(--display);font-weight:600;font-size:1.15rem}
-.pw .pws{font-size:.75rem;opacity:.8}
-.pw.ok{background:var(--leaf-soft);border-color:var(--leaf)} .pw.ok .pww{color:var(--leaf)}
-.pw.mid{background:var(--soft);border-color:var(--accent)} .pw.mid .pww{color:var(--accent-2)}
-.pw.no{background:var(--berry-soft);border-color:var(--berry)} .pw.no .pww{color:var(--berry)}
-.psyl{display:flex;gap:2px;flex-wrap:wrap;justify-content:center}
-.syl{font-size:.75rem;padding:0 5px;border-radius:6px;background:var(--surface,#fff)}
-.syl.ok{color:var(--leaf)} .syl.mid{color:var(--accent-2)} .syl.no{color:var(--berry);text-decoration:underline wavy}
-.pmeta{gap:6px;flex-wrap:wrap}
 .hidden-text{font-style:italic;color:var(--muted)}
 
 /* Overlay, toast, confetti */
@@ -3137,12 +3121,11 @@ const skDone = (type,i) => S.skills[SKILL[type].key][i] || [];
 const skComplete = (type,i) => skDone(type,i).length >= SKILL[type].total(i);
 const skCount = type => LEVELS.filter((_,i)=>skComplete(type,i)).length;
 let sk = null, rec = null;
-function stopRec(){ if(rec){ const r = rec; rec = null; try{ r.abort(); }catch(e){} } if(typeof stopPron === "function") stopPron(); }
+function stopRec(){ if(rec){ const r = rec; rec = null; try{ r.abort(); }catch(e){} } }
 function startSkill(type, i){
   const done = skDone(type, i), full = skComplete(type, i);
   sk = {type, unit:i, local:new Set(full ? [] : done), tries:{}, answered:{}, solved:false, showTr:false, idx:0};
   if(type !== "reading") sk.idx = Math.max(0, [...Array(SKILL[type].total(i)).keys()].find(n=>!sk.local.has(n)) ?? 0);
-  if(type === "speaking") pronInit();
 }
 function skAward(type, i, n, pts){
   const k = SKILL[type].key, d = S.skills[k][i] = S.skills[k][i] || [];
@@ -3442,7 +3425,7 @@ function skNext(){
 
 function speakingHTML(){
   if(!unitOpen(sk.unit)) return skLocked();
-  const i = sk.unit, items = SPEAKING[i], t = items[sk.idx], tries = sk.tries[sk.idx] || 0, hp = pronOk(), mic = (SR || hp) && !sk.noMic;
+  const i = sk.unit, items = SPEAKING[i], t = items[sk.idx], tries = sk.tries[sk.idx] || 0, mic = SR && !sk.noMic;
   return `${skBack()}<section class="panel">
     <div class="eyebrow">Ünite ${i+1} · ${LEVELS[i].theme} · Speaking ${sk.idx+1}/${items.length}</div>
     ${skProg(items.length)}
@@ -3452,7 +3435,6 @@ function speakingHTML(){
     <div class="row center"><button class="btn ghost" data-act="skPlay">🔊 Listen</button><button class="btn ghost small" data-act="skSlow">🐢 Slow</button>
       ${mic ? `<button class="btn" data-act="mic" id="micBtn">🎤 Speak</button>` : `<button class="btn" data-act="skSaid">🎙️ I said it!</button>`}</div>
     <div class="tr" style="text-align:center">${mic ? "1) Önce Ollie'yi dinle · 2) 🎤 Speak'e bas · 3) Cümleyi yüksek sesle söyle" : "1) Ollie'yi dinle · 2) Sen yüksek sesle söyle · 3) \"I said it!\" düğmesine bas"}</div>
-    ${hp && mic ? `<div class="tr" style="text-align:center">🔤 Ollie her heceni puanlar · bugün ${PRON.left} hakkın var</div>` : ""}
     <div id="heard"></div>
     <div id="fb">${mic && tries >= 2 ? skipHTML() : ""}</div>
   </section>`;
@@ -3505,144 +3487,6 @@ function startMic(){
     if(!handled){ say("I can't hear you!", "Seni duyamadım. Tekrar dene."); }
   };
   try{ r.start(); }catch(e){ rec = null; btn.disabled = false; btn.textContent = "🎤 Speak"; }
-}
-
-/* ---------- Hece düzeyinde telaffuz puanı (Azure, sunucu üzerinden) ---------- */
-// Ses tarayıcıda kaydedilir, 16 kHz WAV olarak sunucuya gider, puanlanır; kayıt saklanmaz. Günlük hak bitince,
-// servis kapalıysa ya da hata olursa tarayıcının ücretsiz kelime kontrolüne (startMic) geçilir.
-const AC = window.AudioContext || window.webkitAudioContext;
-const canRecord = !!(AC && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-let PRON = null, prec = null;
-const pronOk = () => canRecord && !!PRON && PRON.on && PRON.left > 0 && PRON.child === childId && !(sk && sk.noPron);
-async function pronInit(){
-  if(!canRecord || !childId || !auth || (PRON && PRON.child === childId && PRON.day === new Date().toDateString())) return;
-  const id = childId;
-  try{ const r = await api(`/children/${id}/pron`); PRON = {on:r.on, left:r.left, child:id, day:new Date().toDateString()}; }
-  catch(e){ PRON = {on:false, left:0, child:id, day:new Date().toDateString()}; }
-  if(sk && sk.type === "speaking" && !sk.solved && !prec && !rec && page === "speaking") render();
-}
-function stopPron(){ if(prec){ const p = prec; prec = null; p.cancel(); } }
-function wav16k(chunks, rate){
-  let len = 0; chunks.forEach(c=>len += c.length);
-  const all = new Float32Array(len); let o = 0; chunks.forEach(c=>{ all.set(c, o); o += c.length; });
-  const ratio = rate / 16000, n = Math.floor(len / ratio), out = new Int16Array(n);
-  for(let i = 0; i < n; i++){
-    const a = Math.floor(i * ratio), b = Math.min(len, Math.floor((i + 1) * ratio));
-    let s = 0; for(let j = a; j < b; j++) s += all[j];
-    const v = Math.max(-1, Math.min(1, s / Math.max(1, b - a)));
-    out[i] = v < 0 ? v * 0x8000 : v * 0x7fff;
-  }
-  const buf = new ArrayBuffer(44 + n * 2), d = new DataView(buf);
-  const str = (p, s) => { for(let i = 0; i < s.length; i++) d.setUint8(p + i, s.charCodeAt(i)); };
-  str(0, "RIFF"); d.setUint32(4, 36 + n * 2, true); str(8, "WAVE"); str(12, "fmt ");
-  d.setUint32(16, 16, true); d.setUint16(20, 1, true); d.setUint16(22, 1, true); d.setUint32(24, 16000, true);
-  d.setUint32(28, 32000, true); d.setUint16(32, 2, true); d.setUint16(34, 16, true); str(36, "data"); d.setUint32(40, n * 2, true);
-  new Int16Array(buf, 44).set(out);
-  return buf;
-}
-// Konuşma bitince kendiliğinden durur: ses başladıktan sonra ~1,2 sn sessizlik ya da 10 sn üst sınır.
-async function recordSpeech(onStart){
-  const stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true, noiseSuppression:true, channelCount:1}});
-  const ctx = new AC(); if(ctx.state === "suspended") await ctx.resume();
-  const src = ctx.createMediaStreamSource(stream), node = ctx.createScriptProcessor(4096, 1, 1), mute = ctx.createGain();
-  mute.gain.value = 0; src.connect(node); node.connect(mute); mute.connect(ctx.destination);
-  const rate = ctx.sampleRate, chunks = [], t0 = performance.now();
-  let floor = 0.004, talked = false, firstVoice = -1, lastVoice = 0, done = false;
-  return new Promise(resolve => {
-    const finish = res => {
-      if(done) return; done = true;
-      try{ node.disconnect(); src.disconnect(); }catch(e){}
-      stream.getTracks().forEach(t=>t.stop()); ctx.close().catch(()=>{});
-      resolve(res);
-    };
-    const handle = {cancel: () => finish(null), stop: () => finish(talked ? cut() : {silent:true})};
-    const cut = () => {
-      const per = 4096, from = Math.max(0, firstVoice - 2), to = Math.min(chunks.length, lastVoice + 4);
-      return {wav: wav16k(chunks.slice(from, to), rate), sec: (to - from) * per / rate};
-    };
-    node.onaudioprocess = e => {
-      if(done) return;
-      const x = new Float32Array(e.inputBuffer.getChannelData(0)); chunks.push(x);
-      let s = 0; for(let i = 0; i < x.length; i++) s += x[i] * x[i];
-      const rms = Math.sqrt(s / x.length), el = performance.now() - t0, k = chunks.length - 1;
-      if(el < 300){ floor = Math.max(floor, rms); return; }
-      const loud = rms > Math.max(0.015, floor * 2.5);
-      if(loud){ if(!talked){ talked = true; firstVoice = k; } lastVoice = k; }
-      const quietMs = (k - lastVoice) * 4096 / rate * 1000;
-      if(talked && quietMs > 1200) finish(cut());
-      else if(el > 10000) finish(talked ? cut() : {silent:true});
-      else if(!talked && el > 6000) finish({silent:true});
-    };
-    onStart(handle);
-  });
-}
-async function startPron(){
-  if(sk.solved || prec || rec) return;
-  stopSpeech();
-  const t = SPEAKING[sk.unit][sk.idx], unit = sk.unit, idx = sk.idx, id = childId;
-  const btn = $("#micBtn");
-  const reset = () => { const b = $("#micBtn"); if(b){ b.disabled = false; b.textContent = "🎤 Speak"; b.dataset.act = "mic"; } };
-  let res;
-  try{
-    res = await recordSpeech(h => {
-      prec = h;
-      btn.textContent = "⏹️ Bitti"; btn.dataset.act = "pronStop";
-      say("I'm listening… 👂", "Dinliyorum, şimdi cümleyi söyle! Bitince kendiliğinden durur.");
-    });
-  }catch(e){
-    prec = null; reset();
-    if(e && (e.name === "NotAllowedError" || e.name === "SecurityError")){
-      sk.noPron = true; sk.noMic = !SR; render();
-      $("#fb").innerHTML = `<div class="fb try">Mikrofon izni verilmedi. Tarayıcının adres çubuğundan mikrofona izin verebilirsin. Şimdilik cümleyi yüksek sesle söyleyip "I said it!" düğmesine bas.</div>`;
-    } else { sk.noPron = true; render(); $("#fb").innerHTML = `<div class="fb try">Mikrofon açılamadı. 🎤 düğmesine basıp tekrar dene.</div>`; }
-    return;
-  }
-  if(!prec || !sk || sk.unit !== unit || sk.idx !== idx){ prec = null; return; }  // sayfadan çıkıldı
-  prec = null;
-  if(res.silent){ reset(); say("I can't hear you!", "Seni duyamadım. Mikrofona yakın konuş ve tekrar dene."); $("#fb").innerHTML = `<div class="fb try">Seni duyamadım. 🎤 düğmesine bastıktan sonra cümleyi yüksek sesle söyle.</div>${(sk.tries[idx]||0) >= 2 ? skipHTML() : ""}`; return; }
-  const b2 = $("#micBtn"); if(b2){ b2.disabled = true; b2.textContent = "⏳ Ollie dinliyor…"; b2.dataset.act = "mic"; }
-  say("Let me check… 🤔", "Hecelerini kontrol ediyorum…");
-  let r;
-  try{
-    const f = await fetch(`${API}/children/${id}/pron?unit=${unit}&idx=${idx}`, {method:"POST", headers:{"Content-Type":"audio/wav", Authorization:"Bearer " + auth.token}, body:res.wav});
-    r = await f.json().catch(()=>({}));
-    if(!f.ok) r = {off:"error"};
-  }catch(e){ r = {off:"error"}; }
-  if(!sk || sk.unit !== unit || sk.idx !== idx) return;
-  if(typeof r.left === "number" && PRON) PRON.left = r.left;
-  if(r.off){
-    if(PRON && (r.off === "quota" || r.off === "nokey")) PRON.on = false;
-    sk.noPron = true; render();
-    const why = {limit:"Bugünkü hece puanı hakkın bitti.", quota:"Hece puanı servisi bu ay için doldu.", nokey:"Hece puanı şu an kapalı.", busy:"Ollie şu an çok meşgul.", error:"Hece puanı şu an alınamadı."}[r.off] || "";
-    $("#fb").innerHTML = `<div class="fb try">${why} <span class="tr">Ollie yine de kelimelerini kontrol edebilir: 🎤 Speak'e basıp cümleyi tekrar söyle.</span></div>`;
-    return;
-  }
-  reset();
-  if(r.nomatch){ sk.tries[idx] = (sk.tries[idx]||0) + 1; say("Let's try again!", "Ollie anlayamadı. Önce dinle, sonra yavaşça ve yüksek sesle söyle."); $("#fb").innerHTML = `<div class="fb try">Ollie cümleyi anlayamadı. 🙂 <span class="tr">Önce 🔊 ile dinle, sonra tekrar dene.</span></div>${sk.tries[idx] >= 2 ? skipHTML() : ""}`; return; }
-  showPron(t, r);
-}
-const pcls = s => s == null ? "" : s >= 80 ? "ok" : s >= 60 ? "mid" : "no";
-function showPron(t, r){
-  const ws = (r.words || []).filter(w => w.e !== "Insertion");
-  const refW = t.en.split(/\s+/); if(refW.length === ws.length) ws.forEach((w,i)=>{ w.w = refW[i].replace(/[.,!?;:"“”]+$/,"").replace(/^["“]/,""); });
-  const weak = ws.filter(w => w.e === "Omission" || (w.s != null && w.s < 70)).sort((a,b)=>(a.e==="Omission"?-1:a.s)-(b.e==="Omission"?-1:b.s))[0];
-  const sylHTML = w => w.e === "Omission" ? `<span class="syl no">söylemedin</span>`
-    : (w.syl && w.syl.length > 1 ? w.syl.map(([x,s])=>`<span class="syl ${pcls(s)}">${esc(x)}</span>`).join("") : "");
-  $("#heard").innerHTML = `<div class="pron">
-    <div class="pscore ${pcls(r.score)}"><b>${r.score ?? "–"}</b><span>/100</span><div class="tr">Telaffuz puanı</div></div>
-    <div class="pwords">${ws.map(w=>`<button class="pw ${w.e==="Omission"?"no":pcls(w.s)}" data-act="pronWord" data-arg="${esc(w.w)}" title="Dinle"><span class="pww">${esc(w.w)}</span><span class="pws">${w.e==="Omission" ? "–" : w.s ?? ""}</span>${sylHTML(w) ? `<span class="psyl">${sylHTML(w)}</span>` : ""}</button>`).join("")}</div>
-    <div class="row center pmeta"><span class="chip">🎯 Doğruluk ${r.acc ?? "–"}</span><span class="chip">🌊 Akıcılık ${r.flu ?? "–"}</span><span class="chip">🧩 Tamlık ${r.comp ?? "–"}</span></div>
-    <div class="tr" style="text-align:center">🟢 çok iyi · 🟡 fena değil · 🔴 tekrar dinle. Bir kelimeye dokunursan Ollie onu söyler.</div></div>`;
-  const pass = (r.score ?? 0) >= 65 && (r.comp ?? 0) >= 70;
-  if(pass){
-    const note = weak ? `<span class="tr">Harika! Bir dahaki sefere “${esc(weak.w)}” kelimesine biraz daha dikkat et.</span>` : `<span class="tr">Bütün heceleri çok güzel söyledin!</span>`;
-    skCorrect(sk.tries[sk.idx] ? 3 : 5, `“${esc(t.en)}” · ${r.score}/100 ${note}`);
-  } else {
-    sk.tries[sk.idx] = (sk.tries[sk.idx]||0) + 1;
-    const tip = weak ? (weak.e === "Omission" ? `“${esc(weak.w)}” kelimesini atladın.` : `En çok “${esc(weak.w)}” kelimesine çalış: kırmızı heceleri dinleyip tekrar söyle.`) : "Biraz daha yavaş ve net söyle.";
-    say((r.score ?? 0) >= 50 ? "Almost! Try again." : "Let's try again!", tip.replace(/<[^>]+>/g,"").replace(/&[^;]+;/g,""));
-    $("#fb").innerHTML = `<div class="fb try">${(r.score ?? 0) >= 50 ? "Almost! 💪" : "Try again! 🙂"} <span class="tr">${tip}</span></div>${sk.tries[sk.idx] >= 2 ? skipHTML() : ""}`;
-  }
 }
 
 /* ---------- Events ---------- */
@@ -3753,9 +3597,7 @@ document.addEventListener("click", e => {
     case "skPlay": return speak(sk.type==="listening" ? LISTENING[sk.unit][sk.idx].say : SPEAKING[sk.unit][sk.idx].en);
     case "skSlow": return speak(sk.type==="listening" ? LISTENING[sk.unit][sk.idx].say : SPEAKING[sk.unit][sk.idx].en, null, .5);
     case "skNext": return skNext();
-    case "mic": return pronOk() ? startPron() : startMic();
-    case "pronStop": if(prec) prec.stop(); return;
-    case "pronWord": return speak(arg, null, .7);
+    case "mic": return startMic();
     case "chatMic": return chatMic();
     case "chatSay": { const m = ct && ct.msgs[+arg]; if(m) speak(m.text); return; }
     case "chatTr": ct.showTr = ct.showTr === +arg ? null : +arg; render(); return;

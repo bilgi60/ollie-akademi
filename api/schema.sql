@@ -74,11 +74,3 @@ CREATE TABLE IF NOT EXISTS chat_log (
 );
 CREATE INDEX IF NOT EXISTS idx_chat_child_day ON chat_log(child_id, day);
 CREATE INDEX IF NOT EXISTS idx_chat_created ON chat_log(created_at);
-
--- Telaffuz puanı günlük sayacı (Madde 11)
-CREATE TABLE IF NOT EXISTS pron_usage (
-  child_id INTEGER NOT NULL REFERENCES children(id) ON DELETE CASCADE,
-  day TEXT NOT NULL,                        -- Türkiye saatiyle gün
-  n INTEGER NOT NULL DEFAULT 0,
-  PRIMARY KEY (child_id, day)
-);
