@@ -74,3 +74,26 @@ const MEB = [
   {n:"Natural Forces", tr:"Doğal afetler", top:"Doğal afetler, tahmin ve uyarı, if cümleleri", u:[38,27]}
  ]}
 ];
+
+// 2026-2027 çalışma takvimi (MEB genelgesi): ders yılı 14 Eylül 2026 – 25 Haziran 2027.
+// Tatil haftaları ders haftası sayılmaz. Her yıl güncellenmeli.
+const MEB_YEAR = {y:"2026-2027", start:"2026-09-14", end:"2027-06-25", off:[
+  ["2026-11-16", "2026-11-20", "1. dönem ara tatili"],
+  ["2027-01-25", "2027-02-05", "Yarıyıl tatili"],
+  ["2027-03-08", "2027-03-12", "2. dönem ara tatili"]
+]};
+// Okulda bu hafta hangi tema işleniyor? Yıllık planlar okula göre değişir: temalar ders haftalarına eşit
+// bölünerek TAHMİN edilir. today: "YYYY-AA-GG". Döner: null (ders yılı dışı) | {holiday} | {k: tema sırası, w: ders haftası, of: toplam hafta}
+function mebNow(g, today){
+  const G = MEB.find(x=>x.g === g); if(!G || today < MEB_YEAR.start || today > MEB_YEAR.end) return null;
+  const off = d => MEB_YEAR.off.find(o => d >= o[0] && d <= o[1]);
+  const t = Date.parse(today + "T00:00:00Z"), dow = (new Date(t).getUTCDay() + 6) % 7;
+  const mon = new Date(t - dow * 864e5).toISOString().slice(0, 10);
+  const h = off(mon) || off(today); if(h) return {holiday: h[2], until: h[1]};
+  const weeks = [];
+  for(let x = Date.parse(MEB_YEAR.start + "T00:00:00Z"); x <= Date.parse(MEB_YEAR.end + "T00:00:00Z"); x += 7 * 864e5){
+    const d = new Date(x).toISOString().slice(0, 10); if(!off(d)) weeks.push(d);
+  }
+  const w = weeks.indexOf(mon); if(w < 0) return null;
+  return {k: Math.min(G.themes.length - 1, Math.floor(w * G.themes.length / weeks.length)), w: w + 1, of: weeks.length};
+}

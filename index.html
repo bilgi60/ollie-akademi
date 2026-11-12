@@ -130,7 +130,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,.c
 .continue{display:flex;gap:14px;align-items:center;background:var(--soft);border-radius:18px;padding:14px 16px;flex-wrap:wrap}
 .continue .ic{font-size:2.2rem}
 .continue .txt{flex:1;min-width:160px}
-.continue.review{margin-top:10px}
+.continue.review,.continue.school{margin-top:10px}
 .rvopt{font-size:1.2rem;padding:14px}
 .rvopt .emo{font-size:2.6rem}
 .rvopt.right{background:var(--leaf-soft);border-color:var(--leaf)}
@@ -1619,7 +1619,7 @@ function parentHTML(){
     <h1 style="overflow-wrap:anywhere">${esc(auth.email)}</h1>
     ${verifyNote()}
     <h2>Çocuklar</h2>
-    ${kids.length ? `<div class="stack">${kids.map(c=>`<div class="row between kidrow"><span class="row"><span class="ava">${c.avatar}</span><span><b>${esc(c.name)}</b><br><span class="tr">⭐ ${c.score} yıldız · son çalışma: ${fmtDate(c.updated_at)}</span></span></span>
+    ${kids.length ? `<div class="stack">${kids.map(c=>`<div class="row between kidrow"><span class="row"><span class="ava">${c.avatar}</span><span><b>${esc(c.name)}</b><br><span class="tr">⭐ ${c.score} yıldız · son çalışma: ${fmtDate(c.updated_at)}${c.grade ? ` · 🏫 ${c.grade}. sınıf` : ""}</span>${kidExams(c)}</span></span>
       <span class="row" id="del-${c.id}"><button class="btn ghost small" data-act="delChild" data-arg="${c.id}">Sil</button></span></div>`).join("")}</div>` : `<p class="muted">Henüz çocuk profili yok.</p>`}
     <p class="tr">İlerleme hesabına kaydedilir. Bu hesapla giriş yaptığın her cihazdan (telefon, tablet, bilgisayar) kaldığın yerden devam edebilirsin.</p>
   </section>
@@ -1641,10 +1641,15 @@ function parentHTML(){
     <div id="delAcc"></div>
   </section>`;
 }
+// Veli panelinde çocuğun deneme sınavı sonuçları (sunucu /me → children[].exams)
+function kidExams(c){
+  const e = c.exams || {}, ids = STAGES.map(g=>g.id).filter(id=>e[id]);
+  return ids.length ? `<br><span class="tr">📝 ${ids.map(id=>`${EX_BADGE[id]} ${exStage(id).n} %${e[id].b}${e[id].p ? " ✅" : ""}`).join(" · ")}</span>` : "";
+}
 function reportHTML(){
   const on = auth.report !== false, kids = (auth.children || []).length;
   return `<section class="panel"><h2>📬 Haftalık rapor</h2>
-    <p>Her pazar akşamı e-postana kısa bir rapor gelir: çocuğunun bu hafta kaç gün çalıştığı, kazandığı yıldızlar, bitirdiği dersler, yeni rozetleri ve zorlandığı kelimeler.</p>
+    <p>Her pazar akşamı e-postana kısa bir rapor gelir: çocuğunun bu hafta kaç gün çalıştığı, kazandığı yıldızlar, bitirdiği dersler, yeni rozetleri, deneme sınavı sonuçları ve zorlandığı kelimeler.</p>
     ${!auth.mail ? `<p class="tr">E-posta gönderimi şu an kapalı.</p>` : !auth.verified ? `<div class="fb try">Raporun gelmesi için önce e-posta adresini doğrulaman gerekiyor.</div>` : ""}
     <div class="row"><span class="pill ${on?"good":""}" id="repState">${on ? "✅ Açık" : "⏸️ Kapalı"}</span>
       <button class="btn ghost small" data-act="toggleReport">${on ? "Raporu kapat" : "Raporu aç"}</button>
@@ -1824,6 +1829,7 @@ function homeHTML(){
     ${cont}
     ${examCardHTML()}
     ${reviewCardHTML()}
+    ${schoolCardHTML()}
     ${chatCardHTML()}
     ${libCardHTML()}
   </section>
@@ -2222,6 +2228,17 @@ function mebUnit(n){
   const st = !unitOpen(i) ? "🔒" : hardDone(i) ? "👑" : easyDone(i) ? "✓" : "";
   return `<a class="mebu ${unitOpen(i)?"":"locked"}" href="#unit-${n}"><span class="ic">${L.icon}</span><span style="min-width:0"><b>Ünite ${n} · ${L.theme}</b><span class="tr">${stageOf(i).e} ${stageOf(i).n} · ${L.tr}</span></span>${st ? `<span class="chip ${st==="🔒"?"":"ok"}">${st}</span>` : ""}</a>`;
 }
+// Ana sayfa: "Okulda bu hafta" kartı (sadece sınıf seçildiyse). Tema, ders haftalarına eşit bölünerek tahmin edilir (meb.js → mebNow).
+function schoolCardHTML(){
+  const G = mebGrade(S.grade); if(!G) return "";
+  const N = mebNow(G.g, todayKey()); if(!N) return "";
+  const word = G.prog === "maarif" ? "Tema" : "Ünite";
+  if(N.holiday) return `<div class="continue school"><span class="ic">🏖️</span><div class="txt"><div class="eyebrow">Okulda bu hafta · ${G.g}. sınıf</div><h3>${N.holiday}!</h3>
+    <span class="tr">Tatilde de günde 10 dakika İngilizce, öğrendiklerini unutmamanı sağlar.</span></div><a class="btn ghost" href="#meb-${G.g}">Temalar ▶</a></div>`;
+  const t = G.themes[N.k], u = t.u.find(n=>unitOpen(n-1) && !hardDone(n-1)) || t.u.find(n=>unitOpen(n-1)) || t.u[0];
+  return `<div class="continue school"><span class="ic">🏫</span><div class="txt"><div class="eyebrow">Okulda bu hafta (tahmini) · ${G.g}. sınıf</div><h3>${word} ${N.k+1}: ${t.n} <span class="tr">${t.tr}</span></h3>
+    <span class="tr">Okulda işlediğin konuyu Ollie'de pekiştir: Ünite ${u} ${LEVELS[u-1].icon} ${LEVELS[u-1].theme}.</span></div><a class="btn ghost" href="#unit-${u}">Çalış ▶</a></div>`;
+}
 function mebHTML(){
   const G = mebGrade(mebView);
   const pick = `<div class="row">${MEB.map(x=>`<a class="chip ${x.g===mebView?"on":""}" href="#meb-${x.g}">${x.g}. sınıf${x.g===S.grade?" 🏫":""}</a>`).join("")}</div>`;
@@ -2229,12 +2246,13 @@ function mebHTML(){
   <section class="panel"><div class="eyebrow">MEB İngilizce · Okulla birlikte</div><h1>🏫 Okulda hangi temadasın?</h1>
     <p class="muted">Sınıfını seç: okuldaki İngilizce dersinin her teması için Ollie'de çalışabileceğin üniteleri gösteriyoruz. Okulda işlediğin konuyu burada şarkı, oyun ve testlerle pekiştir.</p>${pick}</section>`;
   if(!G) return head;
-  const mine = G.g === S.grade;
+  const mine = G.g === S.grade, N = mebNow(G.g, todayKey());
   return head + `<section class="panel"><div class="row between"><div><div class="eyebrow">${G.prog==="maarif" ? "Türkiye Yüzyılı Maarif Modeli" : "2018 İngilizce programı"} · ${G.lv}</div><h2 style="margin:2px 0">${G.g}. sınıf İngilizce · ${G.themes.length} ${G.prog==="maarif" ? "tema" : "ünite"}</h2></div>
       ${mine ? `<button class="btn ghost small" data-act="setGrade" data-arg="0">Seçimi kaldır</button>` : `<button class="btn small" data-act="setGrade" data-arg="${G.g}">🏫 Benim sınıfım</button>`}</div>
     ${mine ? `<p class="tr">✓ Ünite kartlarında okuldaki tema numarası görünür.</p>` : `<p class="tr">“Benim sınıfım” dersen Derslerim'deki ünite kartlarında okuldaki tema numarası da görünür.</p>`}
-    ${G.note ? `<p class="tr">ℹ️ ${G.note}</p>` : ""}</section>
-  ${G.themes.map((t,k)=>`<section class="panel mebtheme"><div class="eyebrow">${G.prog==="maarif" ? "Tema" : "Ünite"} ${k+1}</div><h2 style="margin:2px 0">${t.n} <span class="tr">${t.tr}</span></h2>
+    ${G.note ? `<p class="tr">ℹ️ ${G.note}</p>` : ""}
+    ${N ? `<p class="tr">📍 ${N.holiday ? `Okulda şu an ${N.holiday.toLowerCase()} var.` : `Ders yılının ${N.w}. haftası (${N.of} haftadan). “Okulda bu hafta” işareti, temaların yıla eşit dağıldığı varsayılarak tahmin edilir; öğretmeninin planı biraz farklı olabilir.`}</p>` : ""}</section>
+  ${G.themes.map((t,k)=>`<section class="panel mebtheme"><div class="eyebrow">${G.prog==="maarif" ? "Tema" : "Ünite"} ${k+1}${N && N.k===k ? ` · <span class="chip ok">📍 Okulda bu hafta (tahmini)</span>` : ""}</div><h2 style="margin:2px 0">${t.n} <span class="tr">${t.tr}</span></h2>
     <p class="tr">Okulda: ${t.top}</p><div class="mebus">${t.u.map(mebUnit).join("")}</div></section>`).join("")}
   <p class="tr">Bu eşleştirme Ollie'nin önerisidir, MEB'in resmî eşleştirmesi değildir. Tema adları MEB'in İngilizce öğretim programlarından alınmıştır (2026-2027). Okulunuzdaki kitabın konuları biraz farklı olabilir.</p>`;
 }
@@ -2976,8 +2994,11 @@ function revNext(){
 }
 
 /* ---------- Seviye tespit testi ----------
-   Ünite 1'den başlayarak her üniteden 2 soru sorulur: kelime (resme bak-kelimeyi seç ya da dinle-resmi seç) ve ünitenin kolay testinden
-   bir anlama sorusu (bilmece/dinleme). 2/2 → sonraki üniteye geçilir; 1/2 → bir kelime sorusu daha, 2/3 ise geçilir; değilse test biter.
+   Sorulan her üniteden 2 soru: kelime (resme bak-kelimeyi seç ya da dinle-resmi seç) ve ünitenin kolay testinden bir anlama sorusu
+   (bilmece/dinleme). 2/2 → ünite geçildi; 1/2 → bir kelime sorusu daha, 2/3 ise geçildi.
+   Kısa yol: Starters'ta Ünite 1, 4, 7, 10 sorulur (arada atlananlar bilinmiş sayılır). Sonraki her seviyede önce son ünite ("kapı") sorulur:
+   geçilirse bütün seviye bilinmiş sayılır; geçilemezse o seviyede baştan 3'er atlayarak denenir. İlk geçilemeyen yerde test biter,
+   sonuç = son geçilen üniteden sonraki ünite. En fazla ~4 + 4×4 ünite (güçlü bir öğrenci için ~20 soru).
    Sonuç S.place = {u: başlangıç ünitesi, d: tarih, r: doğru, n: soru}. 0..u ünitelerinin hepsi açılır (unitOpen), "Kaldığın yerden devam"
    u'dan başlar. Geçilen ünitelerin kelimeleri birkaç gün sonra Bugünün tekrarı'na gelir. Testte doğru/yanlış gösterilmez (çocuk üzülmesin). */
 let pt = null;
@@ -2992,18 +3013,21 @@ function ptUnit(u){
   const v = ptVocab(u, Math.random() < .5 ? "pic" : "ear");
   return [v, {type:t.type, q:t.q, tr:t.tr, say:t.say, answer:t.answer, opts:t.options.map(o=>typeof o==="string" ? {v:o} : o)}];
 }
-function startPlace(){ pt = {u:0, qs:ptUnit(0), k:0, ok:0, n:0, right:0, marks:[], done:false, busy:false}; }
+function startPlace(){ pt = {u:0, gate:false, last:-1, qs:ptUnit(0), k:0, ok:0, n:0, right:0, marks:[], done:false, busy:false}; }
+// Seviye içinde sorulacak üniteler: baştan 3'er atlayarak, sonra seviyenin son ünitesi (kapı sorusu yanlışsa son ünite sorulmaz)
+const ptSteps = (g, gateFailed) => [...new Set([g.from, g.from + 3, g.from + 6].concat(gateFailed ? [] : [g.to - 1]))].filter(i => i < g.to && i < LEVELS.length);
+function ptGo(u, gate, msg){ pt.u = u; pt.gate = gate; pt.qs = ptUnit(u); pt.k = 0; pt.ok = 0; say(msg[0], msg[1]); ptShow(); }
 function placeCardHTML(){
   if(S.place || S.lessons.s0 || S.score > 0) return "";
   return `<div class="continue"><span class="ic">🎯</span><div class="txt"><div class="eyebrow">Yeni misin?</div><h3>İngilizceyi biraz biliyor musun?</h3>
-    <span class="tr">3–5 dakikalık seviye testini çöz, Ollie seni sana uygun üniteden başlatsın.</span></div>
+    <span class="tr">Birkaç dakikalık seviye testini çöz, Ollie seni sana uygun üniteden başlatsın.</span></div>
     <div class="row"><a class="btn" href="#placement">Seviye testi ▶</a><button class="btn ghost small" data-act="placeSkip">Baştan başlayacağım</button></div></div>`;
 }
 function placementHTML(){
   const top = `<div class="row between"><a class="link" href="#units">← Derslerim</a><span class="chip">🎯 Seviye testi</span></div>`;
   if(!pt) return `${top}<section class="panel" style="text-align:center">
     <div style="font-size:3.5rem">🎯</div><h1>Seviye testi</h1>
-    <p>Ollie her üniteden birkaç kısa soru soracak. Bildiğin kadar ilerlersin, zorlandığın yerde test biter.</p>
+    <p>Ollie farklı seviyelerden kısa sorular soracak. Bildiğin kadar ilerlersin, zorlandığın yerde test biter.</p>
     <p class="tr">Bilmediğin soruda tahmin etme, <b>🤷 Bilmiyorum</b> düğmesine bas. Böylece sana en uygun yeri buluruz. Bu bir sınav değil, yanlış yapmak sorun değil! 😊</p>
     ${S.place && !S.place.skip ? `<p class="tr">Son sonucun: <b>Ünite ${S.place.u+1}</b>. Testi yeniden çözersen açık üniteler kapanmaz.</p>` : ""}
     <div class="row center"><button class="btn" data-act="ptStart">Başla ▶</button></div></section>`;
@@ -3054,9 +3078,24 @@ function ptStep(){
   if(asked === 2 && ok === 1){ pt.qs.push(ptVocab(pt.u, pt.qs[0].type==="pic" ? "ear" : "pic", pt.qs[0].w)); return ptShow(); }
   if(asked < pt.qs.length) return ptShow();
   const pass = ok >= 2;
-  pt.marks[pt.u] = pass ? "ok" : "no";
-  if(pass && pt.u + 1 < LEVELS.length){ pt.u++; pt.qs = ptUnit(pt.u); pt.k = 0; pt.ok = 0; say("Great! Next unit.", `Ünite ${pt.u+1}: ${LEVELS[pt.u].theme} soruları geliyor.`); return ptShow(); }
-  finishPlace(pass ? LEVELS.length - 1 : pt.u, pass);
+  const g = stageOf(pt.u), si = STAGES.indexOf(g);
+  if(pass){
+    // geçilen ünite (kapı sorusunda bütün seviye) ve aradaki atlanan üniteler bilinmiş sayılır
+    const upto = pt.gate ? g.to - 1 : pt.u;
+    for(let i = pt.last + 1; i <= upto; i++) pt.marks[i] = "ok";
+    pt.last = upto;
+    const next = pt.gate ? undefined : ptSteps(g, pt.gateFailed === si).find(i => i > pt.u);
+    if(next !== undefined) return ptGo(next, false, ["Great! Next.", `Ünite ${next+1}: ${LEVELS[next].theme} soruları geliyor.`]);
+    if(pt.gateFailed === si) return finishPlace(pt.last + 1, false);   // seviyenin son ünitesi bilinmemişti
+    const ng = STAGES[si + 1];
+    if(ng && ng.from < LEVELS.length){ const gu = Math.min(ng.to, LEVELS.length) - 1;
+      return ptGo(gu, true, [`${g.n} ✓ Next level!`, `${g.n} seviyesini biliyorsun! Şimdi ${ng.e} ${ng.n} seviyesinden bir ünite.`]); }
+    return finishPlace(LEVELS.length - 1, true);
+  }
+  pt.marks[pt.u] = "no";
+  // kapı sorusu bilinmedi: o seviyenin başından 3'er atlayarak dene
+  if(pt.gate){ pt.gateFailed = si; return ptGo(g.from, false, ["Let's check.", `${g.e} ${g.n} seviyesinde nereden başlayacağını bulalım.`]); }
+  finishPlace(pt.last + 1, false);
 }
 function finishPlace(u, all){
   const first = !S.place || S.place.skip, prev = S.place && !S.place.skip ? S.place.u : 0;

@@ -1,6 +1,6 @@
 // Ollie Akademi API — Cloudflare Worker + D1
 // Veli hesapları, çocuk profilleri, ilerleme ve yönetici paneli.
-import { reportWeek, snapshot, childReport, reportMail } from "./report.js";
+import { reportWeek, snapshot, childReport, reportMail, examSummary, schoolGrade } from "./report.js";
 import { chatSend, chatList, chatClear, chatPrune } from "./chat.js";
 import { listClasses, createClass, renameClass, newClassCode, deleteClass, removeMember, classDetail, childClasses, joinClass, leaveClass } from "./classes.js";
 
@@ -78,7 +78,11 @@ async function auth(req, env) {
   return p;
 }
 const publicParent = p => ({ id: p.id, email: p.email, role: p.role, status: p.status, email_verified: !!p.email_verified, weekly_report: p.weekly_report !== 0, created_at: p.created_at });
-const childSummary = c => ({ id: c.id, name: c.name, avatar: c.avatar, score: c.score, created_at: c.created_at, updated_at: c.updated_at });
+const childSummary = c => {
+  const o = { id: c.id, name: c.name, avatar: c.avatar, score: c.score, created_at: c.created_at, updated_at: c.updated_at };
+  if (c.data != null) { let d = {}; try { d = JSON.parse(c.data); } catch {} o.grade = schoolGrade(d); o.exams = examSummary(d); }
+  return o;
+};
 
 async function getChild(env, parent, id) {
   const c = await env.DB.prepare("SELECT * FROM children WHERE id = ? AND parent_id = ?").bind(id, parent.id).first();
@@ -129,7 +133,7 @@ async function login(req, env) {
   await env.DB.prepare("DELETE FROM login_fails WHERE email = ?").bind(email).run();
   await env.DB.prepare("DELETE FROM sessions WHERE parent_id = ? AND expires_at < ?").bind(p.id, now()).run();
   await env.DB.prepare("UPDATE parents SET last_seen = ? WHERE id = ?").bind(now(), p.id).run();
-  const { results } = await env.DB.prepare("SELECT id, name, avatar, score, created_at, updated_at FROM children WHERE parent_id = ? ORDER BY id").bind(p.id).all();
+  const { results } = await env.DB.prepare("SELECT id, name, avatar, score, data, created_at, updated_at FROM children WHERE parent_id = ? ORDER BY id").bind(p.id).all();
   return json({ token: await newSession(env, p.id), parent: publicParent(p), children: results.map(childSummary), mail: mailReady(env) });
 }
 
@@ -139,7 +143,7 @@ async function logout(req, env, p) {
 }
 
 async function me(req, env, p) {
-  const { results } = await env.DB.prepare("SELECT id, name, avatar, score, created_at, updated_at FROM children WHERE parent_id = ? ORDER BY id").bind(p.id).all();
+  const { results } = await env.DB.prepare("SELECT id, name, avatar, score, data, created_at, updated_at FROM children WHERE parent_id = ? ORDER BY id").bind(p.id).all();
   return json({ parent: publicParent(p), children: results.map(childSummary), mail: mailReady(env) });
 }
 
@@ -234,7 +238,7 @@ async function adminStats(req, env) {
   const day = trDay(), week = now() - 7 * 86400_000;
   const days = [...Array(14)].map((_, i) => trDay(now() - (13 - i) * 86400_000));
   const q = (sql, ...a) => env.DB.prepare(sql).bind(...a);
-  const [parents, children, today, weekActive, newParents, suspended, daily] = await env.DB.batch([
+  const [parents, children, today, weekActive, newParents, suspended, daily, cls, mem] = await env.DB.batch([
     q("SELECT COUNT(*) AS n FROM parents"),
     q("SELECT COUNT(*) AS n FROM children"),
     q("SELECT COUNT(*) AS n FROM activity WHERE day = ?", day),
@@ -242,6 +246,8 @@ async function adminStats(req, env) {
     q("SELECT COUNT(*) AS n FROM parents WHERE created_at >= ?", week),
     q("SELECT COUNT(*) AS n FROM parents WHERE status = 'suspended'"),
     q("SELECT day, COUNT(*) AS n FROM activity WHERE day >= ? GROUP BY day", days[0]),
+    q("SELECT COUNT(*) AS n, COUNT(DISTINCT teacher_id) AS t FROM classes"),
+    q("SELECT COUNT(*) AS n, COUNT(DISTINCT child_id) AS c FROM class_members"),
   ]);
   const map = Object.fromEntries(daily.results.map(r => [r.day, r.n]));
   return json({
@@ -249,6 +255,7 @@ async function adminStats(req, env) {
     active_today: today.results[0].n, active_week: weekActive.results[0].n,
     new_parents_week: newParents.results[0].n, suspended: suspended.results[0].n,
     daily: days.map(d => ({ day: d, n: map[d] || 0 })),
+    classes: cls.results[0].n, teachers: cls.results[0].t, class_students: mem.results[0].c,
   });
 }
 
@@ -405,7 +412,7 @@ async function resetPassword(req, env) {
     env.DB.prepare("DELETE FROM login_fails WHERE email = ?").bind(p.email),
   ]);
   const fresh = await env.DB.prepare("SELECT * FROM parents WHERE id = ?").bind(id).first();
-  const { results } = await env.DB.prepare("SELECT id, name, avatar, score, created_at, updated_at FROM children WHERE parent_id = ? ORDER BY id").bind(id).all();
+  const { results } = await env.DB.prepare("SELECT id, name, avatar, score, data, created_at, updated_at FROM children WHERE parent_id = ? ORDER BY id").bind(id).all();
   return json({ token: await newSession(env, id), parent: publicParent(fresh), children: results.map(childSummary), mail: mailReady(env) });
 }
 

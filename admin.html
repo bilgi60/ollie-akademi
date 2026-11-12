@@ -26,7 +26,7 @@
   color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding:16px 16px 48px}
-h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;line-height:1.2}
+h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;line-height:1.2;overflow-wrap:anywhere}
 h1{font-size:1.7rem} h2{font-size:1.25rem}
 p{margin:0}
 button,input{font:inherit;color:inherit}
@@ -126,6 +126,7 @@ function denied(){
   $("#app").innerHTML = header() + `<section class="panel"><h1>Erişim yok</h1><p>Bu sayfayı sadece site yöneticisi görebilir. <b>${esc(auth.email)}</b> hesabı yönetici değil.</p></section>`;
 }
 
+const EXAM_N = {starters:"Starters", movers:"Movers", flyers:"Flyers", key:"A2 Key", pet:"B1 Preliminary"};
 function childStats(d){
   d = d || {};
   const easy = (d.p && d.p.easy && d.p.easy.done) || [], hard = (d.p && d.p.hard && d.p.hard.done) || [];
@@ -147,6 +148,8 @@ function listView(){
       <div class="tile"><b>${s.active_week}</b><span>Son 7 günde aktif</span></div>
       <div class="tile"><b>${s.new_parents_week}</b><span>Son 7 günde yeni veli</span></div>
       <div class="tile"><b>${s.suspended}</b><span>Askıdaki hesap</span></div>
+      <div class="tile"><b>${s.classes ?? 0}</b><span>🏫 Sınıf (${s.teachers ?? 0} öğretmen)</span></div>
+      <div class="tile"><b>${s.class_students ?? 0}</b><span>Sınıftaki öğrenci</span></div>
     </div>
     <div><b>Günlük aktif çocuk</b> <span class="muted small">· son 14 gün, yıldız kazanan çocuk sayısı</span></div>
     <div class="chart" role="img" aria-label="Son 14 günün günlük aktif çocuk sayıları">${s.daily.map(x=>`<div class="c"><span class="n">${x.n||""}</span><div class="bar" style="height:${x.n/max*100}%" title="${fmtDay(x.day)}: ${x.n}"></div><span class="d">${fmtDay(x.day).split(" ")[0]}</span></div>`).join("")}</div>
@@ -176,12 +179,13 @@ function detailView(){
     <div class="head"><span class="ava">${esc(c.avatar)}</span><div><h2>${esc(c.name)}</h2><span class="muted small">Profil açılışı: ${fmt(c.created_at)} · Son kayıt: ${fmt(c.updated_at)}${s.lastDay ? ` · Son çalıştığı gün: ${fmtDay(s.lastDay)}` : ""}</span></div></div>
     <div class="tiles">
       <div class="tile"><b>${s.score}</b><span>⭐ Yıldız</span></div>
-      <div class="tile"><b>${s.easy}/10</b><span>🐣 Kolay test</span></div>
-      <div class="tile"><b>${s.hard}/10</b><span>🦅 Zor test</span></div>
-      <div class="tile"><b>${s.writes}/10</b><span>✍️ Yazma</span></div>
+      <div class="tile"><b>${s.easy}/${UNITS.length}</b><span>🐣 Kolay test</span></div>
+      <div class="tile"><b>${s.hard}/${UNITS.length}</b><span>🦅 Zor test</span></div>
+      <div class="tile"><b>${s.writes}/${UNITS.length}</b><span>✍️ Yazma</span></div>
       <div class="tile"><b>${s.badges}</b><span>🏅 Rozet</span></div>
       <div class="tile"><b>${s.days}</b><span>📅 Çalıştığı gün</span></div>
     </div>
+    ${c.grade || (c.exams && Object.keys(c.exams).length) ? `<p class="small">${c.grade ? `🏫 Okulda ${c.grade}. sınıf` : ""}${c.grade && Object.keys(c.exams||{}).length ? " · " : ""}${Object.entries(c.exams||{}).map(([k,e])=>`📝 ${EXAM_N[k]||k}: en iyi %${e.b}${e.p ? " ✅" : ""} (${e.n} deneme)`).join(" · ")}</p>` : ""}
     <div class="units">${s.units.map((u,i)=>`<div class="unit"><b>${i+1}. ${u.n}</b> <span class="muted">%${u.pct}</span><div class="meter"><i style="width:${u.pct}%"></i></div></div>`).join("")}</div>
   </div>`; }).join("") : `<p class="muted">Bu velinin henüz çocuk profili yok.</p>`}
   </section>`;
