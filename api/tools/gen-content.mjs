@@ -26,6 +26,7 @@ const units = LEVELS.map((L, i) => ({
   theme: L.theme, tr: L.tr, icon: L.icon,
   r: READING[i].qs.length, l: LISTENING[i].length, s: SPEAKING[i].length,
   w: L.cards.map(c => c.w),   // Ollie sohbeti için ünite kelimeleri
+  sp: SPEAKING[i].map(x => x.en), // telaffuz puanı için Speaking cümleleri
 }));
 const words = {};
 LEVELS.forEach(L => L.cards.forEach(c => { words[c.w] = [c.e, c.tr]; }));
