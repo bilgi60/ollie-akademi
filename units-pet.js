@@ -3300,7 +3300,7 @@ UNITS_PET.push({
     "w": "torch",
     "ipa": "/tɔrtʃ/",
     "tr": "El feneri",
-    "ex": "I can't see anything, so I am using a torch; it must be under my bed."
+    "ex": "It is dark under my bed, so I am using a torch to find my ball."
    }
   ],
   "tasks": [
@@ -4858,7 +4858,7 @@ UNITS_PET.push({
    "title": "Visit Türkiye",
    "lines": [
     "I am a <b>tourist</b> who loves to roam,",
-    "My <b>guidebook</b> is a friend which shows me the way,",
+    "My <b>guidebook</b> is a friend that shows me the way,",
     "I see a <b>palace</b> where kings once stayed,",
     "What a lovely place for a holiday!"
    ]
@@ -6836,7 +6836,7 @@ UNITS_PET.push({
    ["Suddenly it started to rain, and they ran into the cave.", "Birden yağmur başladı ve mağaraya koştular."],
    ["Inside, Kerem saw a small box that somebody had left on a rock.", "İçeride Kerem, birinin bir kayanın üzerine bıraktığı küçük bir kutu gördü."],
    ["In the box there was a note: “Well done, explorers! I prepared this adventure for you.”", "Kutuda bir not vardı: “Aferin kâşifler! Bu macerayı sizin için hazırladım.”"],
-   ["The real treasure was a big bag of chocolate, and they were laughing all the way home.", "Asıl hazine büyük bir çikolata torbasıydı ve eve dönerken boyunca gülüyorlardı."]
+   ["The real treasure was a big bag of chocolate, and they were laughing all the way home.", "Asıl hazine büyük bir çikolata torbasıydı ve eve dönerken yol boyunca gülüyorlardı."]
   ],
   "qs": [
    { "q": "Who had hidden the map?", "tr": "Haritayı kim saklamıştı?", "options": ["their grandfather", "their teacher", "a pirate"], "answer": "their grandfather" },

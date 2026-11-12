@@ -27,7 +27,7 @@ const MEB = [
   {n:"Jobs", tr:"Meslekler", top:"Meslekler ve iş yerleri", u:[11,12]},
   {n:"My Clothes", tr:"Kıyafetlerim", top:"Kıyafetler, hava durumu ve mevsime göre giyim", u:[9,7]},
   {n:"My Friends", tr:"Arkadaşlarım", top:"Arkadaşını tarif etme, fiziksel görünüş, have got", u:[8,33]},
-  {n:"Food and Drinks", tr:"Yiyecek ve içecekler", top:"Yiyecekler, öneri yapma, aç / susuz olma", u:[6,18]}
+  {n:"Food and Drinks", tr:"Yiyecek ve içecekler", top:"Yiyecekler, öneri yapma, aç / susamış olma", u:[6,18]}
  ]},
  {g:5, prog:"maarif", lv:"A1", themes:[
   {n:"School Life", tr:"Okul hayatı", top:"Okuldaki kişiler, yerler ve kurallar, okul kulüpleri, millî bayramlar", u:[3,31,30]},
