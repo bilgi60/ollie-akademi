@@ -1491,7 +1491,7 @@ function render(greet){
     review:reviewHTML, chat:chatHTML, placement:placementHTML, exam:examHTML, meb:mebHTML, library:libraryHTML, book:bookHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
   if(play && play.order) renderOrder();
   if(!play && page==="words") renderWords();
-  if(!play && page==="review" && rv && !rv.done && rv.queue[rv.pos].type==="ear") setTimeout(()=>speak(rv.queue[rv.pos].w), 300);
+  if(!play && page==="review" && rv && !rv.done && rv.queue[rv.pos].type==="ear"){ const r = rv, w = rv.queue[rv.pos].w; setTimeout(()=>{ if(rv === r) speak(w); }, 300); }
   window.scrollTo({top:0});
   if(!play && page==="chat") chatScroll();
   if(greet && !play) greetPage();
@@ -3046,7 +3046,7 @@ function ptAnswer(v, btn){
   pt.n++; if(ok){ pt.ok++; pt.right++; }
   if(btn && v) btn.classList.add("pick");
   pt.busy = true; stopSpeech();
-  setTimeout(()=>{ pt.busy = false; ptStep(); }, v ? 450 : 150);
+  const p = pt; setTimeout(()=>{ p.busy = false; if(pt === p) ptStep(); }, v ? 450 : 150);
 }
 function ptStep(){
   pt.k++;
@@ -3187,7 +3187,7 @@ function exAnswer(v, btn){
   ex.ans[ex.k] = {v, ok, pts:ok ? 1 : 0};
   if(btn && v) btn.classList.add("pick");
   ex.busy = true; stopSpeech();
-  setTimeout(()=>{ ex.busy = false; exNext(); }, v ? 350 : 120);
+  const e = ex; setTimeout(()=>{ e.busy = false; if(ex === e) exNext(); }, v ? 350 : 120);
 }
 function exEssayDone(){
   const q = ex.qs[ex.k], text = ($("#exEssay").value || "").trim(), r = evalWriting(q.u, text);
@@ -3589,7 +3589,7 @@ function skNext(){
   const total = SKILL[sk.type].total(sk.unit);
   let n = sk.idx; do{ n = (n+1) % total; } while(sk.local.has(n) && sk.local.size < total);
   sk.idx = n; sk.solved = false; stopRec(); render();
-  if(sk.type==="listening"){ say("Listen carefully!", "Dikkatle dinle!"); setTimeout(()=>speak(LISTENING[sk.unit][sk.idx].say), 300); }
+  if(sk.type==="listening"){ say("Listen carefully!", "Dikkatle dinle!"); const s = sk; setTimeout(()=>{ if(sk === s) speak(LISTENING[s.unit][s.idx].say); }, 300); }
   else say("Your turn to talk!", "Önce dinle, sonra sen söyle!");
 }
 
