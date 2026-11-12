@@ -1,6 +1,7 @@
 // Ollie Akademi API — Cloudflare Worker + D1
 // Veli hesapları, çocuk profilleri, ilerleme ve yönetici paneli.
 import { reportWeek, snapshot, childReport, reportMail } from "./report.js";
+import { chatSend, chatList, chatClear, chatPrune } from "./chat.js";
 
 const SESSION_DAYS = 60;
 const MAX_CHILDREN = 6;
@@ -202,6 +203,7 @@ async function deleteChild(req, env, p, id) {
   await env.DB.batch([
     env.DB.prepare("DELETE FROM activity WHERE child_id = ?").bind(c.id),
     env.DB.prepare("DELETE FROM report_snap WHERE child_id = ?").bind(c.id),
+    env.DB.prepare("DELETE FROM chat_log WHERE child_id = ?").bind(c.id),
     env.DB.prepare("DELETE FROM children WHERE id = ?").bind(c.id),
   ]);
   return json({ ok: true });
@@ -211,6 +213,7 @@ async function removeParent(env, id) {
   await env.DB.batch([
     env.DB.prepare("DELETE FROM activity WHERE child_id IN (SELECT id FROM children WHERE parent_id = ?)").bind(id),
     env.DB.prepare("DELETE FROM report_snap WHERE child_id IN (SELECT id FROM children WHERE parent_id = ?)").bind(id),
+    env.DB.prepare("DELETE FROM chat_log WHERE child_id IN (SELECT id FROM children WHERE parent_id = ?)").bind(id),
     env.DB.prepare("DELETE FROM children WHERE parent_id = ?").bind(id),
     env.DB.prepare("DELETE FROM sessions WHERE parent_id = ?").bind(id),
     env.DB.prepare("DELETE FROM email_tokens WHERE parent_id = ?").bind(id),
@@ -553,6 +556,12 @@ async function handle(req, env, ctx) {
     if (M === "PUT") return updateChild(req, env, p, +m[1]);
     if (M === "DELETE") return deleteChild(req, env, p, +m[1]);
   }
+  if ((m = path.match(/^\/api\/children\/(\d+)\/chat$/))) {
+    const c = await getChild(env, p, +m[1]);
+    if (M === "POST") return json(await chatSend(env, c, await body(req), trDay(), bad));
+    if (M === "GET") return json(await chatList(env, c, trDay()));
+    if (M === "DELETE") { await chatClear(env, c); return json({ ok: true }); }
+  }
   if (path.startsWith("/api/admin/")) {
     needAdmin(p);
     if (path === "/api/admin/stats" && M === "GET") return adminStats(req, env);
@@ -584,5 +593,6 @@ export default {
   },
   async scheduled(event, env, ctx) {
     ctx.waitUntil(runWeeklyReports(env, event.scheduledTime).catch(e => console.error("Haftalık rapor hatası", e)));
+    ctx.waitUntil(chatPrune(env).catch(e => console.error("Sohbet temizleme hatası", e)));
   },
 };
