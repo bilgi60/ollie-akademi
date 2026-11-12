@@ -1,5 +1,8 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **FİYAT ANALİZİ BİTTİ (2026-11-12, kod değişmedi).** Kullanıcı sordu: "aylık 1000 TL eder mi?" Cevap: bugünkü hâliyle büyük ihtimalle hayır. Rakipler (TR, aylık): Lingokids ~100–200 TL, Morpa Kampüs ~310–500 TL, Duolingo Super ~650 TL (belirsiz), Novakid (canlı öğretmen) ~1.180–2.940 TL. Ollie'nin farkları (Türkçe açıklama + MEB, Cambridge yolu + deneme sınavları, yapay zekâ sohbeti) ile tahmini değer ~300–500 TL/ay. Öneri: 249–399 TL/ay ya da yıllık ~2.500–3.500 TL; 1000 TL ancak canlı ders/öğretmen geri bildirimi eklenirse ya da okul/sınıf satışında; gerçek ölçüm için 2 fiyatla deneme. Sohbetin çocuk başı maliyeti henüz ölçülmedi (Anthropic panelinden ilk ay bakılmalı).
+> - Sıradaki: kullanıcıya sor. Bekleyen: `MEB_YEAR` 2027-2028 güncellemesi (takvim açıklanınca); KVKK konusu kullanıcıdan gelecek.
+
 > **İÇERİK KONTROLÜ BİTTİ (dal `claude/epic-thompson-3dyntw`, 2026-11-12) — main'e alındı 2026-11-12, YAYINDA. Worker değişmedi (kelime/ünite adı değişmedi, content.js yeniden üretilmedi).**
 > - 10 alt ajan (Sonnet) bütün içeriği okudu (Starters, units-a1/a2/key/pet, books-mf.js, meb.js); ~55 bulgu ana sohbette tek tek doğrulandı, ~45'i düzeltildi: TR yazım (teniste, teleskobum, peronda, kule cümlelerinde cümle ortası büyük harf), çeviri uyuşmazlıkları, anlamsız şarkı satırları, Starters'ta geçmiş/present perfect, belirsiz cevaplı sorular, tutarsız yazma modeli, kitap sözlük karşılıkları, MEB "susamış".
 > - `evalWriting` düzeltildi: e-posta imzası ("See you soon, Mert") ve kapanış tırnağı artık "cümleler büyük harfle başlasın" kontrolünü bozmuyor. Bütün 50 model metin kendi kontrollerini geçiyor (yalnızca birkaç Starters/Movers modeli 40+ "Süper yazar" bonusunun altında — zorunlu değil).
