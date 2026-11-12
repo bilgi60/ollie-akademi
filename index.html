@@ -159,7 +159,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,.c
 .chip{display:inline-flex;align-items:center;gap:4px;background:var(--soft);border-radius:99px;padding:3px 12px;font-weight:700;font-size:.9rem}
 .chip.ok{background:var(--leaf-soft);color:var(--leaf)}
 a.chip{text-decoration:none;color:var(--ink);border:2px solid transparent}
-a.chip.on{background:var(--accent);color:var(--on-accent)}
+a.chip.on,button.chip.on{background:var(--accent);color:var(--on-accent)}
 a.chip.mebchip,.mebtag{background:var(--sky-soft);color:var(--sky)}
 .mebtag{align-self:flex-start;border-radius:99px;padding:2px 10px;font-weight:700;font-size:.8rem}
 .mebus{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:10px}
@@ -331,6 +331,16 @@ body.out .side,body.out .pills{display:none}
 .kid .ava{width:64px;height:64px;font-size:2.2rem}
 .kid b{font-size:1.1rem}
 .kidrow{background:var(--soft);border-radius:16px;padding:10px 14px;flex-wrap:wrap;gap:8px}
+.tblwrap{overflow-x:auto;margin:10px 0;border:2px solid var(--line);border-radius:16px;-webkit-overflow-scrolling:touch}
+.ttbl{border-collapse:collapse;width:100%;min-width:720px;font-size:.92rem}
+.ttbl th,.ttbl td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+.ttbl th{background:var(--soft);font-weight:700;position:sticky;top:0}
+.ttbl tr:last-child td{border-bottom:0}
+.ttbl td.nm{white-space:normal;min-width:130px}
+.ccode{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.9rem;font-weight:800;letter-spacing:.18em;background:var(--soft);border:2px dashed var(--line);border-radius:14px;padding:6px 16px;display:inline-block}
+.clscard{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--soft);border-radius:16px;padding:12px 14px;text-decoration:none;color:inherit}
+.clsjoin{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.clsjoin .field{max-width:170px;text-transform:uppercase;letter-spacing:.12em;font-weight:700}
 .repFrame{width:100%;min-height:600px;border:2px solid var(--line);border-radius:16px;background:#EEF4EA;margin:10px 0}
 .pill.good{border-color:#3E8E5A}
 a.btn{text-decoration:none}
@@ -1445,11 +1455,13 @@ function route(){
   hideSheet();
   if(h === "reset" && !S && resetToken){ page = "reset"; render(true); return; }
   if(!S){
-    if(auth){ page = ["profiles","parent"].includes(h) ? h : "profiles"; if(page !== h) history.replaceState(null, "", "#"+page); }
+    const tm = h.match(/^teacher(?:-(\d+))?$/);
+    if(auth && tm){ page = "teacher"; openTeacher(tm[1] ? +tm[1] : null); }
+    else if(auth){ page = ["profiles","parent"].includes(h) ? h : "profiles"; if(page !== h) history.replaceState(null, "", "#"+page); }
     else page = ["register","forgot"].includes(h) ? h : "login";
     render(true); return;
   }
-  if(["login","register","forgot","profiles","parent"].includes(h)){ history.replaceState(null, "", "#home"); }
+  if(["login","register","forgot","profiles","parent"].includes(h) || /^teacher/.test(h)){ history.replaceState(null, "", "#home"); }
   const ce = h.match(/^cert-(\w+)$/);
   if(ce && exPassed(ce[1])){ showCert(ce[1]); return; }
   const em = h.match(/^exam-(\w+)$/);
@@ -1473,7 +1485,7 @@ function render(greet){
   const nav = play || page==="unit" || page==="placement" || page==="exam" || page==="meb" ? "units" : page==="review" ? "home" : page==="chat" ? "speaking" : page==="library" || page==="book" ? "reading" : page;
   document.querySelectorAll(".nav a").forEach(a=>a.classList.toggle("on", a.dataset.nav===nav));
   const el = $("#screen");
-  if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML, reset:resetHTML, profiles:profilesHTML, parent:parentHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
+  if(!S){ el.innerHTML = ({login:loginHTML, register:registerHTML, forgot:forgotHTML, reset:resetHTML, profiles:profilesHTML, parent:parentHTML, teacher:teacherHTML})[page](); window.scrollTo({top:0}); if(greet) greetPage(); return; }
   if(play) el.innerHTML = play.kind==="song" ? songHTML() : play.kind==="cards" ? cardsHTML() : play.kind==="write" ? writeHTML() : play.kind==="tower" ? towerHTML() : quizHTML();
   else el.innerHTML = ({home:homeHTML, units:unitsHTML, unit:unitHTML, words:wordsHTML, badges:badgesHTML, profile:profileHTML,
     review:reviewHTML, chat:chatHTML, placement:placementHTML, exam:examHTML, meb:mebHTML, library:libraryHTML, book:bookHTML, reading:()=>sk ? readingHTML() : skillListHTML("reading"), listening:()=>sk ? listeningHTML() : skillListHTML("listening"), speaking:()=>sk ? speakingHTML() : skillListHTML("speaking")})[page]();
@@ -1493,6 +1505,7 @@ function greetPage(){
     reset:["New password! 🔑","Yeni şifreni iki kez yaz ve kaydet."],
     profiles:["Who's learning today? 🦉","Profiline dokun ve derslere başla!"],
     parent:["Parent panel","Çocuklarının ilerlemesini buradan görebilirsin."],
+    teacher:["Teacher panel","Sınıfını aç, kodu velilere gönder, ilerlemeyi buradan izle."],
     home:[`Hello${n}! 👋`, `Bugünkü hedefin ${DAILY} yıldız. Hadi başlayalım!`],
     placement:["Let's find your level! 🎯","Birkaç kısa soruyla sana en uygun üniteyi bulalım."],
     meb:["Your school lessons! 🏫","Okulda hangi sınıftasın? Okuldaki temaya uygun Ollie ünitelerini bul."],
@@ -1595,7 +1608,8 @@ function profilesHTML(){
       <label>Avatarı</label>${avasHTML(regAvatar)}
       <div id="authMsg" role="alert"></div>
       <div class="row"><button class="btn" type="submit">Profili oluştur ✓</button>${kids.length ? `<button class="btn ghost" type="button" data-act="addClose">Vazgeç</button>` : ""}</div>
-    </form>` : `<div class="row">${kids.length < 6 ? `<button class="btn ghost" data-act="addOpen">➕ Çocuk ekle</button>` : ""}<a class="btn ghost" href="#parent">👤 Veli paneli</a>${auth.role==="admin" ? `<a class="btn ghost" href="admin.html">🛠 Yönetici paneli</a>` : ""}</div>`}
+    </form>` : `<div class="row">${kids.length < 6 ? `<button class="btn ghost" data-act="addOpen">➕ Çocuk ekle</button>` : ""}<a class="btn ghost" href="#parent">👤 Veli paneli</a><a class="btn ghost" href="#teacher">🏫 Öğretmen paneli</a>${auth.role==="admin" ? `<a class="btn ghost" href="admin.html">🛠 Yönetici paneli</a>` : ""}</div>`}
+    ${addOpen || !kids.length ? `<p class="tr">Öğretmen misin? Çocuk profili açmadan da <a class="link" href="#teacher">🏫 Öğretmen paneli</a>nden sınıf kurabilirsin.</p>` : ""}
   </section>`;
 }
 function parentHTML(){
@@ -1610,6 +1624,7 @@ function parentHTML(){
     <p class="tr">İlerleme hesabına kaydedilir. Bu hesapla giriş yaptığın her cihazdan (telefon, tablet, bilgisayar) kaldığın yerden devam edebilirsin.</p>
   </section>
   ${reportHTML()}
+  ${parentClassHTML()}
   ${parentChatHTML()}
   <section class="panel"><h2>🖨️ Çalışma kâğıtları</h2><p class="tr">Her ünite için yazdırılabilir alıştırma kâğıdı (eşleştirme, yazma, kelime avı, cümle sıralama, okuma) ve cevap anahtarı. Yazdırabilir ya da PDF olarak kaydedebilirsin.</p>${sheetLinksHTML()}</section>
   <section class="panel"><h2>Şifre değiştir</h2>
@@ -2013,6 +2028,161 @@ function chatMic(){
 function chatCardHTML(){
   return `<div class="continue review"><span class="ic">🦉</span><div class="txt"><div class="eyebrow">Yeni · Talk with Ollie</div><h3>Ollie ile İngilizce sohbet et!</h3>
     <span class="tr">Yaz ya da konuş, Ollie cevap versin ve hatalarını nazikçe düzeltsin.</span></div><a class="btn ghost" href="#chat">Sohbet ▶</a></div>`;
+}
+/* ---------- Öğretmen paneli (#teacher, #teacher-N) — Madde 12 ----------
+   Her hesap sınıf açabilir. Veli, çocuğun profiline 6 harfli sınıf kodunu girerek katılır.
+   Öğretmen yalnızca ilerleme tablosunu görür (yıldız, üniteler, son çalışma, sınavlar); sohbetleri/yazıları göremez. */
+let tch = {view:null, list:null, cls:null, err:null, busy:false, sort:"name"};
+async function openTeacher(view){
+  tch.view = view; tch.err = null; tch.busy = true; if(!view) tch.cls = null; else if(tch.cls && tch.cls.class.id !== view) tch.cls = null;
+  render(true);
+  try{
+    if(view) tch.cls = await api(`/teacher/classes/${view}`);
+    else tch.list = await api("/teacher/classes");
+  }catch(e){ tch.err = e.message; }
+  tch.busy = false;
+  if(page === "teacher" && !S) render();
+}
+const dayTR = d => d ? new Date(d+"T12:00").toLocaleDateString("tr-TR",{day:"numeric", month:"short"}) : "—";
+function daysAgo(d, today){
+  if(!d) return "hiç çalışmadı";
+  const n = Math.round((Date.parse(today) - Date.parse(d)) / 86400000);
+  return n <= 0 ? "bugün" : n === 1 ? "dün" : `${n} gün önce`;
+}
+function teacherHTML(){
+  const intro = `<p class="tr">Sınıfını aç, sana verilen <b>sınıf kodunu</b> velilere gönder. Veli, kendi Veli panelinde çocuğunun profiline bu kodu girince çocuk sınıfına katılır. Sen her öğrencinin yıldızlarını, bitirdiği üniteleri, son çalıştığı günü ve deneme sınavı sonuçlarını görürsün. Çocukların Ollie sohbetlerini ve yazdıklarını göremezsin; veli istediği an çocuğunu sınıftan çıkarabilir.</p>`;
+  const back = `<a class="link" href="#profiles">← Profillere dön</a>`;
+  if(tch.err) return `<section class="panel">${back}<h1>🏫 Öğretmen paneli</h1><div class="fb try">${esc(tch.err)}</div><div class="row"><button class="btn ghost" data-act="tReload">Tekrar dene</button>${tch.view ? `<a class="btn ghost" href="#teacher">Sınıflarım</a>` : ""}</div></section>`;
+  if(tch.view) return teacherClassHTML();
+  const L = tch.list;
+  return `<section class="panel">${back}
+    <div class="eyebrow">Öğretmen Paneli · Teacher</div><h1>🏫 Sınıflarım</h1>${intro}
+    ${!L ? `<p class="tr">Yükleniyor…</p>` : L.classes.length ? `<div class="stack">${L.classes.map(c=>`<a class="clscard" href="#teacher-${c.id}"><span><b>${esc(c.name)}</b><br><span class="tr">👧 ${c.members} öğrenci · kod: <b>${esc(c.code)}</b></span></span><span class="btn ghost small">Aç ▶</span></a>`).join("")}</div>` : `<p class="muted">Henüz sınıfın yok. İlk sınıfını aşağıdan aç.</p>`}
+  </section>
+  ${L && L.classes.length < L.max ? `<section class="panel"><h2>➕ Yeni sınıf</h2>
+    <form id="classForm" class="stack" novalidate>
+      <label for="clsName">Sınıfın adı</label><input class="field" id="clsName" maxlength="40" autocomplete="off" placeholder="Örn. 3-B İngilizce">
+      <div id="clsMsg" role="alert"></div>
+      <div><button class="btn" type="submit">Sınıfı aç ✓</button></div>
+    </form></section>` : ""}`;
+}
+function tSorted(list){
+  const k = tch.sort, a = [...list];
+  if(k === "score") a.sort((x,y)=>y.score - x.score);
+  else if(k === "week") a.sort((x,y)=>y.week_pts - x.week_pts || y.week_days - x.week_days);
+  else if(k === "last") a.sort((x,y)=>(x.last_day||"") < (y.last_day||"") ? 1 : (x.last_day||"") > (y.last_day||"") ? -1 : 0);
+  else if(k === "unit") a.sort((x,y)=>y.easy - x.easy || y.unit - x.unit);
+  return a;
+}
+function examCell(ex){
+  const ks = STAGES.filter(g=>ex[g.id]);
+  return ks.length ? ks.map(g=>`<span title="${g.n}">${ex[g.id].p ? EX_BADGE[g.id] : "📝"} ${ex[g.id].b}%</span>`).join(" ") : "—";
+}
+function teacherClassHTML(){
+  const D = tch.cls;
+  if(!D) return `<section class="panel"><a class="link" href="#teacher">← Sınıflarım</a><p class="tr">Yükleniyor…</p></section>`;
+  const C = D.class, st = D.students, today = D.today;
+  const active = st.filter(x=>x.week_days > 0).length;
+  const avg = st.length ? Math.round(st.reduce((t,x)=>t + x.week_pts, 0) / st.length) : 0;
+  const sorts = [["name","Ad"],["week","Bu hafta"],["score","Yıldız"],["unit","Ünite"],["last","Son çalışma"]];
+  return `<section class="panel"><a class="link" href="#teacher">← Sınıflarım</a>
+    <div class="eyebrow">Öğretmen Paneli · Sınıf</div><h1 style="overflow-wrap:anywhere">🏫 ${esc(C.name)}</h1>
+    <p class="tr">Sınıf kodu — velilere gönder:</p>
+    <div class="row"><span class="ccode">${esc(C.code)}</span><button class="btn ghost small" data-act="tCopy" data-arg="code">📋 Kodu kopyala</button><button class="btn ghost small" data-act="tCopy" data-arg="msg">✉️ Veli mesajını kopyala</button></div>
+    <p class="tr">Veli şunu yapar: ollieakademi.com → giriş → 👤 Veli paneli → 🏫 Sınıflar → çocuğun yanındaki kutuya kodu yazar → “Katıl”.</p>
+  </section>
+  <section class="panel">
+    <div class="row between"><h2 style="margin:0">👧 Öğrenciler (${st.length})</h2><span class="row"><button class="btn ghost small" data-act="tReload">🔄 Yenile</button>${st.length ? `<button class="btn ghost small" data-act="tCsv">⬇️ Tabloyu indir (CSV)</button>` : ""}</span></div>
+    ${st.length ? `<div class="stats" style="margin-top:10px"><div class="stat"><b>${active}/${st.length}</b><span>Bu hafta çalışan</span></div><div class="stat"><b>⭐ ${avg}</b><span>Haftalık ortalama</span></div></div>
+    <div class="row" style="margin-top:8px"><span class="tr">Sırala:</span>${sorts.map(([k,n])=>`<button class="chip ${tch.sort===k?"on":""}" data-act="tSort" data-arg="${k}">${n}</button>`).join("")}</div>
+    <div class="tblwrap"><table class="ttbl"><thead><tr><th>Öğrenci</th><th>⭐ Yıldız</th><th>Bu hafta</th><th>Son çalışma</th><th>Şu anki ünite</th><th>✅ Biten</th><th>👑 Zor test</th><th>📝 Deneme sınavı</th><th>🏅 Rozet</th><th></th></tr></thead><tbody>
+    ${tSorted(st).map(x=>{ const L = LEVELS[Math.min(x.unit, LEVELS.length-1)]; return `<tr>
+      <td class="nm">${x.avatar} <b>${esc(x.name)}</b></td><td>${x.score}</td><td>⭐ ${x.week_pts} · ${x.week_days} gün</td>
+      <td>${x.last_day ? `${dayTR(x.last_day)} <span class="tr">(${daysAgo(x.last_day, today)})</span>` : `<span class="tr">hiç çalışmadı</span>`}</td>
+      <td>${x.unit ? `${Math.min(x.unit, LEVELS.length)}. ${L ? L.icon + " " + esc(L.theme) : ""}` : "—"}</td><td>${x.easy}</td><td>${x.hard}</td><td>${examCell(x.exams)}</td><td>${x.badges}</td>
+      <td><span id="trm-${x.id}"><button class="btn ghost small" data-act="tRemove" data-arg="${x.id}">Çıkar</button></span></td></tr>`; }).join("")}
+    </tbody></table></div>
+    <p class="tr">“Bu hafta”: son 7 günde kazanılan yıldız ve çalışılan gün sayısı. “Biten”: kolay testi bitirilen ünite sayısı. “Şu anki ünite”: çalıştığı en ileri ünite.</p>`
+    : `<p class="muted">Henüz öğrenci yok. Sınıf kodunu velilere gönder; çocuklar katılınca burada görünür.</p>`}
+  </section>
+  <section class="panel"><h2>Sınıf ayarları</h2>
+    <div class="row"><button class="btn ghost small" data-act="tRename">✏️ Adını değiştir</button><button class="btn ghost small" data-act="tNewCode">🔁 Yeni kod üret</button><button class="btn ghost small" data-act="tDelete">🗑️ Sınıfı sil</button></div>
+    <p class="tr">Yeni kod üretirsen eski kod çalışmaz; sınıftaki öğrenciler sınıfta kalır. Sınıfı silmek çocukların ilerlemesini silmez.</p>
+  </section>`;
+}
+async function tCreate(f){
+  const name = $("#clsName").value.trim();
+  if(!name) return authMsg("Sınıfın adını yaz.", false, "#clsMsg");
+  const btn = f.querySelector('[type="submit"]'); btn.disabled = true;
+  try{ const r = await api("/teacher/classes", {body:{name}}); toast("Sınıf açıldı 🏫"); go("teacher-" + r.class.id); }
+  catch(e){ authMsg(esc(e.message), false, "#clsMsg"); btn.disabled = false; }
+}
+async function copyText(t, ok){
+  try{ await navigator.clipboard.writeText(t); toast(ok); }
+  catch(e){ prompt("Kopyala:", t); }
+}
+function tCopy(kind){
+  const C = tch.cls && tch.cls.class; if(!C) return;
+  if(kind === "code") return copyText(C.code, "Kod kopyalandı 📋");
+  copyText(`Merhaba! “${C.name}” sınıfımız Ollie Akademi'de İngilizce çalışıyor. Çocuğunuzu sınıfa eklemek için: ollieakademi.com adresinde veli hesabınızla giriş yapın → 👤 Veli paneli → 🏫 Sınıflar → çocuğunuzun yanındaki kutuya ${C.code} kodunu yazıp “Katıl”a basın. Ben yalnızca çocuğun yıldızlarını, bitirdiği üniteleri, son çalıştığı günü ve deneme sınavı sonuçlarını görebilirim. İstediğiniz zaman sınıftan çıkarabilirsiniz.`, "Veli mesajı kopyalandı ✉️");
+}
+async function tNewCode(){
+  if(!confirm("Yeni kod üretilsin mi? Eski kod artık çalışmaz (sınıftaki öğrenciler kalır).")) return;
+  try{ const r = await api(`/teacher/classes/${tch.view}/code`, {method:"POST"}); tch.cls.class.code = r.code; render(); toast("Yeni kod: " + r.code); }catch(e){ toast(e.message); }
+}
+async function tRename(){
+  const n = prompt("Sınıfın yeni adı:", tch.cls.class.name); if(n == null || !n.trim()) return;
+  try{ const r = await api(`/teacher/classes/${tch.view}`, {method:"PUT", body:{name:n.trim()}}); tch.cls.class.name = r.name; render(); toast("Sınıfın adı değişti ✓"); }catch(e){ toast(e.message); }
+}
+async function tDelete(){
+  if(!confirm(`“${tch.cls.class.name}” sınıfı silinsin mi? Öğrencilerin ilerlemesi silinmez, sadece sınıf listesi kalkar.`)) return;
+  try{ await api(`/teacher/classes/${tch.view}`, {method:"DELETE"}); toast("Sınıf silindi."); go("teacher"); }catch(e){ toast(e.message); }
+}
+async function tRemove(id){
+  const x = tch.cls.students.find(s=>s.id === id); if(!x) return;
+  if(!confirm(`${x.name} sınıftan çıkarılsın mı? (İlerlemesi silinmez.)`)) return;
+  try{ await api(`/teacher/classes/${tch.view}/members/${id}`, {method:"DELETE"}); tch.cls.students = tch.cls.students.filter(s=>s.id !== id); render(); toast(`${x.name} sınıftan çıkarıldı.`); }catch(e){ toast(e.message); }
+}
+function tCsv(){
+  const D = tch.cls; if(!D) return;
+  const q = v => `"${String(v).replace(/"/g,'""')}"`;
+  const rows = [["Öğrenci","Yıldız","Bu hafta yıldız","Bu hafta gün","Son çalışma","Şu anki ünite","Biten ünite","Zor test","Rozet",...STAGES.map(g=>g.n+" sınavı %")]];
+  tSorted(D.students).forEach(x=>rows.push([x.name, x.score, x.week_pts, x.week_days, x.last_day || "", x.unit || "", x.easy, x.hard, x.badges, ...STAGES.map(g=>x.exams[g.id] ? x.exams[g.id].b : "")]));
+  const blob = new Blob(["﻿" + rows.map(r=>r.map(q).join(";")).join("\r\n")], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `ollie-${D.class.name.replace(/[^\wçğıöşüÇĞİÖŞÜ-]+/g,"_")}-${D.today}.csv`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+/* Veli paneli: çocuğun sınıfları */
+function parentClassHTML(){
+  const kids = auth.children || []; if(!kids.length) return "";
+  return `<section class="panel"><h2>🏫 Sınıflar</h2>
+    <p class="tr">Öğretmenin sana bir <b>sınıf kodu</b> verdiyse çocuğunun yanındaki kutuya yaz. Öğretmen yalnızca çocuğunun adını, avatarını, yıldızlarını, bitirdiği üniteleri, son çalıştığı günü ve deneme sınavı sonuçlarını görür; Ollie sohbetlerini ve yazdıklarını göremez. İstediğin zaman sınıftan çıkarabilirsin.</p>
+    ${kids.map(c=>`<div class="kidrow"><div class="row between"><span class="row"><span class="ava">${c.avatar}</span><b>${esc(c.name)}</b></span><button class="btn ghost small" data-act="pClasses" data-arg="${c.id}">🏫 Sınıflarını gör</button></div>
+      <div id="pcls-${c.id}"></div>
+      <form class="clsjoin" data-child="${c.id}" novalidate><input class="field" name="code" maxlength="9" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="KOD" aria-label="${esc(c.name)} için sınıf kodu"><button class="btn small" type="submit">Katıl</button></form></div>`).join("")}
+  </section>`;
+}
+async function pClasses(id){
+  const box = $("#pcls-" + id); if(!box) return;
+  box.innerHTML = `<p class="tr">Yükleniyor…</p>`;
+  try{
+    const r = await api(`/children/${id}/classes`);
+    box.innerHTML = r.classes.length ? `<div class="stack" style="margin-top:8px">${r.classes.map(k=>`<div class="row between"><span><b>🏫 ${esc(k.name)}</b><br><span class="tr" style="overflow-wrap:anywhere">Öğretmen: ${esc(k.teacher)} · katıldı: ${fmtDate(k.joined_at)}</span></span><button class="btn ghost small" data-act="pLeave" data-arg="${id}:${k.id}">Sınıftan çıkar</button></div>`).join("")}</div>`
+      : `<p class="tr">Henüz bir sınıfa katılmadı.</p>`;
+  }catch(e){ box.innerHTML = `<div class="fb try">${esc(e.message)}</div>`; }
+}
+async function pJoin(f){
+  const id = +f.dataset.child, inp = f.querySelector("input"), code = inp.value.trim();
+  if(!code){ toast("Önce öğretmenin verdiği kodu yaz."); return; }
+  const btn = f.querySelector('[type="submit"]'); btn.disabled = true;
+  try{ const r = await api(`/children/${id}/classes`, {body:{code}}); inp.value = ""; toast(`“${r.class.name}” sınıfına katıldı 🏫`); pClasses(id); }
+  catch(e){ toast(e.message); }
+  btn.disabled = false;
+}
+async function pLeave(arg){
+  const [cid, kid] = arg.split(":").map(Number);
+  if(!confirm("Çocuğun bu sınıftan çıkarılsın mı? Öğretmen artık ilerlemesini göremez.")) return;
+  try{ await api(`/children/${cid}/classes/${kid}`, {method:"DELETE"}); toast("Sınıftan çıkarıldı."); pClasses(cid); }catch(e){ toast(e.message); }
 }
 /* Veli paneli: çocukların Ollie sohbetleri (son 7 gün) */
 const FLAG_TR = {personal:"🔒 kişisel bilgi engellendi", bad:"🚫 uygunsuz kelime engellendi", unsafe:"⚠️ uygunsuz konu", offtopic:"↩️ konu dışı"};
@@ -3604,6 +3774,16 @@ document.addEventListener("click", e => {
     case "chatStarter": return chatSend(arg);
     case "chatRetry": return startChat(ct.unit);
     case "parentChats": return parentChats(+arg);
+    case "pClasses": return pClasses(+arg);
+    case "pLeave": return pLeave(arg);
+    case "tSort": tch.sort = arg; render(); return;
+    case "tCopy": return tCopy(arg);
+    case "tNewCode": return tNewCode();
+    case "tRename": return tRename();
+    case "tDelete": return tDelete();
+    case "tRemove": return tRemove(+arg);
+    case "tCsv": return tCsv();
+    case "tReload": return openTeacher(tch.view);
     case "clearChats": return clearChats(+arg);
     case "skSaid": if(!sk.solved) skCorrect(SR && !sk.noMic ? 2 : 3, `“${esc(SPEAKING[sk.unit][sk.idx].en)}” <span class="tr">Konuşman harikaydı!</span>`); return;
     case "play": return speak(t.say || t.word || t.sentence);
@@ -3656,6 +3836,8 @@ document.addEventListener("submit", e => {
   e.preventDefault();
   const f = {loginForm:onLogin, regForm:onRegister, forgotForm:onForgot, resetForm:onReset, childForm:onAddChild, pwForm:onChangePw, delForm:onDeleteAccount}[e.target.id];
   if(f){ const btn = e.target.querySelector('[type="submit"]'); btn.disabled = true; f().finally(()=>{ btn.disabled = false; }); return; }
+  if(e.target.id==="classForm") return tCreate(e.target);
+  if(e.target.classList.contains("clsjoin")) return pJoin(e.target);
   if(e.target.id==="exForm"){ const v = $("#exIn").value; if(!norm(v)){ say("Type your answer first!","Önce cevabını yaz! Bilmiyorsan 🤷 düğmesine bas."); return; } return exAnswer(v.trim()); }
   if(e.target.id==="chatForm"){ const v = $("#chatIn").value; if(!v.trim()){ say("Write something first!","Önce bir şey yaz ya da 🎤 ile konuş!"); return; } return chatSend(v); }
   if(e.target.id==="rvForm"){ const v = $("#rvIn").value; if(!norm(v)){ say("Type the word first!","Önce kelimeyi yaz!"); return; } return revAnswer(v); }
