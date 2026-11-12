@@ -1,5 +1,12 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **SIRADAKİ İŞ (2026-11-12, kullanıcı istedi): BÜTÜN İÇERİĞİN BAŞTAN SONA HATA KONTROLÜ — "baştan sona oku, hata kalmasın".**
+> - Kapsam: Starters üniteleri (index.html içindeki LEVELS 1–10, şarkılar, kartlar, testler, READING/LISTENING/Speaking metinleri), `units-a1.js` (Movers), `units-a2.js` (Flyers), `units-key.js` (A2 Key), `units-pet.js` (B1 PET), `books-mf.js` (kütüphane kitapları; Starters kitapları index.html'de ise onlar da), `meb.js` tema adları/alt konular, rozet adları.
+> - Neye bakılacak: İngilizce dilbilgisi/yazım; Türkçe çeviri ve yazım (ç/ş/ğ/ı/İ, ekler); doğru cevap seçeneklerde var mı, birden fazla doğru seçenek var mı; emoji kelimeyle uyuşuyor mu; seviyeye uygunluk (Starters'ta zor yapı yok vb.); dinleme metni ile soru tutarlı mı; okuma sorusunun cevabı metinde var mı; yazma model metni kelime sınırı; çocuğa uygunluk.
+> - Yöntem (baş asistan kuralı): içerik dosyalarını ünite gruplarına bölüp (ör. 5'er ünite) alt ajanlara oku-raporla görevi ver (Sonnet; mekanik değil, dil işi). Alt ajan DÜZELTMEZ, yalnızca "dosya:satır — sorun — önerilen düzeltme" listesi verir. Ana sohbet her bulguyu doğrular, sonra düzeltir. Sonra `node api/tools/check-units.js units-a1.js units-a2.js units-key.js units-pet.js` ve `check-books` çalıştır, `api/tools/gen-content.mjs` ile content.js yeniden üret (kelime/ünite adı değiştiyse) → Worker'ı yeniden yayınla.
+> - Bitince: tarayıcıda birkaç ünite aç, kullanıcıya bulunan/düzeltilen hata özetini ver, main'e almadan önce sor.
+> - Madde 11 (telaffuz) durumu: "şimdilik atlandı"; kullanıcı 2026-11-12'de "iptal etmedik mi" diye sordu, kesin iptal mi kararını henüz vermedi — sorulabilir.
+
 > **YENİ İŞ (2026-11-11): `ARASTIRMA.md`'deki 12 öneri SIRAYLA yapılacak (kullanıcı onayladı).**
 > - Sıra: 1) Akıllı tekrar ("Bugünün tekrarı") → 2) Yanlış cevabı Türkçe açıklama → 3) Veliye haftalık e-posta raporu (Resend kurulu) → 4) Yazdırılabilir çalışma kâğıdı → 5) Seviye tespit testi → 6) Uyarlanabilir zorluk → 7) Seviyeli okuma kütüphanesi → 8) Movers (A1) + Flyers (A2) üniteleri, sonra KET/PET hazırlık → 9) MEB müfredatı eşleştirme → 10) Ollie ile yapay zekâ sohbeti → 11) Hece düzeyinde telaffuz puanı → 12) Öğretmen/sınıf hesabı.
 > - Her madde (ya da birkaç küçük madde) ayrı sohbette. Her biri bitince: tarayıcıda dene, main'e almadan önce kullanıcıya sor, bu nota "biten/sıradaki" yaz.
