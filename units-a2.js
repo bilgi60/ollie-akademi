@@ -384,8 +384,8 @@ UNITS_A2.push({
   },
   {
    "say": "It is very sunny at the beach. I am going to wear my sunglasses.",
-   "q": "What is he going to wear?",
-   "tr": "Ne takacak?",
+   "q": "What is the speaker going to wear?",
+   "tr": "Konuşan kişi ne takacak?",
    "options": [
     {
      "e": "🕶️",
@@ -1253,7 +1253,7 @@ UNITS_A2.push({
   {
    "e": "🔭",
    "en": "I will look at the stars with my telescope.",
-   "tr": "Teleskopumla yıldızlara bakacağım."
+   "tr": "Teleskobumla yıldızlara bakacağım."
   }
  ],
  "write": {
@@ -1548,7 +1548,7 @@ UNITS_A2.push({
        "who"
       ],
       [
-       "teleskopuyla",
+       "teleskobuyla",
        "where"
       ],
       [
@@ -1582,7 +1582,7 @@ UNITS_A2.push({
        "when"
       ],
       [
-       "teleskopuyla",
+       "teleskobuyla",
        "where"
       ],
       [
@@ -2234,7 +2234,7 @@ UNITS_A2.push({
     "t": "Tarih yaz (on the fifth of May…)"
    }
   ],
-  "model": "My birthday is on the tenth of August, so it is in summer. I love summer because we go to the sea. Before my birthday, I look at the calendar every week. This month is special for me! In winter, it snows in my city, and I play outside. My favourite season is autumn."
+  "model": "My birthday is on the tenth of August, so it is in summer. I love summer because we go to the sea. Before my birthday, I look at the calendar every week. This month is special for me! In winter, it snows in my city, and I play outside. My favourite season is summer."
  },
  "towers": [
   {
@@ -2360,8 +2360,8 @@ UNITS_A2.push({
    },
    {
     "type": "pick",
-    "q": "It costs only five lira. It does not cost a lot of money. What is it?",
-    "tr": "Sadece beş lira. Çok para tutmuyor. Nedir?",
+    "q": "It costs only five lira. It does not cost a lot of money. Which word means this?",
+    "tr": "Sadece beş lira. Çok para tutmuyor. Hangi kelime bunu anlatır?",
     "options": [
      {
       "e": "💲",
@@ -4838,7 +4838,7 @@ UNITS_A2.push({
    ["Ece wrote an invitation because she wanted all her friends to come.", "Ece tüm arkadaşları gelsin istediği için bir davetiye yazdı."],
    ["It was raining, so the party was inside.", "Yağmur yağıyordu, bu yüzden parti içerideydi."],
    ["Her friends wore costumes, and the room had many balloons.", "Arkadaşları kostüm giydi ve odada çok balon vardı."],
-   ["When the evening came, Dad put a candle on the cake.", "Akşam olunca Babası pastaya bir mum koydu."],
+   ["When the evening came, Dad put a candle on the cake.", "Akşam olunca babası pastaya bir mum koydu."],
    ["Ece got a small present from her friend Can.", "Ece arkadaşı Can'dan küçük bir hediye aldı."],
    ["Later, the rain stopped, so they watched the fireworks from the balcony.", "Sonra yağmur durdu, bu yüzden havai fişekleri balkondan izlediler."],
    ["Next year, Ece will invite her cousins too.", "Gelecek yıl Ece kuzenlerini de davet edecek."]
@@ -4851,7 +4851,7 @@ UNITS_A2.push({
  },
  "listening": [
   {
-   "say": "We went to a festival in Kapadokya because my uncle lives there. There were many balloons in the sky.",
+   "say": "We went to a festival in Cappadocia because my uncle lives there. There were many balloons in the sky.",
    "q": "What was in the sky?", "tr": "Gökyüzünde ne vardı?",
    "options": [{"e": "🎈", "v": "balloons"}, {"e": "🎆", "v": "fireworks"}, {"e": "☁️", "v": "clouds"}],
    "answer": "balloons"

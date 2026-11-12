@@ -47,7 +47,7 @@ UNITS_A1.push({
     "ex": "My uncle is a cook."
    },
    {
-    "e": "🚕",
+    "e": "🚌",
     "w": "driver",
     "ipa": "/ˈdraɪvər/",
     "tr": "Şoför",
@@ -1709,7 +1709,7 @@ UNITS_A1.push({
    "title": "Smile, Smile, Smile",
    "lines": [
     "When I'm <b>happy</b>, I jump and sing,",
-    "When I'm <b>sad</b>, I hug my string,",
+    "When I'm <b>sad</b>, a hug is the thing,",
     "A smile, a hug, a cuddly friend,",
     "Make my sad days start to end!"
    ]
@@ -1729,7 +1729,7 @@ UNITS_A1.push({
     "I'm <b>hungry</b>, yum, yum, yum,",
     "I'm <b>thirsty</b>, glug, glug, glug,",
     "Bread and soup and apple juice,",
-    "Now I'm full, what a good use!"
+    "Now I'm full, my belt is loose!"
    ]
   },
   {
@@ -1919,7 +1919,7 @@ UNITS_A1.push({
    },
    {
     "type": "story",
-    "say": "Deniz has a fever and a cough. Her mother says, You must stay in bed and drink warm tea. Deniz takes her medicine and rests.",
+    "say": "Deniz has a fever and a cough. Her mother says, “You must stay in bed and drink warm tea.” Deniz takes her medicine and rests.",
     "q": "What must Deniz do?",
     "tr": "Deniz ne yapmalı?",
     "options": ["go to school", "stay in bed", "play football"],
@@ -2044,8 +2044,8 @@ UNITS_A1.push({
    "steps": [
     {"tr": [["Dişçiye gider.", "does"]], "en": [["goes to the dentist", "does"]]},
     {"tr": [["Ece", "who"], ["dişçiye gider.", "does"]], "en": [["Ece", "who"], ["goes to the dentist", "does"]]},
-    {"tr": [["Ece", "who"], ["hastanede", "where"], ["dişçiye gider.", "does"]], "en": [["Ece", "who"], ["goes to the dentist", "does"], ["at the clinic", "where"]]},
-    {"tr": [["Ece", "who"], ["pazartesi", "when"], ["hastanede", "where"], ["dişçiye gider.", "does"]], "en": [["Ece", "who"], ["goes to the dentist", "does"], ["at the clinic", "where"], ["on Monday", "when"]]}
+    {"tr": [["Ece", "who"], ["klinikte", "where"], ["dişçiye gider.", "does"]], "en": [["Ece", "who"], ["goes to the dentist", "does"], ["at the clinic", "where"]]},
+    {"tr": [["Ece", "who"], ["pazartesi", "when"], ["klinikte", "where"], ["dişçiye gider.", "does"]], "en": [["Ece", "who"], ["goes to the dentist", "does"], ["at the clinic", "where"], ["on Monday", "when"]]}
    ]
   },
   {
@@ -2063,7 +2063,7 @@ UNITS_A1.push({
     {"tr": [["İlacını alır.", "does"]], "en": [["takes her medicine", "does"]]},
     {"tr": [["Elif", "who"], ["ilacını alır.", "does"]], "en": [["Elif", "who"], ["takes her medicine", "does"]]},
     {"tr": [["Elif", "who"], ["mutfakta", "where"], ["ilacını alır.", "does"]], "en": [["Elif", "who"], ["takes her medicine", "does"], ["in the kitchen", "where"]]},
-    {"tr": [["Elif", "who"], ["yemekten sonra", "when"], ["mutfakta", "where"], ["ilacını alır.", "does"]], "en": [["Elif", "who"], ["takes her medicine", "does"], ["in the kitchen", "where"], ["after lunch", "when"]]}
+    {"tr": [["Elif", "who"], ["öğle yemeğinden sonra", "when"], ["mutfakta", "where"], ["ilacını alır.", "does"]], "en": [["Elif", "who"], ["takes her medicine", "does"], ["in the kitchen", "where"], ["after lunch", "when"]]}
    ]
   }
  ]
@@ -4133,7 +4133,7 @@ UNITS_A1.push({
     "answer": "football",
     "hint": [
      "He is not good at tennis. What does he play on Saturday?",
-     "Tenisde iyi değil. Cumartesi ne oynuyor?"
+     "Teniste iyi değil. Cumartesi ne oynuyor?"
     ]
    },
    {
@@ -4203,7 +4203,7 @@ UNITS_A1.push({
    ],
    [
     "Can is not good at tennis, but he likes playing.",
-    "Can tenisde iyi değil ama oynamayı seviyor."
+    "Can teniste iyi değil ama oynamayı seviyor."
    ],
    [
     "After the games, they ride their bikes to the park.",
@@ -4362,7 +4362,7 @@ UNITS_A1.push({
   {
    "e": "🎾",
    "en": "She is good at tennis.",
-   "tr": "O, tenisde iyidir."
+   "tr": "O, teniste iyidir."
   },
   {
    "e": "🧗",
@@ -5005,7 +5005,7 @@ UNITS_A1.push({
    ],
    [
     "At the airport, Dad showed the tickets.",
-    "Havalimanında Babası biletleri gösterdi."
+    "Havalimanında babası biletleri gösterdi."
    ],
    [
     "They took a taxi to the hotel.",

@@ -1192,7 +1192,7 @@ UNITS_KEY.push({
   {
    "say": "We waited on platform two and caught the train at ten past nine.",
    "q": "Which platform did they wait on?",
-   "tr": "Hangi perondan beklediler?",
+   "tr": "Hangi peronda beklediler?",
    "options": [
     {
      "e": "1️⃣",
@@ -5358,7 +5358,7 @@ UNITS_KEY.push({
        "who"
       ],
       [
-       "Çoktan bir film izledi.",
+       "çoktan bir film izledi.",
        "does"
       ]
      ],
@@ -5384,7 +5384,7 @@ UNITS_KEY.push({
        "where"
       ],
       [
-       "Çoktan bir film izledi.",
+       "çoktan bir film izledi.",
        "does"
       ]
      ],
@@ -5418,7 +5418,7 @@ UNITS_KEY.push({
        "where"
       ],
       [
-       "Çoktan bir film izledi.",
+       "çoktan bir film izledi.",
        "does"
       ]
      ],
@@ -5468,7 +5468,7 @@ UNITS_KEY.push({
        "who"
       ],
       [
-       "Kanalı az önce değiştirdi.",
+       "kanalı az önce değiştirdi.",
        "does"
       ]
      ],
@@ -5494,7 +5494,7 @@ UNITS_KEY.push({
        "where"
       ],
       [
-       "Kanalı az önce değiştirdi.",
+       "kanalı az önce değiştirdi.",
        "does"
       ]
      ],
@@ -5528,7 +5528,7 @@ UNITS_KEY.push({
        "where"
       ],
       [
-       "Kanalı az önce değiştirdi.",
+       "kanalı az önce değiştirdi.",
        "does"
       ]
      ],
@@ -5578,7 +5578,7 @@ UNITS_KEY.push({
        "who"
       ],
       [
-       "Bir podcast'i çoktan dinledi.",
+       "bir podcast'i çoktan dinledi.",
        "does"
       ]
      ],
@@ -5604,7 +5604,7 @@ UNITS_KEY.push({
        "where"
       ],
       [
-       "Bir podcast'i çoktan dinledi.",
+       "bir podcast'i çoktan dinledi.",
        "does"
       ]
      ],
@@ -5638,7 +5638,7 @@ UNITS_KEY.push({
        "where"
       ],
       [
-       "Bir podcast'i çoktan dinledi.",
+       "bir podcast'i çoktan dinledi.",
        "does"
       ]
      ],
@@ -6173,7 +6173,7 @@ UNITS_KEY.push({
        "who"
       ],
       [
-       "Satranç oynayacak.",
+       "satranç oynayacak.",
        "does"
       ]
      ],
@@ -6199,7 +6199,7 @@ UNITS_KEY.push({
        "where"
       ],
       [
-       "Satranç oynayacak.",
+       "satranç oynayacak.",
        "does"
       ]
      ],
@@ -6233,7 +6233,7 @@ UNITS_KEY.push({
        "where"
       ],
       [
-       "Satranç oynayacak.",
+       "satranç oynayacak.",
        "does"
       ]
      ],
@@ -6283,7 +6283,7 @@ UNITS_KEY.push({
        "who"
       ],
       [
-       "Kitap okuyacak.",
+       "kitap okuyacak.",
        "does"
       ]
      ],
@@ -6309,7 +6309,7 @@ UNITS_KEY.push({
        "where"
       ],
       [
-       "Kitap okuyacak.",
+       "kitap okuyacak.",
        "does"
       ]
      ],
@@ -6343,7 +6343,7 @@ UNITS_KEY.push({
        "where"
       ],
       [
-       "Kitap okuyacak.",
+       "kitap okuyacak.",
        "does"
       ]
      ],
@@ -6393,7 +6393,7 @@ UNITS_KEY.push({
        "who"
       ],
       [
-       "Fotoğraf çekecek.",
+       "fotoğraf çekecek.",
        "does"
       ]
      ],
@@ -6419,7 +6419,7 @@ UNITS_KEY.push({
        "where"
       ],
       [
-       "Fotoğraf çekecek.",
+       "fotoğraf çekecek.",
        "does"
       ]
      ],
@@ -6453,7 +6453,7 @@ UNITS_KEY.push({
        "where"
       ],
       [
-       "Fotoğraf çekecek.",
+       "fotoğraf çekecek.",
        "does"
       ]
      ],
@@ -7036,7 +7036,7 @@ UNITS_KEY.push({
        "who"
       ],
       [
-       "liseden sonra",
+       "okuldan sonra",
        "when"
       ],
       [
