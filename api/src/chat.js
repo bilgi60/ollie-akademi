@@ -162,7 +162,12 @@ export async function chatSend(env, child, b, day, bad) {
   } catch (e) {
     if (e instanceof Anthropic.RateLimitError) bad("Ollie şu an çok yoğun. Birazdan tekrar dene.", 503);
     if (e instanceof Anthropic.AuthenticationError) { console.error("Anthropic anahtarı geçersiz"); bad("Ollie sohbeti şu an çalışmıyor.", 503); }
-    if (e instanceof Anthropic.APIError) { console.error("Anthropic hatası", e.status, e.message); bad("Ollie şu an cevap veremiyor. Birazdan tekrar dene.", 502); }
+    if (e instanceof Anthropic.APIError) {
+      const msg = String(e.error && e.error.error && e.error.error.message || e.message || "");
+      console.error("Anthropic hatası", e.status, msg);
+      // Hata kodu çocuğa da gösterilir (sorun bildirirken işe yarar); ayrıntı yalnız sunucu kaydında.
+      bad(`Ollie şu an cevap veremiyor. Birazdan tekrar dene. (hata ${e.status || "?"}${/credit balance/i.test(msg) ? "-kredi" : ""})`, 502);
+    }
     if (e instanceof SyntaxError) out = { ...CANNED.oops, fix: noFix, flag: "unsafe" };
     else throw e;
   }
