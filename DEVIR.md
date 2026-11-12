@@ -31,7 +31,7 @@
 > - **Madde 11 ŞİMDİLİK ATLANDI (2026-11-12, kullanıcı kararı).** Yapılırsa kararlar hazır: yalnızca Speaking bölümünde, çocuk başına günde 30 deneme, sınır dolunca tarayıcı yöntemi. Servis seçilmedi (öneri: Azure Pronunciation Assessment).
 > - **Madde 12 BAŞLADI (dal `claude/dreamy-cerf-lz8xdi`, 2026-11-12). Kullanıcı kararları:** öğrenci sınıfa **veli, çocuğun profiline öğretmenin verdiği 6 harfli sınıf kodunu girerek** katılır (veli istediği an çıkarır); **her hesap "Öğretmen paneli"ni açıp sınıf kurabilir** (yönetici onayı yok); öğretmen **yalnızca ilerleme tablosunu** görür (yıldız, biten üniteler, son çalışma günü, deneme sınavları). Ödev, sınıf sıralaması, sohbetleri görme YOK.
 
-> - **Madde 12 KODU BİTTİ (2026-11-12, dal `claude/dreamy-cerf-lz8xdi`) — main'e ALINMADI, canlı veritabanına göç YAPILMADI, Worker YAYINLANMADI; kullanıcı onayı bekleniyor.** Yayın sırası: 1) `npx wrangler d1 execute ollie-akademi-db --remote --file=migrations-0005-classes.sql` 2) `npx wrangler deploy` (api klasöründe) 3) main'e birleştir. Sıradaki: 12 maddenin hepsi bitti/atlandı; kullanıcıya sor (Madde 11 bekliyor, KVKK konusu kullanıcıdan gelecek).
+> - **Madde 12 BİTTİ (dal `claude/dreamy-cerf-lz8xdi`, 2026-11-12): `migrations-0005-classes.sql` canlıya uygulandı, Worker yayınlandı, main'e alındı — YAYINDA.** Sıradaki: 12 maddenin hepsi bitti/atlandı; kullanıcıya sor (Madde 11 bekliyor, KVKK konusu kullanıcıdan gelecek).
 
 > **Son durum (2026-11-12, 23. oturum): Öğretmen / sınıf hesabı (Madde 12).**
 > - Sunucu: `api/src/classes.js`, tablolar `classes` (teacher_id, name, code UNIQUE) + `class_members` (class_id, child_id) — `migrations-0005-classes.sql`, `schema.sql`'e de eklendi.
