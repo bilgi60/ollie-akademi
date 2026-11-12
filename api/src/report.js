@@ -34,8 +34,19 @@ export function snapshot(score, data) {
   });
   const x = {};
   for (const [w, r] of Object.entries(d.rev || {})) if (r && r.x) x[w] = r.x;
-  return { score: score || 0, done, badges: Array.isArray(d.badges) ? d.badges : [], revN: d.revN || 0, x, words: Object.keys(d.rev || {}).length };
+  return { score: score || 0, done, badges: Array.isArray(d.badges) ? d.badges : [], revN: d.revN || 0, x, words: Object.keys(d.rev || {}).length, exams: examSummary(d) };
 }
+
+/** Deneme sınavları (Cambridge benzeri seviyeler) — index.html'deki STAGES ile aynı sıra. */
+export const EXAMS = [["starters", "🥉", "Starters"], ["movers", "🥈", "Movers"], ["flyers", "🥇", "Flyers"], ["key", "🎗️", "A2 Key"], ["pet", "🏵️", "B1 Preliminary"]];
+/** {seviye: {b: en iyi %, n: deneme sayısı, p: geçti mi}} — sadece girilmiş sınavlar */
+export function examSummary(d) {
+  const out = {}, E = (d && d.exams) || {};
+  for (const [id] of EXAMS) { const e = E[id]; if (e && typeof e.b === "number" && e.b >= 0) out[id] = { b: e.b, n: e.n || 1, p: !!e.p }; }
+  return out;
+}
+/** Okuldaki sınıf (2–8) ya da null */
+export const schoolGrade = d => (d && Number.isInteger(d.grade) && d.grade >= 2 && d.grade <= 8 ? d.grade : null);
 
 const DONE_TEXT = {
   s: "🎵 Şarkı dersi", c: "🃏 Kelime Kartları", k: "🧱 Cümle Kulesi", e: "✅ Kolay test", h: "🦅 Zor test",
@@ -75,8 +86,14 @@ export function childReport(child, data, act, prev, wk) {
   if (cur < 0) cur = UNITS.length - 1;
   const L = d.lessons || {};
   const steps = (L["s" + cur] ? 1 : 0) + (L["c" + cur] ? 1 : 0) + len(easy[cur]) + len(d.p && d.p.hard && d.p.hard.done && d.p.hard.done[cur]);
+  // Deneme sınavları: geçen haftadan bu yana girilenler (yeni) + her seviyenin en iyi sonucu
+  const pe = prev && prev.exams;
+  const exams = EXAMS.filter(([id]) => now.exams[id]).map(([id, e, n]) => {
+    const x = now.exams[id], o = pe && pe[id];
+    return { id, e, n, b: x.b, p: x.p, tries: pe ? x.n - (o ? o.n : 0) : 0, newPass: !!(pe && x.p && !(o && o.p)) };
+  });
   return {
-    name: child.name, avatar: child.avatar, total: now.score, stars, studied, streak: streak(d.days, wk.today),
+    name: child.name, avatar: child.avatar, total: now.score, grade: schoolGrade(d), exams, stars, studied, streak: streak(d.days, wk.today),
     first: !prev, newDone, newBadges, reviews, newWords, hard, due,
     unit: { no: cur + 1, ...UNITS[cur], pct: Math.min(100, Math.round(steps / 12 * 100)) },
     totals: { lessons: now.done.length, badges: now.badges.length, words: now.words },
@@ -106,6 +123,13 @@ function dayDots(r, wk) {
   }).join("")}</tr></table>`;
 }
 
+const examLine = x => `${x.e} ${escH(x.n)}: en iyi %${x.b}${x.p ? " · ✅ sertifika" : ""}${x.newPass ? " <b>(bu hafta geçti! 🎉)</b>" : x.tries > 0 ? ` (bu hafta ${x.tries} deneme)` : ""}`;
+function examHTML(r) {
+  if (!r.exams.length) return "";
+  return `<p style="margin:14px 0 4px;font-weight:bold">📝 Deneme sınavları</p><ul style="margin:0;padding-left:20px;line-height:1.6">${r.exams.map(x => `<li>${examLine(x)}</li>`).join("")}</ul>
+<p style="margin:4px 0 0;font-size:13px;color:${C.muted}">Sertifika için %60 gerekir. Cambridge'in resmî sınavı değildir, hazırlık amaçlıdır.</p>`;
+}
+
 function childHTML(r, wk) {
   const n = r.studied.length;
   const verdict = n === 0 ? `Bu hafta hiç çalışmadı. Haftada 3 gün, 10 dakika bile büyük fark yaratır. 💛`
@@ -132,7 +156,8 @@ ${dayDots(r, wk)}
 <p style="margin:14px 0 4px;font-weight:bold">📍 Şu an</p>
 <p style="margin:0">Ünite ${r.unit.no}: ${r.unit.icon} ${escH(r.unit.theme)} <span style="color:${C.muted}">(${escH(r.unit.tr)})</span> · %${r.unit.pct}</p>
 <div style="background:${C.bg};border-radius:8px;height:10px;margin-top:6px"><div style="background:${C.orange};border-radius:8px;height:10px;width:${Math.max(3, r.unit.pct)}%"></div></div>
-${done}${badges}${hard}
+${r.grade ? `<p style="margin:6px 0 0;font-size:13px;color:${C.muted}">🏫 Okulda ${r.grade}. sınıf</p>` : ""}
+${done}${badges}${examHTML(r)}${hard}
 ${r.due ? `<p style="margin:14px 0 0;font-size:14px">🔁 Tekrarı bekleyen <b>${r.due}</b> kelime var.</p>` : ""}
 </div>`;
 }
@@ -161,6 +186,8 @@ ${reports.map(r => childHTML(r, wk)).join("")}
       `Şu an: Ünite ${r.unit.no} ${r.unit.theme} (%${r.unit.pct})`,
       ...(r.first ? [`Şimdiye kadar: ${r.totals.lessons} ders, ${r.totals.words} kelime, ${r.totals.badges} rozet.`] : r.newDone.map(x => "- " + doneLabel(x))),
       ...(r.newBadges.length ? ["Yeni rozetler: " + r.newBadges.filter(b => BADGES[b]).map(b => BADGES[b][1]).join(", ")] : []),
+      ...(r.grade ? [`Okulda ${r.grade}. sınıf.`] : []),
+      ...(r.exams.length ? ["Deneme sınavları: " + r.exams.map(x => examLine(x).replace(/<[^>]+>/g, "")).join("; ")] : []),
       ...(r.hard.length ? ["Zorlandığı kelimeler: " + r.hard.map(w => `${w} = ${WORDS[w][1]}`).join(", ")] : []),
       "",
     ].join("\n")),
