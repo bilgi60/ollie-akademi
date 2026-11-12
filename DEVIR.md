@@ -1,10 +1,11 @@
 # DEVİR NOTU — Ollie Akademi
 
-> **İÇERİK KONTROLÜ BİTTİ (dal `claude/epic-thompson-3dyntw`, 2026-11-12) — main'e ALINMADI, kullanıcı onayı bekleniyor. Worker değişmedi (kelime/ünite adı değişmedi, content.js yeniden üretilmedi).**
+> **İÇERİK KONTROLÜ BİTTİ (dal `claude/epic-thompson-3dyntw`, 2026-11-12) — main'e alındı 2026-11-12, YAYINDA. Worker değişmedi (kelime/ünite adı değişmedi, content.js yeniden üretilmedi).**
 > - 10 alt ajan (Sonnet) bütün içeriği okudu (Starters, units-a1/a2/key/pet, books-mf.js, meb.js); ~55 bulgu ana sohbette tek tek doğrulandı, ~45'i düzeltildi: TR yazım (teniste, teleskobum, peronda, kule cümlelerinde cümle ortası büyük harf), çeviri uyuşmazlıkları, anlamsız şarkı satırları, Starters'ta geçmiş/present perfect, belirsiz cevaplı sorular, tutarsız yazma modeli, kitap sözlük karşılıkları, MEB "susamış".
 > - `evalWriting` düzeltildi: e-posta imzası ("See you soon, Mert") ve kapanış tırnağı artık "cümleler büyük harfle başlasın" kontrolünü bozmuyor. Bütün 50 model metin kendi kontrollerini geçiyor (yalnızca birkaç Starters/Movers modeli 40+ "Süper yazar" bonusunun altında — zorunlu değil).
 > - Bilerek dokunulmadı: Starters'ta Amerikan (gray, soccer) / sonraki seviyelerde İngiliz yazımı karışık; hat→"bere" (soğuk havada doğru); stairs 🪜; PET IPA Amerikan; HARD[0] ölü veri (zararsız).
-> - Sıradaki: kullanıcı onaylarsa main'e al. Madde 11 (telaffuz) kararı ve `MEB_YEAR` 2027-2028 güncellemesi bekliyor.
+> - **Madde 11 (telaffuz puanı) KESİN İPTAL (kullanıcı kararı, 2026-11-12) — bir daha önerme.**
+> - Sıradaki: kullanıcıya sor. Bekleyen: `MEB_YEAR` 2027-2028 güncellemesi (takvim açıklanınca); KVKK konusu kullanıcıdan gelecek.
 
 > **(BİTTİ, yukarıya bak) SIRADAKİ İŞ (2026-11-12, kullanıcı istedi): BÜTÜN İÇERİĞİN BAŞTAN SONA HATA KONTROLÜ — "baştan sona oku, hata kalmasın".**
 > - Kapsam: Starters üniteleri (index.html içindeki LEVELS 1–10, şarkılar, kartlar, testler, READING/LISTENING/Speaking metinleri), `units-a1.js` (Movers), `units-a2.js` (Flyers), `units-key.js` (A2 Key), `units-pet.js` (B1 PET), `books-mf.js` (kütüphane kitapları; Starters kitapları index.html'de ise onlar da), `meb.js` tema adları/alt konular, rozet adları.
