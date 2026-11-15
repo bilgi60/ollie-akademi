@@ -1,5 +1,12 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **SIRADAKİ İŞ ADAYLARI (2026-11-15, kullanıcı "yarın devam edelim" dedi — henüz seçmedi, önce sor).** Kullanıcı iki Instagram reklamını (Praktika.ai, Raffles Reading) inceletti. Öneriler (etkiye göre):
+> 1. **"Ollie'yi ara" ekranı (önerilen ilk iş):** tam ekran canlı Ollie (göz kırpma, konuşurken ağız, dinlerken baş eğme), sesle konuşma, çocuğun söylediği büyük yazıyla ekranda. Mevcut sohbet sunucusu (`api/src/chat.js`, `#chat-N`) kullanılır; yeni yapay zekâ maliyeti yok.
+> 2. **Kitaplara gerçek çizimler:** şu an `books-mf.js`/BOOKS sayfa resimleri emoji (`pages:[[resim,en,tr]]`). Önce 40 kitabın kapağı, sonra sayfalar; tek çizim tarzı. Görsel üretim aracı (higgsfield) bağlı ama kredi harcar → önce 2–3 örnek, kullanıcı tarzı onaylasın.
+> 3. **Okurken kelime kelime vurgulama** (şu an `bookReadPage` bütün cümleyi işaretliyor). Küçük iş.
+> 4. **"Bu haftanın hikâyesi":** mevsim/özel gün hikâyesi, ana sayfadaki "Okulda bu hafta" kartının yanında.
+> - Reklam dersi: ikisi de ürünün içini gösteriyor → 1 bitince çocuk-Ollie konuşma videosu, 2 bitince iki dilli kitap sayfası Reels'i.
+
 > **FİYAT ANALİZİ BİTTİ (2026-11-12, kod değişmedi).** Kullanıcı sordu: "aylık 1000 TL eder mi?" Cevap: bugünkü hâliyle büyük ihtimalle hayır. Rakipler (TR, aylık): Lingokids ~100–200 TL, Morpa Kampüs ~310–500 TL, Duolingo Super ~650 TL (belirsiz), Novakid (canlı öğretmen) ~1.180–2.940 TL. Ollie'nin farkları (Türkçe açıklama + MEB, Cambridge yolu + deneme sınavları, yapay zekâ sohbeti) ile tahmini değer ~300–500 TL/ay. Öneri: 249–399 TL/ay ya da yıllık ~2.500–3.500 TL; 1000 TL ancak canlı ders/öğretmen geri bildirimi eklenirse ya da okul/sınıf satışında; gerçek ölçüm için 2 fiyatla deneme. Sohbetin çocuk başı maliyeti henüz ölçülmedi (Anthropic panelinden ilk ay bakılmalı). Ayrıntı: `FIYAT.md`.
 > - Sıradaki: kullanıcıya sor. Bekleyen: `MEB_YEAR` 2027-2028 güncellemesi (takvim açıklanınca); KVKK konusu kullanıcıdan gelecek.
 
