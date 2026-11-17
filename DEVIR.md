@@ -1,5 +1,10 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **TÜRKÇE YARDIM EKLENDİ (2026-11-17, kullanıcı istedi) — Worker YAYINDA; site kısmı dalda, main'e alınması için kullanıcı onayı bekleniyor.**
+> - Arama ekranında "🇹🇷 Türkçe" düğmesi: tarayıcı dili kendiliğinden ayırt edemediği için çocuk bu düğmeyle `tr-TR` dinlenir (🎤 hep İngilizce). Duyulamazsa ipucu "🎤 ile tekrar dene ya da 🇹🇷 ile Türkçe söyle".
+> - Sunucu (`api/src/chat.js`): şemaya `say_tr` eklendi; "konuşamıyorum/bilmiyorum/anlamadım" → kopyalanacak tek kolay İngilizce cümle + Türkçe yönlendirme; başka Türkçe cümle → `fix` (you_said=Türkçe, better=İngilizcesi, note=Türkçe), tam olarak çocuğun söylediği öğretilir; karışık TR/EN de düzeltilir. `say_tr` true ise site İngilizce cevaptan sonra `tr` metnini Türkçe sesle okur (`speak(..., "tr")`, `trVoice`) ve Türkçesini açık gösterir (yazılı sohbette de).
+> - Canlı Haiku ile denendi (konuşamıyorum, ben kedileri severim, karışık cümle, anlamadım, İngilizce cümle, üst seviye ünite, Türkçe soru): hepsi iyi; geçici test hesapları silindi.
+
 > **"OLLIE'Yİ ARA" EKRANI BİTTİ (dal `claude/inspiring-ride-ejf2vk`, 2026-11-17) — main'e alındı 2026-11-17, YAYINDA (kullanıcı telefonda deneyecek). Worker değişmedi (yayın gerekmez).**
 > - `#call-N`: tam ekran sesli sohbet. Yeşil 📞 → "aranıyor" → Ollie selam verir (TTS) → otomatik dinler (SpeechRecognition, çocuğun sözleri canlı ve büyük yazıyla) → `chatSend` ile aynı sunucu (`api/src/chat.js`, günlük 20 mesaj ortak) → Ollie cevabı sesli okur → yine dinler. Düzeltme (💡), 🔁 Tekrar söyle, 🇹🇷 Türkçesi, ⌨️ yazma (mikrofonsuz tarayıcıda varsayılan), ilk turda hazır cümle çipleri, arama süresi, Kapat/Escape → `#chat-N` (yazılı geçmiş orada).
 > - Canlı Ollie: `img/ollie-512.png` üstünde SVG katman (`OLLIE_SVG`): göz kapakları rastgele kırpar, konuşurken kapalı gaga açılıp kapanır + hafif sallanma, dinlerken baş eğik + yeşil halka, düşünürken sağa sola. Azaltılmış hareket ayarında animasyonlar kapalı.
