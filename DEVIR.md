@@ -1,5 +1,11 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **KİTAP ÇİZİMLERİ BAŞLADI (dal `claude/vibrant-wright-2xb2ud`, 2026-11-17) — kod değişmedi, tarz onayı bekleniyor.**
+> - 60 kitap / 486 sayfa. higgsfield bakiyesi 27,64 kredi; `gpt_image_2_6` 1:1 bir çizim 0,25 kredi → 60 kapak ≈ 15 kredi; bütün sayfalar (~121 kredi) bakiyeyi aşar.
+> - "The Hat Box" (b21) kapağı için 3 tarz üretildi (0,75 kredi): 1) suluboya/kuru boya, 2) düz vektör, 3) 3D kil. İş kimlikleri: f83d3219…, 67000ee6…, e205f9ca… (higgsfield geçmişinde).
+> - Engel: konteyner `d8j0ntlcm91z4.cloudfront.net`'e (higgsfield görselleri) erişemiyor (proxy 403) → görselleri depoya indirmek için ortamın ağ izinlerine bu host eklenmeli.
+> - Sıradaki: kullanıcı tarzı seçsin → host izni → 60 kapak üret, `img/books/<id>.webp` (küçük boyut) olarak kaydet, kütüphane kartı + kitap sayfasında emoji yerine kapak göster (resim yoksa emoji kalsın).
+
 > **"OLLIE'Yİ ARA" TÜRKÇE YARDIMLI MOD (dal `claude/compassionate-volta-qp9l6t`, 2026-11-17, kullanıcı istedi) — Worker YAYINDA; main'e alındı 2026-11-17, site de YAYINDA. Sıradaki (yeni sohbette): kitap çizimleri.**
 > - Arama ekranında (hazır ekranı) iki seçenek: "🇹🇷 Türkçe yardımlı" (Ünite 1–30'da varsayılan) / "🇬🇧 Sadece İngilizce"; seçim `S.chat.guided`'da saklanır. Yardımlı modda karşılama yerelde Türkçe ("Merhaba Hatice! … Önce bana İngilizce merhaba de!") + "Say: Hello Ollie!"; her turda önce Türkçe soru (`tr`) sonra İngilizce soru + örnek cevap (`reply`) okunur; ekranda Türkçe metin + sarı kutuda 🗣️ İngilizce.
 > - Sunucu (`api/src/chat.js`): istek gövdesinde `guided:true` → `GUIDED` sistem bloğu (Türkçe sor, örnek cevap ver, yavaş yavaş zorlaştır, hatada yeni soruya geçmeden tekrar söylet, Türkçe cevaba İngilizcesini öğret). Model adı bilmez, `{name}` yazar; sunucu çocuğun ilk adını kendisi koyar (ad Anthropic'e gitmez). Geçmişte Ollie'nin Türkçe metni de modele gider.
