@@ -160,7 +160,7 @@ body.calling{overflow:hidden}
 [data-s=listen] .callMe{color:var(--leaf)}
 .callOl{background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:10px 16px;font-size:1.15rem;overflow-wrap:anywhere;max-width:100%}
 .callOl .tr{margin-top:4px}
-.callBar{display:flex;align-items:flex-start;justify-content:center;gap:22px;width:100%;padding-top:4px}
+.callBar{display:flex;align-items:flex-start;justify-content:center;gap:14px;width:100%;padding-top:4px}
 .callGap{width:56px}
 .callBtn{width:76px;height:76px;border-radius:50%;border:0;font-size:2rem;display:grid;place-items:center;cursor:pointer;background:var(--accent);color:var(--on-accent);box-shadow:0 6px 18px rgba(0,0,0,.18);margin:0 auto}
 .callBtn.sm{width:56px;height:56px;font-size:1.4rem;background:var(--surface);color:var(--ink);border:2px solid var(--line);box-shadow:none;margin-top:10px}
@@ -1468,15 +1468,16 @@ function confetti(){
 }
 
 /* ---------- Speech ---------- */
-let voice = null;
-function pickVoice(){ try{ const v = speechSynthesis.getVoices(); voice = v.find(x=>/en[-_]US/i.test(x.lang)) || v.find(x=>/^en/i.test(x.lang)) || null; }catch(e){} }
+let voice = null, trVoice = null;
+function pickVoice(){ try{ const v = speechSynthesis.getVoices(); voice = v.find(x=>/en[-_]US/i.test(x.lang)) || v.find(x=>/^en/i.test(x.lang)) || null; trVoice = v.find(x=>/^tr/i.test(x.lang)) || null; }catch(e){} }
 try{ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }catch(e){}
-function speak(text, onend, rate){
+function speak(text, onend, rate, lang){
   try{
     if(!("speechSynthesis" in window)) throw 0;
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = "en-US"; u.rate = rate || .82; u.pitch = 1.1; if(voice) u.voice = voice;
+    const tr = lang === "tr";
+    u.lang = tr ? "tr-TR" : "en-US"; u.rate = rate || (tr ? .95 : .82); u.pitch = 1.1; if(tr ? trVoice : voice) u.voice = tr ? trVoice : voice;
     if(onend){ u.onend = onend; u.onerror = onend; }
     speechSynthesis.speak(u);
   }catch(e){ say("Oops, no sound here.", "Bu cihazda ses çıkmıyor. Metni okuyabilirsin!"); onend && onend(); }
@@ -2041,12 +2042,12 @@ async function chatSend(text){
     const me = ct.msgs[ct.msgs.length-1];
     if(r.flag === "personal") me.text = "[kişisel bilgi gizlendi]";
     if(r.flag === "bad") me.text = "[uygunsuz kelime engellendi]";
-    if(r.flag !== "limit"){ me.fix = r.fix; ct.msgs.push({role:"ollie", text:r.reply, tr:r.tr}); }
+    if(r.flag !== "limit"){ me.fix = r.fix; ct.msgs.push({role:"ollie", text:r.reply, tr:r.tr}); if(r.say_tr) ct.showTr = ct.msgs.length - 1; }
     else ct.msgs.pop();
     ct.left = r.left;
     if(r.flag === "ok" || r.flag === "offtopic"){ S.chat.n = (S.chat.n||0) + 1; addPts(CHAT_PTS); checkBadges(); save(); }
     ct.busy = false;
-    if(ct.call){ if(page === "call") callSay(r.reply); return; }
+    if(ct.call){ ct.call.showTr = !!(r.say_tr && r.tr); if(page === "call") callSay(r.reply, r.say_tr && r.tr); return; }
     if(page === "chat"){ render(); chatScroll(); const inp = $("#chatIn"); if(inp && !SR) inp.focus(); }
     speak(r.reply);
   }catch(e){
@@ -2141,13 +2142,14 @@ function callHTML(){
     <div><button class="callBtn go" data-act="callStart" aria-label="Ollie'yi ara">📞</button><div class="callLbl">Ollie'yi ara</div></div>
     <div class="callGap"></div>`;
   else bar = `${!out && SR ? `<div><button class="callBtn sm${c.kb ? " on" : ""}" data-act="callKb" aria-label="Klavye" ${c.s === "ring" ? "disabled" : ""}>⌨️</button><div class="callLbl">Yaz</div></div>` : `<div class="callGap"></div>`}
-    ${!out && SR ? `<div><button class="callBtn${c.s === "listen" ? " on" : ""}" data-act="callMic" aria-label="${c.s === "listen" ? "Bitirdim" : "Konuş"}" ${["think","ring"].includes(c.s) ? "disabled" : ""}>${c.s === "listen" ? "⏹️" : "🎤"}</button><div class="callLbl">${c.s === "listen" ? "Bitirdim" : "Konuş"}</div></div>` : ""}
+    ${!out && SR ? `<div><button class="callBtn${c.s === "listen" ? " on" : ""}" data-act="callMic" aria-label="${c.s === "listen" ? "Bitirdim" : "İngilizce konuş"}" ${["think","ring"].includes(c.s) ? "disabled" : ""}>${c.s === "listen" ? "⏹️" : "🎤"}</button><div class="callLbl">${c.s === "listen" ? "Bitirdim" : "Konuş"}</div></div>
+    <div><button class="callBtn sm" data-act="callMicTr" aria-label="Türkçe söyle" ${["think","ring","listen"].includes(c.s) ? "disabled" : ""}>🇹🇷</button><div class="callLbl">Türkçe</div></div>` : ""}
     <div><button class="callBtn end" data-act="callHang" aria-label="Aramayı kapat"><span class="hang">📞</span></button><div class="callLbl">Kapat</div></div>`;
   return `<div class="callscr" id="callScr" data-s="${c.s}">
     <div class="callTop"><span class="chip">${L.icon} ${esc(L.theme)}</span><span class="calltime" id="callTime">${c.t0 ? callClock() : "📞"}</span><span class="chip" title="Bugün kalan mesaj">💬 ${ct.left ?? "—"}/${ct.limit || 20}</span></div>
     <div class="callMid">${ollieLive()}<div class="callSt" id="callSt" aria-live="polite">${esc(status)}</div></div>
     <div class="callTxt">
-      ${c.s === "ready" ? `<h1>📞 Ollie'yi ara</h1><p class="tr">Ollie seninle ${esc(L.tr)} hakkında İngilizce konuşacak. Sen konuş, o dinlesin; sonra o cevap versin. ${SR ? "" : "Bu tarayıcıda mikrofon yok; yazarak konuşabilirsin."}</p><p class="tr">🔒 Adını soyadını, adresini, okulunu söyleme. Konuşmaların veli panelinde görünür.</p>` : ""}
+      ${c.s === "ready" ? `<h1>📞 Ollie'yi ara</h1><p class="tr">Ollie seninle ${esc(L.tr)} hakkında İngilizce konuşacak. Sen konuş, o dinlesin; sonra o cevap versin. ${SR ? "İngilizce söyleyemediğin bir şey olursa 🇹🇷 düğmesine basıp Türkçe söyle, Ollie sana İngilizcesini öğretsin." : "Bu tarayıcıda mikrofon yok; yazarak konuşabilirsin (Türkçe de yazabilirsin)."}</p><p class="tr">🔒 Adını soyadını, adresini, okulunu söyleme. Konuşmaların veli panelinde görünür.</p>` : ""}
       <div class="callMe" id="callMe">${esc(c.s === "listen" ? c.heard : me ? me.text : "")}</div>
       ${fix && c.s !== "listen" ? `<div class="cfix">💡 <b>${esc(me.fix.better)}</b>${me.fix.note ? `<span class="tr">${esc(me.fix.note)}</span>` : ""}</div>` : ""}
       ${olText && c.s !== "ring" ? `<div class="callOl">🦉 ${esc(olText.text)}${olText.tr && c.showTr ? `<div class="tr">🇹🇷 ${esc(olText.tr)}</div>` : ""}</div>
@@ -2166,24 +2168,25 @@ function callStart(){
   setTimeout(()=>{ if(ct && ct.call === c && c.s === "ring") callSay(c.greet[0]); }, 1400);
 }
 // Ollie konuşur; bitince (çocuk hâlâ aramadaysa) otomatik dinlemeye geçer.
-function callSay(text){
+function callSay(text, trText){
   if(!ct || !ct.call) return;
   const c = ct.call; let done = false;
   callSet("talk");
   const fin = () => { if(done) return; done = true; if(ct && ct.call === c && c.s === "talk") callListen(true); };
-  speak(text, fin);
-  setTimeout(fin, 2500 + text.length * 110); // bazı tarayıcılar onend göndermiyor
+  const ok = () => ct && ct.call === c && c.s === "talk";
+  speak(text, trText ? () => { if(ok()) setTimeout(()=>{ if(ok()) speak(trText, fin, null, "tr"); }, 250); } : fin);
+  setTimeout(fin, 2500 + (text.length + (trText ? trText.length : 0)) * 110); // bazı tarayıcılar onend göndermiyor
 }
 function callStopRec(){ if(callRec){ const r = callRec; callRec = null; try{ r.abort(); }catch(e){} } }
-function callListen(auto){
+function callListen(auto, lang){
   if(!ct || !ct.call) return;
-  const c = ct.call;
+  const c = ct.call; c.lang = lang === "tr" ? "tr" : "en";
   if(!SR || ct.left === 0 || c.kb && auto){ callSet("idle"); return; }
   stopSpeech(); callStopRec();
   let r; try{ r = new SR(); }catch(e){ callSet("idle"); return; }
-  callRec = r; r.lang = "en-US"; r.interimResults = true; r.maxAlternatives = 1;
+  callRec = r; r.lang = c.lang === "tr" ? "tr-TR" : "en-US"; r.interimResults = true; r.maxAlternatives = 1;
   let final = "", err = "";
-  c.heard = ""; callSet("listen");
+  c.heard = ""; callSet("listen", c.lang === "tr" ? "🇹🇷 Türkçe dinliyorum… Ne söylemek istiyorsun?" : "");
   r.onresult = e => {
     let interim = ""; final = "";
     for(const res of e.results){ if(res.isFinal) final += res[0].transcript; else interim += res[0].transcript; }
@@ -2197,16 +2200,16 @@ function callListen(auto){
     const v = (final || c.heard).trim();
     if(v){ c.heard = ""; chatSend(v); return; }
     if(err === "not-allowed" || err === "service-not-allowed") callSet("idle", auto ? "" : "Mikrofon izni verilmedi. ⌨️ ile yazarak da konuşabilirsin.");
-    else callSet("idle", err === "no-speech" || !err ? "Seni duyamadım. 🎤'ya basıp tekrar dene." : "");
+    else callSet("idle", err === "no-speech" || !err ? "Seni duyamadım. 🎤 ile tekrar dene ya da 🇹🇷 ile Türkçe söyle." : "");
   };
   try{ r.start(); }catch(e){ callRec = null; callSet("idle"); }
 }
-function callMic(){
+function callMic(lang){
   if(!ct || !ct.call) return;
   const c = ct.call;
   if(c.s === "listen" && callRec){ try{ callRec.stop(); }catch(e){} return; } // Bitirdim → söylenen gönderilir
   if(c.s === "think" || c.s === "ring") return;
-  callListen(false);
+  callListen(false, lang);
 }
 function callHang(){ const i = ct ? ct.unit : 0; stopSpeech(); callStopRec(); go(`chat-${i+1}`); }
 function callSend(text){
@@ -3992,9 +3995,10 @@ document.addEventListener("click", e => {
     case "chatRetry": return page === "call" ? (startCall(ct.unit), render()) : startChat(ct.unit);
     case "callStart": return callStart();
     case "callMic": return callMic();
+    case "callMicTr": return callMic("tr");
     case "callHang": return callHang();
     case "callKb": ct.call.kb = !ct.call.kb; if(ct.call.kb && ct.call.s === "listen") callStopRec(), ct.call.s = "idle"; render(); { const inp = $("#callIn"); if(inp) inp.focus(); } return;
-    case "callRepeat": { const m = [...ct.msgs].reverse().find(x=>x.role === "ollie"); return callSay(m ? m.text : ct.call.greet[0]); }
+    case "callRepeat": { const m = [...ct.msgs].reverse().find(x=>x.role === "ollie"); return m ? callSay(m.text, ct.call.showTr && m.tr) : callSay(ct.call.greet[0]); }
     case "callTr": ct.call.showTr = !ct.call.showTr; render(); return;
     case "callStarter": return callSend(arg);
     case "parentChats": return parentChats(+arg);

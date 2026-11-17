@@ -55,8 +55,16 @@ How to talk:
 
 Correcting:
 - If the child's last message has a mistake in English (grammar, spelling or word choice), put a gentle correction in "fix": "you_said" is the wrong part, "better" is the corrected sentence, "note" is ONE short Turkish explanation for a child. Do not repeat the correction inside "reply"; simply use the correct form naturally.
-- If there is no mistake, or the child wrote in Turkish, leave all three fix fields as empty strings. If the child writes Turkish, kindly answer in English and help them say it in English (you may give the English sentence in "tr" note form).
+- If there is no mistake, leave all three fix fields as empty strings.
 - Ignore missing capital letters and final punctuation.
+
+When the child uses Turkish (they can speak Turkish when they cannot say something in English):
+- Set "say_tr" to true: the app then also reads your "tr" text aloud in Turkish, so "tr" must guide the child, not only translate. For English-only messages "say_tr" is false.
+- "reply" is still in English and very simple.
+- If the child says they cannot speak, do not know what to say, or did not understand (for example "konuşamıyorum", "bilmiyorum", "ne diyeyim", "anlamadım", "yardım et"): be very encouraging. In "reply" give ONE very easy English sentence about the unit topic that they can copy, like: No problem! Say: "I like cats." In "tr" say in Turkish that it is okay, what the sentence means, and ask them to say it now. If they did not understand your last message, explain it simply in Turkish in "tr". Leave the fix fields empty.
+- If the child says something else in Turkish (a sentence or a question), ALWAYS fill the fix fields and teach exactly what the child meant (do not change it to another sentence or another unit word): "you_said" = their Turkish words, "better" = a simple, correct English sentence at their level that says the same thing, "note" = one short Turkish line such as "İngilizcesi böyle. Sen de söylemeyi dene!". Answer their meaning in English in "reply". In "tr", tell them in Turkish how to say it in English and encourage them to try.
+- In "tr" never write English words in Turkish spelling (no pronunciation hints like "ai layk"); write the English sentence normally in quotes.
+- If the child mixes Turkish and English words, do the same: "better" is the whole sentence in English, "note" explains the Turkish words in Turkish.
 
 "tr": a short, simple Turkish translation of your reply, for a child who did not understand.
 
@@ -79,8 +87,9 @@ const SCHEMA = {
       additionalProperties: false,
     },
     flag: { type: "string", enum: ["ok", "offtopic", "personal", "unsafe"] },
+    say_tr: { type: "boolean" },
   },
-  required: ["reply", "tr", "fix", "flag"],
+  required: ["reply", "tr", "fix", "flag", "say_tr"],
   additionalProperties: false,
 };
 
@@ -177,12 +186,12 @@ export async function chatSend(env, child, b, day, bad) {
   const fx = out.fix || noFix;
   const fix = { you_said: String(fx.you_said || "").slice(0, 300), better: String(fx.better || "").slice(0, 300), note: String(fx.note || "").slice(0, 300) };
   let flag = ["ok", "offtopic", "personal", "unsafe"].includes(out.flag) ? out.flag : "ok";
-  let final = { reply, tr, fix };
-  if (!reply || hasBad(reply + " " + tr + " " + fix.better + " " + fix.note)) { final = { ...CANNED.oops, fix: noFix }; flag = "unsafe"; }
+  let final = { reply, tr, fix, say_tr: out.say_tr === true };
+  if (!reply || hasBad(reply + " " + tr + " " + fix.better + " " + fix.note)) { final = { ...CANNED.oops, fix: noFix, say_tr: false }; flag = "unsafe"; }
 
   // Kişisel bilgi modelin fark ettiği bir şeyse çocuğun mesajını kayda açık yazma
   await log(env, child.id, unit, day, "user", flag === "personal" ? "[kişisel bilgi gizlendi]" : text, flag);
-  await log(env, child.id, unit, day, "ollie", final.reply, flag, { tr: final.tr, ...(final.fix.better ? { fix: final.fix } : {}) });
+  await log(env, child.id, unit, day, "ollie", final.reply, flag, { tr: final.tr, ...(final.fix.better ? { fix: final.fix } : {}), ...(final.say_tr ? { say_tr: true } : {}) });
   return { ...final, flag, left };
 }
 
