@@ -1,5 +1,10 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **KELİME KELİME VURGULAMA BİTTİ (dal `claude/compassionate-volta-qp9l6t`, 2026-11-17) — main'e ALINMADI, kullanıcı onayı bekleniyor. Worker değişmedi.**
+> - Kütüphanede "🔊 Read to me / 🐢 Slow / ▶ Bütün kitabı oku" sırasında o an okunan kelime sarıyla işaretleniyor, cümle açık sarı zeminde. `bookReadPage`: ses `onboundary` (kelime sınırı) bildirirse ona göre; bildirmezse (ör. Chrome'un çevrim içi sesleri) harf sayısı + noktalama duraklamasından süre tahmini (`64ms/harf ÷ hız`). `speak()` artık konuşma nesnesini döndürüyor.
+> - Test: sahte sesle Playwright, iki yol da doğru sırayla işaretliyor, bitince işaret kalkıyor, hata yok. **Gerçek telefonda denenmedi** (iPhone Safari sınır bildirir; Android Chrome'da tahmin yolu çalışır).
+> - Sıradaki: kullanıcı onaylarsa main'e al. Sonra 2) kitap çizimleri (higgsfield kredi harcar → önce 2–3 örnek, tarz onayı), 4) haftanın hikâyesi. Bekleyen: "Ollie'yi ara" telefon geri bildirimi.
+
 > **TÜRKÇE YARDIM EKLENDİ (2026-11-17, kullanıcı istedi) — main'e alındı 2026-11-17, YAYINDA; Worker da yayında.**
 > - Arama ekranında "🇹🇷 Türkçe" düğmesi: tarayıcı dili kendiliğinden ayırt edemediği için çocuk bu düğmeyle `tr-TR` dinlenir (🎤 hep İngilizce). Duyulamazsa ipucu "🎤 ile tekrar dene ya da 🇹🇷 ile Türkçe söyle".
 > - Sunucu (`api/src/chat.js`): şemaya `say_tr` eklendi; "konuşamıyorum/bilmiyorum/anlamadım" → kopyalanacak tek kolay İngilizce cümle + Türkçe yönlendirme; başka Türkçe cümle → `fix` (you_said=Türkçe, better=İngilizcesi, note=Türkçe), tam olarak çocuğun söylediği öğretilir; karışık TR/EN de düzeltilir. `say_tr` true ise site İngilizce cevaptan sonra `tr` metnini Türkçe sesle okur (`speak(..., "tr")`, `trVoice`) ve Türkçesini açık gösterir (yazılı sohbette de).

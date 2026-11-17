@@ -329,7 +329,8 @@ span.chunk{display:inline-block;box-shadow:none}
 .bkpage{display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--soft);border-radius:18px;padding:18px 12px;margin:12px 0;text-align:center}
 .bkpic{font-size:4.2rem;line-height:1.15;letter-spacing:.08em}
 .bktext{font-family:var(--display);font-weight:600;font-size:1.55rem;line-height:1.6;margin:0;padding:4px 10px;border-radius:12px;max-width:34ch}
-.bktext.on{background:var(--sun);color:#22304A}
+.bktext.on{background:color-mix(in srgb,var(--sun) 24%,transparent)}
+.bw.rd{background:var(--sun);color:#22304A}
 .bktr{margin:0;font-size:1.05rem}
 .bw{background:none;border:0;padding:0 2px;margin:0;font:inherit;color:inherit;cursor:pointer;border-radius:6px;border-bottom:2px dotted var(--line)}
 .bw:hover,.bw.on{background:var(--sun);color:#22304A}
@@ -1480,6 +1481,7 @@ function speak(text, onend, rate, lang){
     u.lang = tr ? "tr-TR" : "en-US"; u.rate = rate || (tr ? .95 : .82); u.pitch = 1.1; if(tr ? trVoice : voice) u.voice = tr ? trVoice : voice;
     if(onend){ u.onend = onend; u.onerror = onend; }
     speechSynthesis.speak(u);
+    return u;
   }catch(e){ say("Oops, no sound here.", "Bu cihazda ses çıkmıyor. Metni okuyabilirsin!"); onend && onend(); }
 }
 let singing = false;
@@ -3714,12 +3716,42 @@ function bookShow(){ const y = window.scrollY; stopSpeech(); render(); if(bk.pha
 function bookReadPage(rate){
   const t = $("#bktext"); if(!t) return;
   stopSpeech(); t.classList.add("on");
-  speak(bk.b.pages[bk.pg][1].replace(/[“”]/g,""), ()=>{
-    t.classList.remove("on");
+  const text = bk.b.pages[bk.pg][1].replace(/[“”]/g,"");
+  /* kelime kelime vurgulama: her .bw düğmesinin okunan metindeki başlangıç yeri */
+  const words = []; let at = 0;
+  t.querySelectorAll(".bw").forEach(el=>{ const k = text.indexOf(el.dataset.arg, at); if(k < 0) return; words.push([k, el]); at = k + el.dataset.arg.length; });
+  let timer = null, gotBoundary = false;
+  const mark = el => { t.querySelectorAll(".bw.rd").forEach(x=>{ if(x !== el) x.classList.remove("rd"); }); if(el) el.classList.add("rd"); };
+  const clear = () => { clearTimeout(timer); mark(null); };
+  const u = speak(text, ()=>{
+    clear(); t.classList.remove("on");
     if(!bk || !bk.auto || !document.body.contains(t)) return;
     if(bk.pg < bk.b.pages.length - 1) setTimeout(()=>{ if(bk && bk.auto && document.body.contains(t)){ bk.pg++; bk.seen.add(bk.pg); render(); bookReadPage(rate); } }, 700);
     else { bk.auto = false; render(); say("The end! 📖", "Kitap bitti. Şimdi soruları cevaplayalım: Sorulara geç ▶"); }
   }, rate);
+  if(!u || !words.length) return;
+  u.onboundary = e=>{
+    if(e.name && e.name !== "word") return;
+    gotBoundary = true; clearTimeout(timer);
+    if(!document.body.contains(t)) return;
+    let w = null; for(const [k, el] of words){ if(k <= e.charIndex) w = el; else break; }
+    mark(w);
+  };
+  /* bazı sesler (ör. Chrome'un çevrim içi sesleri) kelime sınırı bildirmez: süreyi harf sayısından tahmin et */
+  u.onstart = ()=>{
+    const msPerChar = 64 / (rate || .82);
+    let k = 0;
+    const step = ()=>{
+      if(gotBoundary || !document.body.contains(t) || k >= words.length) return;
+      mark(words[k][1]);
+      const next = k + 1 < words.length ? words[k+1][0] : text.length;
+      const gap = text.slice(words[k][0], next);
+      const pause = /[.!?]/.test(gap) ? 380 : /[,;:]/.test(gap) ? 180 : 0;
+      timer = setTimeout(step, gap.length * msPerChar + pause);
+      k++;
+    };
+    timer = setTimeout(()=>{ if(!gotBoundary) step(); }, 250);
+  };
 }
 function bookWord(w){
   const tr = glossOf(w, bk.b), el = $("#bkgl");
