@@ -1,6 +1,6 @@
 # DEVİR NOTU — Ollie Akademi
 
-> **TÜRKÇE YARDIM EKLENDİ (2026-11-17, kullanıcı istedi) — Worker YAYINDA; site kısmı dalda, main'e alınması için kullanıcı onayı bekleniyor.**
+> **TÜRKÇE YARDIM EKLENDİ (2026-11-17, kullanıcı istedi) — main'e alındı 2026-11-17, YAYINDA; Worker da yayında.**
 > - Arama ekranında "🇹🇷 Türkçe" düğmesi: tarayıcı dili kendiliğinden ayırt edemediği için çocuk bu düğmeyle `tr-TR` dinlenir (🎤 hep İngilizce). Duyulamazsa ipucu "🎤 ile tekrar dene ya da 🇹🇷 ile Türkçe söyle".
 > - Sunucu (`api/src/chat.js`): şemaya `say_tr` eklendi; "konuşamıyorum/bilmiyorum/anlamadım" → kopyalanacak tek kolay İngilizce cümle + Türkçe yönlendirme; başka Türkçe cümle → `fix` (you_said=Türkçe, better=İngilizcesi, note=Türkçe), tam olarak çocuğun söylediği öğretilir; karışık TR/EN de düzeltilir. `say_tr` true ise site İngilizce cevaptan sonra `tr` metnini Türkçe sesle okur (`speak(..., "tr")`, `trVoice`) ve Türkçesini açık gösterir (yazılı sohbette de).
 > - Canlı Haiku ile denendi (konuşamıyorum, ben kedileri severim, karışık cümle, anlamadım, İngilizce cümle, üst seviye ünite, Türkçe soru): hepsi iyi; geçici test hesapları silindi.
