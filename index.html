@@ -332,6 +332,9 @@ span.chunk{display:inline-block;box-shadow:none}
 .story .line.on .tr{color:#22304A}
 .bkpage{display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--soft);border-radius:18px;padding:18px 12px;margin:12px 0;text-align:center}
 .bkpic{font-size:4.2rem;line-height:1.15;letter-spacing:.08em}
+.bkcover{display:block;width:min(100%,340px);aspect-ratio:1;object-fit:cover;border-radius:22px;margin:0 auto;background:var(--soft)}
+.ic.cv{padding:0;overflow:hidden}.ic.cv img{width:100%;height:100%;object-fit:cover;display:block}
+.continue .ic.cv{width:64px;height:64px;border-radius:16px;flex:none}
 .bktext{font-family:var(--display);font-weight:600;font-size:1.55rem;line-height:1.6;margin:0;padding:4px 10px;border-radius:12px;max-width:34ch}
 .bktext.on{background:color-mix(in srgb,var(--sun) 24%,transparent)}
 .bw.rd{background:var(--sun);color:#22304A}
@@ -3072,7 +3075,7 @@ function whyWrong(t, given){
 const whyHTML = s => s ? `<div class="why">🦉 <b>Neden olmadı?</b> ${s}</div>` : "";
 function libCardHTML(){
   const nb = nextBook(); if(!nb) return "";
-  return `<div class="continue review"><span class="ic">📚</span><div class="txt"><div class="eyebrow">Kütüphane · ${BOOK_LV[nb.lv].e} ${BOOK_LV[nb.lv].n}</div><h3>${nb.e} ${esc(nb.t)}</h3>
+  return `<div class="continue review">${bookCover(nb) ? bookIc(nb) : `<span class="ic">📚</span>`}<div class="txt"><div class="eyebrow">Kütüphane · ${BOOK_LV[nb.lv].e} ${BOOK_LV[nb.lv].n}</div><h3>${nb.e} ${esc(nb.t)}</h3>
     <span class="tr">${bookCount() ? `${bookCount()} kitap okudun. Sıradaki kitabın hazır.` : "Seviyene uygun kısa resimli kitaplar. Ollie sana okur."}</span></div><a class="btn ghost" href="#book-${nb.id}">Oku ▶</a></div>`;
 }
 function reviewCardHTML(){
@@ -3663,13 +3666,17 @@ function bookWords(text){
     return m ? `${esc(m[1])}<button type="button" class="bw" data-act="bkWord" data-arg="${esc(m[2])}">${esc(m[2])}</button>${esc(m[3])}` : esc(tok);
   }).join(" ");
 }
+// Kapak çizimi olan kitaplar: img/books/<id>.webp (512 px). Listede olmayan kitapta emoji gösterilir.
+const BOOK_COVERS = new Set([]);
+const bookCover = b => BOOK_COVERS.has(b.id) ? `img/books/${b.id}.webp` : "";
+const bookIc = (b, extra="") => { const c = bookCover(b); return c ? `<span class="ic cv ${extra}"><img src="${c}" alt="" loading="lazy" decoding="async"></span>` : `<span class="ic ${extra}">${b.e}</span>`; };
 function libraryHTML(){
   const nb = nextBook(), rl = readerLevel();
   return `<div class="row between"><a class="link" href="#reading">← Reading · Okuma</a><span class="chip">📚 ${bookCount()}/${BOOKS.length} kitap</span></div>
   <section class="panel"><div class="eyebrow">Reading · Okuma Kütüphanesi</div><h1>📚 Kütüphane</h1>
     <p class="muted">Seviyene göre kısa resimli kitaplar. Ollie sana okur, bilmediğin kelimeye dokununca Türkçesini söyler. Kitabın sonunda kısa bir test var: ilk denemede her doğru ⭐+2, kitabı bitirince ⭐+5.</p>
     <div class="row"><span class="chip ok">📖 Okuma seviyem: ${rl ? `${BOOK_LV[rl].e} ${BOOK_LV[rl].n}` : "henüz yok"}</span></div>
-    ${nb ? `<div class="continue" style="margin-top:12px"><span class="ic">${nb.e}</span><div class="txt"><div class="eyebrow">Sıradaki kitabın · ${BOOK_LV[nb.lv].e} ${BOOK_LV[nb.lv].n}</div><h3>${esc(nb.t)}</h3><span class="tr">${nb.pages.length} sayfa · Ünite ${nb.u+1}: ${LEVELS[nb.u].theme}</span></div><a class="btn" href="#book-${nb.id}">Oku ▶</a></div>` : ""}
+    ${nb ? `<div class="continue" style="margin-top:12px">${bookIc(nb)}<div class="txt"><div class="eyebrow">Sıradaki kitabın · ${BOOK_LV[nb.lv].e} ${BOOK_LV[nb.lv].n}</div><h3>${esc(nb.t)}</h3><span class="tr">${nb.pages.length} sayfa · Ünite ${nb.u+1}: ${LEVELS[nb.u].theme}</span></div><a class="btn" href="#book-${nb.id}">Oku ▶</a></div>` : ""}
   </section>
   ${bookLevels().map(lv=>{ const L = BOOK_LV[lv], list = BOOKS.filter(b=>b.lv===lv), n = bookLvCount(lv), goal = Math.min(BOOK_GOAL, list.length);
     return `<section class="panel"><h2>${L.e} ${L.n} <span class="tr">· ${L.tr} · ${n}/${list.length} okundu</span></h2>
@@ -3677,7 +3684,7 @@ function libraryHTML(){
       <div class="grid g3">${list.map(b=>{ const open = unitOpen(b.u), r = S.books[b.id];
         const st = !open ? `<span class="chip">🔒 Ünite ${b.u+1}</span>` : r && r.n ? `<span class="chip ok">✓ Okundu</span>` : `<span class="chip">Yeni</span>`;
         return `<a class="unit book ${open?"":"locked"}" href="#book-${b.id}" ${open?"":'aria-disabled="true"'}>
-          <div class="top"><span class="ic">${b.e}</span><div style="min-width:0"><div class="no">${L.e} ${L.n} · ${LEVELS[b.u].theme}</div><div class="nm">${esc(b.t)}</div><div class="tr">${b.pages.length} sayfa · ${b.qs.length} soru</div></div></div>
+          <div class="top">${bookIc(b)}<div style="min-width:0"><div class="no">${L.e} ${L.n} · ${LEVELS[b.u].theme}</div><div class="nm">${esc(b.t)}</div><div class="tr">${b.pages.length} sayfa · ${b.qs.length} soru</div></div></div>
           <div class="meta"><span>${st}</span><span>${r && r.n ? `⭐ ${r.q}/${b.qs.length}` : ""}</span></div></a>`; }).join("")}</div></section>`; }).join("")}`;
 }
 function startBook(id){
@@ -3695,7 +3702,7 @@ function bookHTML(){
     return `${head}<section class="panel">
       <div class="eyebrow">${b.e} ${esc(b.t)} · Sayfa ${bk.pg+1}/${b.pages.length}</div>
       <div class="progress">${b.pages.map((_,n)=>`<span class="${n<bk.pg?"done":n===bk.pg?"now":""}"></span>`).join("")}</div>
-      <div class="bkpage"><div class="bkpic" aria-hidden="true">${p[0]}</div>
+      <div class="bkpage">${bk.pg===0 && bookCover(b) ? `<img class="bkcover" src="${bookCover(b)}" alt="">` : `<div class="bkpic" aria-hidden="true">${p[0]}</div>`}
         <p class="bktext" id="bktext">${bookWords(p[1])}</p>
         ${bk.showTr ? `<p class="tr bktr">${esc(p[2])}</p>` : ""}
         <div class="bkgl" id="bkgl" aria-live="polite"><span class="tr">Bir kelimeye dokun: Ollie okur ve Türkçesini söyler.</span></div></div>
