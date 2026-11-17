@@ -1,6 +1,6 @@
 # DEVİR NOTU — Ollie Akademi
 
-> **"OLLIE'Yİ ARA" TÜRKÇE YARDIMLI MOD (dal `claude/compassionate-volta-qp9l6t`, 2026-11-17, kullanıcı istedi) — Worker YAYINDA (geriye uyumlu); site main'e ALINMADI, kullanıcı onayı bekleniyor.**
+> **"OLLIE'Yİ ARA" TÜRKÇE YARDIMLI MOD (dal `claude/compassionate-volta-qp9l6t`, 2026-11-17, kullanıcı istedi) — Worker YAYINDA; main'e alındı 2026-11-17, site de YAYINDA. Sıradaki (yeni sohbette): kitap çizimleri.**
 > - Arama ekranında (hazır ekranı) iki seçenek: "🇹🇷 Türkçe yardımlı" (Ünite 1–30'da varsayılan) / "🇬🇧 Sadece İngilizce"; seçim `S.chat.guided`'da saklanır. Yardımlı modda karşılama yerelde Türkçe ("Merhaba Hatice! … Önce bana İngilizce merhaba de!") + "Say: Hello Ollie!"; her turda önce Türkçe soru (`tr`) sonra İngilizce soru + örnek cevap (`reply`) okunur; ekranda Türkçe metin + sarı kutuda 🗣️ İngilizce.
 > - Sunucu (`api/src/chat.js`): istek gövdesinde `guided:true` → `GUIDED` sistem bloğu (Türkçe sor, örnek cevap ver, yavaş yavaş zorlaştır, hatada yeni soruya geçmeden tekrar söylet, Türkçe cevaba İngilizcesini öğret). Model adı bilmez, `{name}` yazar; sunucu çocuğun ilk adını kendisi koyar (ad Anthropic'e gitmez). Geçmişte Ollie'nin Türkçe metni de modele gider.
 > - Canlı Haiku ile denendi (Ünite 1 ve 16; doğru cevap, hata, bilmiyorum, Türkçe cevap, konu dışı): iyi. Geçici test hesabı silindi. Sahte API ile Playwright (iPhone 13, açık/koyu): okuma sırası TR→EN, hata yok, yatay kayma yok.
