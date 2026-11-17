@@ -1,5 +1,10 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **"OLLIE'Yİ ARA" TÜRKÇE YARDIMLI MOD (dal `claude/compassionate-volta-qp9l6t`, 2026-11-17, kullanıcı istedi) — Worker YAYINDA (geriye uyumlu); site main'e ALINMADI, kullanıcı onayı bekleniyor.**
+> - Arama ekranında (hazır ekranı) iki seçenek: "🇹🇷 Türkçe yardımlı" (Ünite 1–30'da varsayılan) / "🇬🇧 Sadece İngilizce"; seçim `S.chat.guided`'da saklanır. Yardımlı modda karşılama yerelde Türkçe ("Merhaba Hatice! … Önce bana İngilizce merhaba de!") + "Say: Hello Ollie!"; her turda önce Türkçe soru (`tr`) sonra İngilizce soru + örnek cevap (`reply`) okunur; ekranda Türkçe metin + sarı kutuda 🗣️ İngilizce.
+> - Sunucu (`api/src/chat.js`): istek gövdesinde `guided:true` → `GUIDED` sistem bloğu (Türkçe sor, örnek cevap ver, yavaş yavaş zorlaştır, hatada yeni soruya geçmeden tekrar söylet, Türkçe cevaba İngilizcesini öğret). Model adı bilmez, `{name}` yazar; sunucu çocuğun ilk adını kendisi koyar (ad Anthropic'e gitmez). Geçmişte Ollie'nin Türkçe metni de modele gider.
+> - Canlı Haiku ile denendi (Ünite 1 ve 16; doğru cevap, hata, bilmiyorum, Türkçe cevap, konu dışı): iyi. Geçici test hesabı silindi. Sahte API ile Playwright (iPhone 13, açık/koyu): okuma sırası TR→EN, hata yok, yatay kayma yok.
+
 > **KELİME KELİME VURGULAMA BİTTİ (dal `claude/compassionate-volta-qp9l6t`, 2026-11-17) — main'e alındı 2026-11-17, YAYINDA. Worker değişmedi.**
 > - Kütüphanede "🔊 Read to me / 🐢 Slow / ▶ Bütün kitabı oku" sırasında o an okunan kelime sarıyla işaretleniyor, cümle açık sarı zeminde. `bookReadPage`: ses `onboundary` (kelime sınırı) bildirirse ona göre; bildirmezse (ör. Chrome'un çevrim içi sesleri) harf sayısı + noktalama duraklamasından süre tahmini (`64ms/harf ÷ hız`). `speak()` artık konuşma nesnesini döndürüyor.
 > - Test: sahte sesle Playwright, iki yol da doğru sırayla işaretliyor, bitince işaret kalkıyor, hata yok. **Gerçek telefonda denenmedi** (iPhone Safari sınır bildirir; Android Chrome'da tahmin yolu çalışır).

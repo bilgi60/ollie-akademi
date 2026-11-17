@@ -160,6 +160,10 @@ body.calling{overflow:hidden}
 [data-s=listen] .callMe{color:var(--leaf)}
 .callOl{background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:10px 16px;font-size:1.15rem;overflow-wrap:anywhere;max-width:100%}
 .callOl .tr{margin-top:4px}
+.callOl.gd{font-size:1.05rem}
+.callEn{margin-top:8px;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,var(--sun) 26%,transparent);font-family:var(--display);font-weight:700;font-size:1.25rem}
+.callMode{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.callMode .btn[aria-pressed="true"]{outline:3px solid var(--sun);outline-offset:1px}
 .callBar{display:flex;align-items:flex-start;justify-content:center;gap:14px;width:100%;padding-top:4px}
 .callGap{width:56px}
 .callBtn{width:76px;height:76px;border-radius:50%;border:0;font-size:2rem;display:grid;place-items:center;cursor:pointer;background:var(--accent);color:var(--on-accent);box-shadow:0 6px 18px rgba(0,0,0,.18);margin:0 auto}
@@ -2039,7 +2043,7 @@ async function chatSend(text){
   const u = ct.unit;
   ct.msgs.push({role:"user", text}); ct.busy = true; if(ct.call){ ct.call.s = "think"; ct.call.note = ""; ct.call.showTr = false; } render(); chatScroll();
   try{
-    const r = await api(`/children/${childId}/chat`, {body:{unit:u, text}});
+    const r = await api(`/children/${childId}/chat`, {body:{unit:u, text, ...(ct.call && ct.call.guided ? {guided:true} : {})}});
     if(!ct || ct.unit !== u) return;
     const me = ct.msgs[ct.msgs.length-1];
     if(r.flag === "personal") me.text = "[kişisel bilgi gizlendi]";
@@ -2049,7 +2053,7 @@ async function chatSend(text){
     ct.left = r.left;
     if(r.flag === "ok" || r.flag === "offtopic"){ S.chat.n = (S.chat.n||0) + 1; addPts(CHAT_PTS); checkBadges(); save(); }
     ct.busy = false;
-    if(ct.call){ ct.call.showTr = !!(r.say_tr && r.tr); if(page === "call") callSay(r.reply, r.say_tr && r.tr); return; }
+    if(ct.call){ ct.call.showTr = !!(r.say_tr && r.tr); if(page === "call") callSay(r.reply, r.say_tr && r.tr, ct.call.guided); return; }
     if(page === "chat"){ render(); chatScroll(); const inp = $("#chatIn"); if(inp && !SR) inp.focus(); }
     speak(r.reply);
   }catch(e){
@@ -2110,7 +2114,7 @@ const callIdle = () => SR ? "🎤 düğmesine bas ve konuş." : "Ollie'ye yaz, o
 function startCall(i){
   callStopRec(); clearInterval(callTick);
   startChat(i);
-  ct.call = {s:"ready", heard:"", t0:0, kb:!SR, showTr:false, note:""};
+  ct.call = {s:"ready", heard:"", t0:0, kb:!SR, showTr:false, note:"", guided: typeof S.chat.guided === "boolean" ? S.chat.guided : i < 30};
   callTick = setInterval(()=>{
     if(page !== "call" || !ct || !ct.call){ clearInterval(callTick); callTick = null; return; }
     const t = $("#callTime"); if(t && ct.call.t0) t.textContent = callClock();
@@ -2126,6 +2130,8 @@ function callBlink(){
 function callSet(s, note){ if(!ct || !ct.call) return; ct.call.s = s; ct.call.note = note || ""; if(page === "call") render(); }
 function callGreet(){
   const L = LEVELS[ct.unit], n = S.name ? ` ${S.name}` : "", t = L.theme.toLowerCase();
+  if(ct.call && ct.call.guided) return ct.msgs.length ? [`Say: Hello Ollie!`, `Yine merhaba${n}! Kaldığımız yerden devam edelim. Ben Türkçe soracağım, sen İngilizce cevap vereceksin. Önce bana İngilizce merhaba de!`]
+    : [`Say: Hello Ollie!`, `Merhaba${n}! Ben Ollie. Bugün ${L.tr} hakkında konuşacağız. Ben sana Türkçe soracağım, sen İngilizce cevap vermeye çalışacaksın. Önce bana İngilizce merhaba de!`];
   return ct.msgs.length ? [`Hi again${n}! Let's keep talking about ${t}.`, `Yine merhaba! ${L.tr} hakkında konuşmaya devam edelim.`]
     : [`Hi${n}! It's me, Ollie! Let's talk about ${t}. Tell me something!`, `Merhaba! Ben Ollie. ${L.tr} hakkında konuşalım. Bana bir şey söyle!`];
 }
@@ -2151,12 +2157,15 @@ function callHTML(){
     <div class="callTop"><span class="chip">${L.icon} ${esc(L.theme)}</span><span class="calltime" id="callTime">${c.t0 ? callClock() : "📞"}</span><span class="chip" title="Bugün kalan mesaj">💬 ${ct.left ?? "—"}/${ct.limit || 20}</span></div>
     <div class="callMid">${ollieLive()}<div class="callSt" id="callSt" aria-live="polite">${esc(status)}</div></div>
     <div class="callTxt">
-      ${c.s === "ready" ? `<h1>📞 Ollie'yi ara</h1><p class="tr">Ollie seninle ${esc(L.tr)} hakkında İngilizce konuşacak. Sen konuş, o dinlesin; sonra o cevap versin. ${SR ? "İngilizce söyleyemediğin bir şey olursa 🇹🇷 düğmesine basıp Türkçe söyle, Ollie sana İngilizcesini öğretsin." : "Bu tarayıcıda mikrofon yok; yazarak konuşabilirsin (Türkçe de yazabilirsin)."}</p><p class="tr">🔒 Adını soyadını, adresini, okulunu söyleme. Konuşmaların veli panelinde görünür.</p>` : ""}
+      ${c.s === "ready" ? `<h1>📞 Ollie'yi ara</h1>
+        <div class="callMode" role="group" aria-label="Konuşma şekli"><button class="btn ${c.guided ? "" : "ghost"} small" data-act="callMode" data-arg="tr" aria-pressed="${!!c.guided}">🇹🇷 Türkçe yardımlı</button><button class="btn ${c.guided ? "ghost" : ""} small" data-act="callMode" data-arg="en" aria-pressed="${!c.guided}">🇬🇧 Sadece İngilizce</button></div>
+        ${c.guided ? `<p class="tr">Ollie sana Türkçe soru soracak ve örnek bir İngilizce cümle söyleyecek. Sen İngilizce cevap ver; Ollie adım adım biraz daha zor sorular soracak.${SR ? "" : " Bu tarayıcıda mikrofon yok; yazarak cevap verebilirsin."}</p>` : `<p class="tr">Ollie seninle ${esc(L.tr)} hakkında İngilizce konuşacak. Sen konuş, o dinlesin; sonra o cevap versin. ${SR ? "İngilizce söyleyemediğin bir şey olursa 🇹🇷 düğmesine basıp Türkçe söyle, Ollie sana İngilizcesini öğretsin." : "Bu tarayıcıda mikrofon yok; yazarak konuşabilirsin (Türkçe de yazabilirsin)."}</p>`}<p class="tr">🔒 Adını soyadını, adresini, okulunu söyleme. Konuşmaların veli panelinde görünür.</p>` : ""}
       <div class="callMe" id="callMe">${esc(c.s === "listen" ? c.heard : me ? me.text : "")}</div>
       ${fix && c.s !== "listen" ? `<div class="cfix">💡 <b>${esc(me.fix.better)}</b>${me.fix.note ? `<span class="tr">${esc(me.fix.note)}</span>` : ""}</div>` : ""}
-      ${olText && c.s !== "ring" ? `<div class="callOl">🦉 ${esc(olText.text)}${olText.tr && c.showTr ? `<div class="tr">🇹🇷 ${esc(olText.tr)}</div>` : ""}</div>
-        <div class="row" style="justify-content:center"><button class="btn ghost small" data-act="callRepeat" ${c.s === "think" ? "disabled" : ""}>🔁 Tekrar söyle</button>${olText.tr ? `<button class="btn ghost small" data-act="callTr">${c.showTr ? "Gizle" : "🇹🇷 Türkçesi"}</button>` : ""}</div>` : ""}
-      ${starters ? `<div class="tr">Ne diyeceğini bilemedin mi? Birine dokun:</div><div class="row" style="justify-content:center">${chatStarters(i).map(s=>`<button class="chip" data-act="callStarter" data-arg="${esc(s)}">${esc(s)}</button>`).join("")}</div>` : ""}
+      ${olText && c.s !== "ring" ? (c.guided && olText.tr ? `<div class="callOl gd">🦉 ${esc(olText.tr)}<div class="callEn" lang="en">🗣️ ${esc(olText.text)}</div></div>`
+        : `<div class="callOl">🦉 ${esc(olText.text)}${olText.tr && c.showTr ? `<div class="tr">🇹🇷 ${esc(olText.tr)}</div>` : ""}</div>`)
+        + `<div class="row" style="justify-content:center"><button class="btn ghost small" data-act="callRepeat" ${c.s === "think" ? "disabled" : ""}>🔁 Tekrar söyle</button>${olText.tr && !c.guided ? `<button class="btn ghost small" data-act="callTr">${c.showTr ? "Gizle" : "🇹🇷 Türkçesi"}</button>` : ""}</div>` : ""}
+      ${starters ? `<div class="tr">Ne diyeceğini bilemedin mi? Birine dokun:</div><div class="row" style="justify-content:center">${(c.guided ? ["Hello Ollie!"] : chatStarters(i)).map(s=>`<button class="chip" data-act="callStarter" data-arg="${esc(s)}">${esc(s)}</button>`).join("")}</div>` : ""}
       ${out && c.s !== "talk" ? `<div class="fb good">Bugünlük sohbet hakkın bitti. Yarın yine ara! 🦉</div>` : ""}
       ${!out && c.kb && c.s !== "ready" ? `<form id="callForm" class="crow" style="width:100%" novalidate><input class="field" id="callIn" maxlength="300" autocomplete="off" placeholder="Write in English…" aria-label="Mesajın" ${c.s === "think" ? "disabled" : ""}><button class="btn" type="submit" ${c.s === "think" ? "disabled" : ""}>▶</button></form>` : ""}
     </div>
@@ -2167,16 +2176,18 @@ function callStart(){
   if(!ct || !ct.call || ct.call.s !== "ready") return;
   try{ speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance("")); }catch(e){} // iOS: sesi dokunuşla aç
   const c = ct.call; c.t0 = Date.now(); c.greet = callGreet(); callSet("ring");
-  setTimeout(()=>{ if(ct && ct.call === c && c.s === "ring") callSay(c.greet[0]); }, 1400);
+  c.showTr = !!c.guided;
+  setTimeout(()=>{ if(ct && ct.call === c && c.s === "ring") callSay(c.greet[0], c.guided && c.greet[1], c.guided); }, 1400);
 }
 // Ollie konuşur; bitince (çocuk hâlâ aramadaysa) otomatik dinlemeye geçer.
-function callSay(text, trText){
+function callSay(text, trText, trFirst){
   if(!ct || !ct.call) return;
   const c = ct.call; let done = false;
   callSet("talk");
   const fin = () => { if(done) return; done = true; if(ct && ct.call === c && c.s === "talk") callListen(true); };
   const ok = () => ct && ct.call === c && c.s === "talk";
-  speak(text, trText ? () => { if(ok()) setTimeout(()=>{ if(ok()) speak(trText, fin, null, "tr"); }, 250); } : fin);
+  if(trText && trFirst) speak(trText, () => { if(ok()) setTimeout(()=>{ if(ok()) speak(text, fin); }, 250); }, null, "tr");
+  else speak(text, trText ? () => { if(ok()) setTimeout(()=>{ if(ok()) speak(trText, fin, null, "tr"); }, 250); } : fin);
   setTimeout(fin, 2500 + (text.length + (trText ? trText.length : 0)) * 110); // bazı tarayıcılar onend göndermiyor
 }
 function callStopRec(){ if(callRec){ const r = callRec; callRec = null; try{ r.abort(); }catch(e){} } }
@@ -4030,7 +4041,8 @@ document.addEventListener("click", e => {
     case "callMicTr": return callMic("tr");
     case "callHang": return callHang();
     case "callKb": ct.call.kb = !ct.call.kb; if(ct.call.kb && ct.call.s === "listen") callStopRec(), ct.call.s = "idle"; render(); { const inp = $("#callIn"); if(inp) inp.focus(); } return;
-    case "callRepeat": { const m = [...ct.msgs].reverse().find(x=>x.role === "ollie"); return m ? callSay(m.text, ct.call.showTr && m.tr) : callSay(ct.call.greet[0]); }
+    case "callRepeat": { const m = [...ct.msgs].reverse().find(x=>x.role === "ollie"); const g = ct.call.guided; return m ? callSay(m.text, (g || ct.call.showTr) && m.tr, g) : callSay(ct.call.greet[0], g && ct.call.greet[1], g); }
+    case "callMode": ct.call.guided = arg === "tr"; S.chat.guided = ct.call.guided; save(); render(); return;
     case "callTr": ct.call.showTr = !ct.call.showTr; render(); return;
     case "callStarter": return callSend(arg);
     case "parentChats": return parentChats(+arg);
