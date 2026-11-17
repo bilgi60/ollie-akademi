@@ -1,5 +1,12 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **"OLLIE'Yİ ARA" EKRANI BİTTİ (dal `claude/inspiring-ride-ejf2vk`, 2026-11-17) — main'e ALINMADI, kullanıcı onayı bekleniyor. Worker değişmedi (yayın gerekmez).**
+> - `#call-N`: tam ekran sesli sohbet. Yeşil 📞 → "aranıyor" → Ollie selam verir (TTS) → otomatik dinler (SpeechRecognition, çocuğun sözleri canlı ve büyük yazıyla) → `chatSend` ile aynı sunucu (`api/src/chat.js`, günlük 20 mesaj ortak) → Ollie cevabı sesli okur → yine dinler. Düzeltme (💡), 🔁 Tekrar söyle, 🇹🇷 Türkçesi, ⌨️ yazma (mikrofonsuz tarayıcıda varsayılan), ilk turda hazır cümle çipleri, arama süresi, Kapat/Escape → `#chat-N` (yazılı geçmiş orada).
+> - Canlı Ollie: `img/ollie-512.png` üstünde SVG katman (`OLLIE_SVG`): göz kapakları rastgele kırpar, konuşurken kapalı gaga açılıp kapanır + hafif sallanma, dinlerken baş eğik + yeşil halka, düşünürken sağa sola. Azaltılmış hareket ayarında animasyonlar kapalı.
+> - Girişler: sohbet konu sayfası, sohbet başlığı, ünite sayfası, ana sayfa sohbet kartı. Ayrıca: `.toast` artık tıklamayı geçiriyor (düğmeleri kapatıyordu); Starters hazır cümleleri "I like the elephant." (eskiden "I like elephant.").
+> - Test: sahte API + sahte mikrofon/ses ile Playwright, 390 px ve 1100 px (koyu tema): tam akış, mikrofonsuz tarayıcı, hakkı bitmiş, sunucu hatası, konuşurken sayfadan çıkma, Escape, kilitli ünite; hata yok, yatay kayma yok. `check-units`/`check-books` ✓. **Gerçek telefonda (özellikle iPhone Safari: ses/mikrofon izinleri) denenmedi** — main'e almadan önce kullanıcı denemeli.
+> - Sıradaki: kullanıcıya sor → main'e alma; sonra reklam listesindeki 2) kitap çizimleri, 3) kelime kelime vurgulama, 4) haftanın hikâyesi. Reklam dersi: bu iş bitti → çocuk-Ollie konuşma videosu çekilebilir.
+
 > **SIRADAKİ İŞ ADAYLARI (2026-11-15, kullanıcı "yarın devam edelim" dedi — henüz seçmedi, önce sor).** Kullanıcı iki Instagram reklamını (Praktika.ai, Raffles Reading) inceletti. Öneriler (etkiye göre):
 > 1. **"Ollie'yi ara" ekranı (önerilen ilk iş):** tam ekran canlı Ollie (göz kırpma, konuşurken ağız, dinlerken baş eğme), sesle konuşma, çocuğun söylediği büyük yazıyla ekranda. Mevcut sohbet sunucusu (`api/src/chat.js`, `#chat-N`) kullanılır; yeni yapay zekâ maliyeti yok.
 > 2. **Kitaplara gerçek çizimler:** şu an `books-mf.js`/BOOKS sayfa resimleri emoji (`pages:[[resim,en,tr]]`). Önce 40 kitabın kapağı, sonra sayfalar; tek çizim tarzı. Görsel üretim aracı (higgsfield) bağlı ama kredi harcar → önce 2–3 örnek, kullanıcı tarzı onaylasın.
