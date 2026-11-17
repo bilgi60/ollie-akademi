@@ -1,5 +1,11 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **SIRADAKİ İŞ (2026-11-17, kullanıcı istedi, YENİ SOHBETTE yapılacak): "🎯 Durum görevi" modu.**
+> - Kullanıcının örneği: Ollie "Mağazaya girdiğinde bu gömleğin fiyatını nasıl sorarsın?" der → çocuk İngilizce cevaplar → Ollie cevabı kontrol eder, doğrusunu söyler.
+> - Kararlar (kullanıcı "nasıl kolay olursa" dedi → en kolay yol seçildi): durumları **yapay zekâ üretir** (ünite konusu + seviye; hazır liste yazılmaz); mod **"Ollie'yi ara" ekranında "🎯 Görev ver" düğmesi** (ayrı sayfa yok). Her cevap günlük 20 mesaj hakkından düşer; görevi istemek ayrıca hak harcamasın (ya da en fazla 1).
+> - Önerilen yapı: `api/src/chat.js`'e `mode:"task"` → model `task_tr` (Türkçe durum, ör. mağaza/restoran/okul/park, ünite konusuna uygun) + gizli `task_en` (örnek doğru cevap) üretir; çocuğun cevabında model `correct: true/false`, `better` (doğru/daha doğal hâli), `note` (Türkçe kısa açıklama), `say_tr: true` döner. Site: görev Türkçe sesle okunur, çocuk 🎤 (İngilizce) ya da ⌨️ ile cevaplar; doğruysa ⭐ + "Sıradaki görev", yanlışsa doğrusu sesli okunur + "Tekrar dene". Mevcut `say_tr`, `fix`, `callSay(text, trText)` altyapısı kullanılabilir. Kişisel bilgi / filtre kuralları aynen geçerli.
+> - Bitince: sahte API ile Playwright, sonra canlı Haiku ile birkaç görev (geçici test hesabı açılıp silinir), Worker yayını, main'e almadan önce kullanıcıya sor.
+
 > **TÜRKÇE YARDIM EKLENDİ (2026-11-17, kullanıcı istedi) — main'e alındı 2026-11-17, YAYINDA; Worker da yayında.**
 > - Arama ekranında "🇹🇷 Türkçe" düğmesi: tarayıcı dili kendiliğinden ayırt edemediği için çocuk bu düğmeyle `tr-TR` dinlenir (🎤 hep İngilizce). Duyulamazsa ipucu "🎤 ile tekrar dene ya da 🇹🇷 ile Türkçe söyle".
 > - Sunucu (`api/src/chat.js`): şemaya `say_tr` eklendi; "konuşamıyorum/bilmiyorum/anlamadım" → kopyalanacak tek kolay İngilizce cümle + Türkçe yönlendirme; başka Türkçe cümle → `fix` (you_said=Türkçe, better=İngilizcesi, note=Türkçe), tam olarak çocuğun söylediği öğretilir; karışık TR/EN de düzeltilir. `say_tr` true ise site İngilizce cevaptan sonra `tr` metnini Türkçe sesle okur (`speak(..., "tr")`, `trVoice`) ve Türkçesini açık gösterir (yazılı sohbette de).
