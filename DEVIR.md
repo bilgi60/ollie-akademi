@@ -1,5 +1,13 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **SAYFA İÇİ ÇİZİMLER, 1. PARTİ (dal `claude/focused-babbage-kjupzx`, 2026-11-18) — main'e ALINMADI, kullanıcı onayı bekleniyor. Worker değişmedi.**
+> - Kullanıcı "yettiği kadarını çiz" dedi: 4,14 kredi → 16 çizim (0,25/çizim), kalan bakiye **0,14** (yeni kredi alınmadan çizim yok).
+> - Çizilen: b1–b4'ün 2–5. sayfaları (`img/books/b1-2.webp` … `b4-5.webp`, 512 px, ~35–60 KB). 1. sayfada kapak zaten var. Kitap kapağı referans görsel olarak verildi (`media_import_url` ile canlı siteden `https://ollieakademi.com/img/books/bN.webp`; `upload.higgsfield.ai` ağ izninde yok, o yüzden doğrudan yükleme çalışmıyor) → karakterler kapakla aynı.
+> - `index.html`: `PAGE_ART` (kitap → çizimi olan sayfa no'ları) + `pageArt(b, i)`; okuyucu sayfada çizim varsa onu, yoksa emojiyi gösterir. Yeni çizim eklemek: dosyayı `img/books/<id>-<sayfa>.webp` koy, `PAGE_ART`'a ekle.
+> - Küçük kusur: b4 (Deniz’s Color Box) 2. ve 3. sayfada boya kutusunda turuncu kalem var gibi görünüyor (4. sayfada doğru: turuncu yok). Kredi gelince yeniden çizilebilir.
+> - Test: sahte API ile Playwright (390 px açık, 1100 px koyu): b1–b4 tüm sayfalar resim (512 px, kırık yok), b5 emojiye düşüyor; hata yok, yatay kayma yok. 16 çizim gözle kontrol edildi (yazı yok).
+> - Sıradaki: kullanıcı onaylarsa main'e al. Kredi alınırsa sıradaki kitaplar b5, b6… (kitap başı 4 çizim = 1 kredi). Bekleyen: 2028 bayram tarihleri, `MEB_YEAR` 2027-2028.
+
 > **HAFTANIN HİKÂYESİ + KAPAKLARI BİTTİ (dal `claude/sweet-cray-ll9e3j`, 2026-11-18) — main'e alındı 2026-11-18, YAYINDA. Worker değişmedi.**
 > - Kapaklar: `img/books/w1..w31.webp` (3D kil, higgsfield `gpt_image_2_6`, 32 çizim = 8 kredi; w7 yılbaşı kapağı kadeh yüzünden meyve suyuyla yeniden çizildi). Kalan bakiye ~4,1 kredi. `BOOK_COVERS` w1–w31'i de içeriyor. Higgsfield aynı anda en çok 4 iş kabul ediyor (fazlası 429).
 > - `stories.js` (yeni, index.html'de meb.js'ten sonra yüklenir): 31 hikâye (`w1`–`w31`), hepsi Starters 2 düzeyi, 6 sayfa + 3 soru, kitaplarla aynı biçim. 15 özel gün (Ramazan/Kurban Bayramı, okula dönüş, Hayvanları Koruma Günü, 29 Ekim, Öğretmenler Günü, yılbaşı, karne, bahar, Kütüphane Haftası, 23 Nisan, Anneler Günü, 19 Mayıs, Babalar Günü, yaz tatili) + mevsim başına 4 hikâye. `weekStory(gün)`: o haftaya değen özel gün (listede üstteki önce), yoksa mevsim hikâyeleri özel günsüz haftalara sırayla.

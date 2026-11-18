@@ -3680,6 +3680,8 @@ function bookWords(text){
 // Kapak çizimi olan kitaplar: img/books/<id>.webp (512 px). Listede olmayan kitapta emoji gösterilir.
 const BOOK_COVERS = new Set([...Array.from({length:60},(_,i)=>`b${i+1}`), ...Array.from({length:31},(_,i)=>`w${i+1}`)]);   // b: kütüphane, w: haftanın hikâyesi
 const bookCover = b => BOOK_COVERS.has(b.id) ? `img/books/${b.id}.webp` : "";
+const PAGE_ART = {b1:[2,3,4,5], b2:[2,3,4,5], b3:[2,3,4,5], b4:[2,3,4,5]};   // sayfa içi çizimler: img/books/<id>-<sayfa no>.webp (1. sayfada kapak)
+const pageArt = (b, i) => i === 0 ? bookCover(b) : ((PAGE_ART[b.id] || []).includes(i+1) ? `img/books/${b.id}-${i+1}.webp` : "");
 const bookIc = (b, extra="") => { const c = bookCover(b); return c ? `<span class="ic cv ${extra}"><img src="${c}" alt="" loading="lazy" decoding="async"></span>` : `<span class="ic ${extra}">${b.e}</span>`; };
 function libraryHTML(){
   const nb = nextBook(), rl = readerLevel();
@@ -3714,7 +3716,7 @@ function bookHTML(){
     return `${head}<section class="panel">
       <div class="eyebrow">${b.e} ${esc(b.t)} · Sayfa ${bk.pg+1}/${b.pages.length}</div>
       <div class="progress">${b.pages.map((_,n)=>`<span class="${n<bk.pg?"done":n===bk.pg?"now":""}"></span>`).join("")}</div>
-      <div class="bkpage">${bk.pg===0 && bookCover(b) ? `<img class="bkcover" src="${bookCover(b)}" alt="">` : `<div class="bkpic" aria-hidden="true">${p[0]}</div>`}
+      <div class="bkpage">${pageArt(b, bk.pg) ? `<img class="bkcover" src="${pageArt(b, bk.pg)}" alt="">` : `<div class="bkpic" aria-hidden="true">${p[0]}</div>`}
         <p class="bktext" id="bktext">${bookWords(p[1])}</p>
         ${bk.showTr ? `<p class="tr bktr">${esc(p[2])}</p>` : ""}
         <div class="bkgl" id="bkgl" aria-live="polite"><span class="tr">Bir kelimeye dokun: Ollie okur ve Türkçesini söyler.</span></div></div>
