@@ -1,5 +1,12 @@
 # DEVİR NOTU — Ollie Akademi
 
+> **HAFTANIN HİKÂYESİ BİTTİ (dal `claude/sweet-cray-ll9e3j`, 2026-11-18) — main'e ALINMADI, kullanıcı onayı bekleniyor. Worker değişmedi.**
+> - `stories.js` (yeni, index.html'de meb.js'ten sonra yüklenir): 31 hikâye (`w1`–`w31`), hepsi Starters 2 düzeyi, 6 sayfa + 3 soru, kitaplarla aynı biçim. 15 özel gün (Ramazan/Kurban Bayramı, okula dönüş, Hayvanları Koruma Günü, 29 Ekim, Öğretmenler Günü, yılbaşı, karne, bahar, Kütüphane Haftası, 23 Nisan, Anneler Günü, 19 Mayıs, Babalar Günü, yaz tatili) + mevsim başına 4 hikâye. `weekStory(gün)`: o haftaya değen özel gün (listede üstteki önce), yoksa mevsim hikâyeleri özel günsüz haftalara sırayla.
+> - **Dinî bayram tarihleri yıl yıl girilir** (`when.y`); şu an yalnız 2027 var (Ramazan 9–11 Mart, Kurban 16–19 Mayıs; Diyanet takvimi haberlerinden). 2028 tarihleri açıklanınca eklenmeli. `node api/tools/check-stories.js 2028` hiç çıkmayan hikâyeyi uyarır.
+> - index.html: `WEEK_STORIES`, `storyNow()`, `bookById` hikâyeleri de bulur, `#book-wN` rotası, okuyucuda hikâye kilitsiz ve başlıkta "🗓️ Haftanın hikâyesi"; `storyCardHTML` ana sayfada (okul kartının altında) ve kütüphane başında. Ödül kitaplarla aynı (ilk okuma ⭐+5, soru başı ⭐+2); okuma seviyesine/kitap sayısına sayılmaz.
+> - Test: sahte API ile Playwright (390 px açık, 1100 px koyu): ana sayfa kartı, okuma, sorular, ⭐, kütüphane kartı "✓ Okundu"; hata yok, yatay kayma yok. Kapak çizimi yok (emoji); higgsfield ile 31 kapak ≈ 7,75 kredi (bakiye ~11,9) — kullanıcı isterse.
+> - Sıradaki (yeni sohbette): kullanıcı onaylarsa main'e al; isterse hikâye kapakları; sonra kullanıcıya sor.
+
 > **KİTAP KAPAKLARI BİTTİ (dal `claude/vibrant-wright-2xb2ud`, 2026-11-17) — main'e alındı 2026-11-18, YAYINDA.**
 > - Tarz: 3D kil (kullanıcı seçti). higgsfield `gpt_image_2_6`, 1:1, 0,25 kredi/çizim, toplam ~15,75 kredi (kalan ~11,9). Çizim metni: kitap adı + ilk 2 sayfa.
 > - `img/books/b1..b60.webp` (512 px, ~2,5 MB toplam). `index.html`: `BOOK_COVERS` (b1–b60), `bookCover`, `bookIc`; kütüphane kartları, "sıradaki kitabın" kartı, ana sayfa kütüphane kartı ve kitabın 1. sayfası kapak gösteriyor; listede olmayan kitapta emoji.

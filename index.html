@@ -536,6 +536,7 @@ body.sheeton #sheet{display:block;max-width:232mm;margin:0 auto;padding:16px}
 <script src="units-pet.js"></script>
 <script src="books-mf.js"></script>
 <script src="meb.js"></script>
+<script src="stories.js"></script>
 <script>
 const LEVELS = [
  { rank:"Novice Explorer", theme:"Animals", tr:"Hayvanlar ve yetenekleri", icon:"🐾",
@@ -1528,7 +1529,7 @@ function route(){
   if(m && +m[1]>=1 && +m[1]<=LEVELS.length){ page = "unit"; unitArg = +m[1]-1; }
   else if(sm){ page = sm[1]; if(sm[2] && +sm[2]>=1 && +sm[2]<=LEVELS.length) startSkill(sm[1], +sm[2]-1); }
   else if(h === "library") page = "library";
-  else if(/^book-b\d+$/.test(h) && startBook(h.slice(5))) page = "book";
+  else if(/^book-[bw]\d+$/.test(h) && startBook(h.slice(5))) page = "book";
   else if(h === "review"){ page = "review"; startReview(); }
   else if(h === "placement"){ page = "placement"; pt = null; }
   else if(h === "exams") page = "exam";
@@ -1891,6 +1892,7 @@ function homeHTML(){
     ${examCardHTML()}
     ${reviewCardHTML()}
     ${schoolCardHTML()}
+    ${storyCardHTML()}
     ${chatCardHTML()}
     ${libCardHTML()}
   </section>
@@ -3073,6 +3075,13 @@ function whyWrong(t, given){
   return whyTyped(given, t.type==="songtype" ? t.blank : t.type==="dictation" ? t.word : t.answer);
 }
 const whyHTML = s => s ? `<div class="why">🦉 <b>Neden olmadı?</b> ${s}</div>` : "";
+// Ana sayfa + kütüphane: "Bu haftanın hikâyesi" (stories.js → weekStory). İlk okuma ⭐+5 (finishBook), sonra günde ⭐+1.
+function storyCardHTML(top){
+  const w = storyNow(); if(!w) return "";
+  const r = S.books[w.id], done = r && r.n;
+  return `<div class="continue school"${top ? ' style="margin-top:12px"' : ""}>${bookIc(w)}<div class="txt"><div class="eyebrow">🗓️ Bu haftanın hikâyesi${done ? " · ✓ Okundu" : " · Yeni"}</div><h3>${esc(w.t)}</h3>
+    <span class="tr">${done ? "Bu haftanın hikâyesini okudun! Gelecek hafta yeni bir hikâye var." : `Mevsime ve özel günlere göre her hafta yeni bir kısa hikâye. ${w.pages.length} sayfa, ilk okumada ⭐+5.`}</span></div><a class="btn ${done ? "ghost" : ""}" href="#book-${w.id}">Oku ▶</a></div>`;
+}
 function libCardHTML(){
   const nb = nextBook(); if(!nb) return "";
   return `<div class="continue review">${bookCover(nb) ? bookIc(nb) : `<span class="ic">📚</span>`}<div class="txt"><div class="eyebrow">Kütüphane · ${BOOK_LV[nb.lv].e} ${BOOK_LV[nb.lv].n}</div><h3>${nb.e} ${esc(nb.t)}</h3>
@@ -3646,7 +3655,9 @@ const BASIC_TR = {a:"bir", an:"bir", the:"(belirli tanımlık)", i:"ben", you:"s
   snowman:"kardan adam", head:"baş", feet:"ayaklar", mouth:"ağız", wear:"giymek", cold:"soğuk", warm:"sıcak", play:"oynamak",
   football:"futbol", seven:"yedi", "o’clock":"saat (tam)", friend:"arkadaş", team:"takım", climb:"tırmanmak", fly:"uçmak", jump:"zıplamak"};
 let bk = null;
-const bookById = id => BOOKS.find(b=>b.id===id);
+const WEEK_STORIES = typeof STORIES !== "undefined" ? STORIES : [];   // stories.js: haftanın hikâyesi (seviyeye sayılmaz, kilitsiz)
+const bookById = id => BOOKS.find(b=>b.id===id) || WEEK_STORIES.find(b=>b.id===id);
+const storyNow = () => WEEK_STORIES.length ? weekStory(todayKey()) : null;
 const bookRead = b => !!(S.books[b.id] && S.books[b.id].n);
 const bookCount = () => BOOKS.filter(bookRead).length;
 const bookLvCount = lv => BOOKS.filter(b=>b.lv===lv && bookRead(b)).length;
@@ -3676,6 +3687,7 @@ function libraryHTML(){
   <section class="panel"><div class="eyebrow">Reading · Okuma Kütüphanesi</div><h1>📚 Kütüphane</h1>
     <p class="muted">Seviyene göre kısa resimli kitaplar. Ollie sana okur, bilmediğin kelimeye dokununca Türkçesini söyler. Kitabın sonunda kısa bir test var: ilk denemede her doğru ⭐+2, kitabı bitirince ⭐+5.</p>
     <div class="row"><span class="chip ok">📖 Okuma seviyem: ${rl ? `${BOOK_LV[rl].e} ${BOOK_LV[rl].n}` : "henüz yok"}</span></div>
+    ${storyCardHTML(true)}
     ${nb ? `<div class="continue" style="margin-top:12px">${bookIc(nb)}<div class="txt"><div class="eyebrow">Sıradaki kitabın · ${BOOK_LV[nb.lv].e} ${BOOK_LV[nb.lv].n}</div><h3>${esc(nb.t)}</h3><span class="tr">${nb.pages.length} sayfa · Ünite ${nb.u+1}: ${LEVELS[nb.u].theme}</span></div><a class="btn" href="#book-${nb.id}">Oku ▶</a></div>` : ""}
   </section>
   ${bookLevels().map(lv=>{ const L = BOOK_LV[lv], list = BOOKS.filter(b=>b.lv===lv), n = bookLvCount(lv), goal = Math.min(BOOK_GOAL, list.length);
@@ -3693,9 +3705,9 @@ function startBook(id){
   return true;
 }
 function bookHTML(){
-  const b = bk.b, L = BOOK_LV[b.lv];
-  const head = `<div class="row between"><a class="link" href="#library">← Kütüphane</a><span class="chip">${L.e} ${L.n} · Ünite ${b.u+1}: ${LEVELS[b.u].theme}</span></div>`;
-  if(!unitOpen(b.u)) return `${head}<section class="panel"><div class="uhead"><span class="ic">🔒</span><div><div class="eyebrow">${L.e} ${L.n}</div><h1>${esc(b.t)}</h1></div></div>
+  const b = bk.b, L = BOOK_LV[b.lv || 2], ws = !!b.when;
+  const head = `<div class="row between"><a class="link" href="#library">← Kütüphane</a><span class="chip">${ws ? `🗓️ ${b === storyNow() ? "Haftanın hikâyesi" : "Haftalık hikâye"}` : `${L.e} ${L.n} · Ünite ${b.u+1}: ${LEVELS[b.u].theme}`}</span></div>`;
+  if(!ws && !unitOpen(b.u)) return `${head}<section class="panel"><div class="uhead"><span class="ic">🔒</span><div><div class="eyebrow">${L.e} ${L.n}</div><h1>${esc(b.t)}</h1></div></div>
     <p>Bu kitap henüz kilitli. Önce <a class="link" href="#unit-${b.u}">Ünite ${b.u}: ${LEVELS[b.u-1].theme}</a> kolay testini bitir.</p></section>`;
   if(bk.phase === "read"){
     const p = b.pages[bk.pg], last = bk.pg === b.pages.length - 1;
