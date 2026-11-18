@@ -1,11 +1,12 @@
 # DEVİR NOTU — Ollie Akademi
 
-> **HAFTANIN HİKÂYESİ BİTTİ (dal `claude/sweet-cray-ll9e3j`, 2026-11-18) — main'e ALINMADI, kullanıcı onayı bekleniyor. Worker değişmedi.**
+> **HAFTANIN HİKÂYESİ + KAPAKLARI BİTTİ (dal `claude/sweet-cray-ll9e3j`, 2026-11-18) — main'e alındı 2026-11-18, YAYINDA. Worker değişmedi.**
+> - Kapaklar: `img/books/w1..w31.webp` (3D kil, higgsfield `gpt_image_2_6`, 32 çizim = 8 kredi; w7 yılbaşı kapağı kadeh yüzünden meyve suyuyla yeniden çizildi). Kalan bakiye ~4,1 kredi. `BOOK_COVERS` w1–w31'i de içeriyor. Higgsfield aynı anda en çok 4 iş kabul ediyor (fazlası 429).
 > - `stories.js` (yeni, index.html'de meb.js'ten sonra yüklenir): 31 hikâye (`w1`–`w31`), hepsi Starters 2 düzeyi, 6 sayfa + 3 soru, kitaplarla aynı biçim. 15 özel gün (Ramazan/Kurban Bayramı, okula dönüş, Hayvanları Koruma Günü, 29 Ekim, Öğretmenler Günü, yılbaşı, karne, bahar, Kütüphane Haftası, 23 Nisan, Anneler Günü, 19 Mayıs, Babalar Günü, yaz tatili) + mevsim başına 4 hikâye. `weekStory(gün)`: o haftaya değen özel gün (listede üstteki önce), yoksa mevsim hikâyeleri özel günsüz haftalara sırayla.
 > - **Dinî bayram tarihleri yıl yıl girilir** (`when.y`); şu an yalnız 2027 var (Ramazan 9–11 Mart, Kurban 16–19 Mayıs; Diyanet takvimi haberlerinden). 2028 tarihleri açıklanınca eklenmeli. `node api/tools/check-stories.js 2028` hiç çıkmayan hikâyeyi uyarır.
 > - index.html: `WEEK_STORIES`, `storyNow()`, `bookById` hikâyeleri de bulur, `#book-wN` rotası, okuyucuda hikâye kilitsiz ve başlıkta "🗓️ Haftanın hikâyesi"; `storyCardHTML` ana sayfada (okul kartının altında) ve kütüphane başında. Ödül kitaplarla aynı (ilk okuma ⭐+5, soru başı ⭐+2); okuma seviyesine/kitap sayısına sayılmaz.
-> - Test: sahte API ile Playwright (390 px açık, 1100 px koyu): ana sayfa kartı, okuma, sorular, ⭐, kütüphane kartı "✓ Okundu"; hata yok, yatay kayma yok. Kapak çizimi yok (emoji); higgsfield ile 31 kapak ≈ 7,75 kredi (bakiye ~11,9) — kullanıcı isterse.
-> - Sıradaki (yeni sohbette): kullanıcı onaylarsa main'e al; isterse hikâye kapakları; sonra kullanıcıya sor.
+> - Test: sahte API ile Playwright (390 px açık, 1100 px koyu): ana sayfa kartı, okuma, sorular, ⭐, kütüphane kartı "✓ Okundu"; hata yok, yatay kayma yok. 31 kapak tek tek gözle kontrol edildi (yazı yok, sahneler uygun); kırık resim yok.
+> - Sıradaki (yeni sohbette): kullanıcıya sor. Bekleyen: 2028 bayram tarihleri (`stories.js` when.y), `MEB_YEAR` 2027-2028, sayfa içi çizimler (kredi gerekli).
 
 > **KİTAP KAPAKLARI BİTTİ (dal `claude/vibrant-wright-2xb2ud`, 2026-11-17) — main'e alındı 2026-11-18, YAYINDA.**
 > - Tarz: 3D kil (kullanıcı seçti). higgsfield `gpt_image_2_6`, 1:1, 0,25 kredi/çizim, toplam ~15,75 kredi (kalan ~11,9). Çizim metni: kitap adı + ilk 2 sayfa.

@@ -3678,7 +3678,7 @@ function bookWords(text){
   }).join(" ");
 }
 // Kapak çizimi olan kitaplar: img/books/<id>.webp (512 px). Listede olmayan kitapta emoji gösterilir.
-const BOOK_COVERS = new Set(Array.from({length:60},(_,i)=>`b${i+1}`));
+const BOOK_COVERS = new Set([...Array.from({length:60},(_,i)=>`b${i+1}`), ...Array.from({length:31},(_,i)=>`w${i+1}`)]);   // b: kütüphane, w: haftanın hikâyesi
 const bookCover = b => BOOK_COVERS.has(b.id) ? `img/books/${b.id}.webp` : "";
 const bookIc = (b, extra="") => { const c = bookCover(b); return c ? `<span class="ic cv ${extra}"><img src="${c}" alt="" loading="lazy" decoding="async"></span>` : `<span class="ic ${extra}">${b.e}</span>`; };
 function libraryHTML(){
