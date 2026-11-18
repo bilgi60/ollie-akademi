@@ -5,7 +5,7 @@
 // {season:"autumn|winter|spring|summer"} özel gün yoksa o mevsimin hikâyeleri haftalara sırayla dağıtılır. Sıra önceliktir: üstteki önce seçilir.
 // Seviye: hepsi Starters 2 düzeyinde (6 sayfa, sayfada 1–2 kısa cümle, 3 soru), böylece her çocuk okuyabilir.
 const STORIES = [
-{id:"w1", t:"Sweet Bayram", e:"🍬", when:{y:{2027:["2027-03-09","2027-03-11"]}}, pages:[
+{id:"w1", t:"Sweet Bayram", e:"🍬", when:{y:{2027:["2027-03-09","2027-03-11"], 2028:["2028-02-26","2028-02-27"]}}, pages:[
  ["👧👗","It is Bayram today! Ece wears her new dress.","Bugün bayram! Ece yeni elbisesini giyer."],
  ["👧👵🤲","Ece visits her grandma. She kisses Grandma’s hand.","Ece büyükannesini ziyaret eder. Büyükannesinin elini öper."],
  ["👵🍬","Grandma gives her sweets and a big smile.","Büyükanne ona şeker ve kocaman bir gülümseme verir."],
@@ -17,7 +17,7 @@ const STORIES = [
   {q:"What does Grandma give her?", tr:"Büyükanne ona ne verir?", options:["Sweets","A book","A ball"], answer:"Sweets"},
   {q:"What does Ece do with her sweets?", tr:"Ece şekerlerini ne yapar?", options:["She hides them","She shares them","She eats them all"], answer:"She shares them"}]},
 
-{id:"w2", t:"Bayram at Grandpa’s", e:"🏡", when:{y:{2027:["2027-05-15","2027-05-16"]}}, pages:[
+{id:"w2", t:"Bayram at Grandpa’s", e:"🏡", when:{y:{2027:["2027-05-15","2027-05-16"], 2028:["2028-05-04","2028-05-07"]}}, pages:[
  ["🚗👨‍👩‍👦","It is Kurban Bayramı. Mert and his family go to the village.","Kurban Bayramı. Mert ve ailesi köye gider."],
  ["👴🏡","Grandpa waits at the door. “Welcome!” he says.","Büyükbaba kapıda bekler. “Hoş geldiniz!” der."],
  ["👦🤲👴","Mert kisses Grandpa’s hand. Grandpa gives him some money.","Mert büyükbabasının elini öper. Büyükbaba ona biraz harçlık verir."],
