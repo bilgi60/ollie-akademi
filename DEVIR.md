@@ -1,11 +1,11 @@
 # DEVİR NOTU — Ollie Akademi
 
-> **KİTAP KAPAKLARI BİTTİ (dal `claude/vibrant-wright-2xb2ud`, 2026-11-17) — 60 kapak dalda; main'e almak için kullanıcı onayı bekleniyor (kod desteği + b21 önceden main'e alındı, o hâlde site değişmemişti).**
+> **KİTAP KAPAKLARI BİTTİ (dal `claude/vibrant-wright-2xb2ud`, 2026-11-17) — main'e alındı 2026-11-18, YAYINDA.**
 > - Tarz: 3D kil (kullanıcı seçti). higgsfield `gpt_image_2_6`, 1:1, 0,25 kredi/çizim, toplam ~15,75 kredi (kalan ~11,9). Çizim metni: kitap adı + ilk 2 sayfa.
 > - `img/books/b1..b60.webp` (512 px, ~2,5 MB toplam). `index.html`: `BOOK_COVERS` (b1–b60), `bookCover`, `bookIc`; kütüphane kartları, "sıradaki kitabın" kartı, ana sayfa kütüphane kartı ve kitabın 1. sayfası kapak gösteriyor; listede olmayan kitapta emoji.
 > - Ortam ağ iznine `d8j0ntlcm91z4.cloudfront.net` eklendi (higgsfield görselleri).
 > - Test: sahte API ile Playwright (390 px açık, 1100 px koyu): 61 resim, kırık yok, hata yok, yatay kayma yok. 60 kapak tek tek gözle kontrol edildi (yazı yok, sahneler uygun).
-> - Sıradaki: main'e al (onayla) → sayfa içi çizimler (486 sayfa ≈ 121 kredi, bakiye yetmez; kredi alınırsa) ya da 4) haftanın hikâyesi.
+> - Sıradaki (yeni sohbette, kullanıcıya sor): sayfa içi çizimler (486 sayfa ≈ 121 kredi, bakiye yetmez; kredi alınırsa) ya da 4) haftanın hikâyesi.
 
 > **"OLLIE'Yİ ARA" TÜRKÇE YARDIMLI MOD (dal `claude/compassionate-volta-qp9l6t`, 2026-11-17, kullanıcı istedi) — Worker YAYINDA; main'e alındı 2026-11-17, site de YAYINDA. Sıradaki (yeni sohbette): kitap çizimleri.**
 > - Arama ekranında (hazır ekranı) iki seçenek: "🇹🇷 Türkçe yardımlı" (Ünite 1–30'da varsayılan) / "🇬🇧 Sadece İngilizce"; seçim `S.chat.guided`'da saklanır. Yardımlı modda karşılama yerelde Türkçe ("Merhaba Hatice! … Önce bana İngilizce merhaba de!") + "Say: Hello Ollie!"; her turda önce Türkçe soru (`tr`) sonra İngilizce soru + örnek cevap (`reply`) okunur; ekranda Türkçe metin + sarı kutuda 🗣️ İngilizce.
